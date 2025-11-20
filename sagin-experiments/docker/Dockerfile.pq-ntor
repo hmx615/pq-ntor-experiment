@@ -1,0 +1,93 @@
+# Dockerfile for PQ-NTOR SAGIN Node
+# Based on Ubuntu 22.04 with liboqs and PQ-NTOR compiled
+
+FROM ubuntu:22.04
+
+# Prevent interactive prompts during build
+ENV DEBIAN_FRONTEND=noninteractive
+ENV TZ=UTC
+
+# Install build dependencies and network tools
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    cmake \
+    git \
+    libssl-dev \
+    wget \
+    ca-certificates \
+    # Network tools for SAGIN simulation
+    iproute2 \
+    iptables \
+    iputils-ping \
+    net-tools \
+    tcpdump \
+    netcat \
+    curl \
+    # Utilities
+    vim \
+    nano \
+    htop \
+    procps \
+    && rm -rf /var/lib/apt/lists/*
+
+# Set working directory
+WORKDIR /root
+
+# Build and install liboqs (Open Quantum Safe library)
+RUN git clone --depth 1 --branch 0.10.1 https://github.com/open-quantum-safe/liboqs.git && \
+    cd liboqs && \
+    mkdir build && cd build && \
+    cmake -DCMAKE_INSTALL_PREFIX=/root/_oqs \
+          -DBUILD_SHARED_LIBS=ON \
+          -DOQS_BUILD_ONLY_LIB=ON \
+          .. && \
+    make -j$(nproc) && \
+    make install && \
+    cd ../.. && \
+    rm -rf liboqs
+
+# Set environment variables for liboqs
+ENV LIBOQS_DIR=/root/_oqs
+ENV LD_LIBRARY_PATH=${LIBOQS_DIR}/lib:${LD_LIBRARY_PATH}
+ENV C_INCLUDE_PATH=${LIBOQS_DIR}/include:${C_INCLUDE_PATH}
+
+# Copy PQ-NTOR source code
+COPY c/ /root/pq-ntor/
+
+# Build PQ-NTOR
+WORKDIR /root/pq-ntor
+RUN make clean && make all
+
+# Create directories for runtime
+RUN mkdir -p /root/pq-ntor/logs /root/pq-ntor/data
+
+# Verify executables are built
+RUN ls -lh /root/pq-ntor/relay \
+          /root/pq-ntor/client \
+          /root/pq-ntor/directory \
+          /root/pq-ntor/benchmark_pq_ntor
+
+# Expose ports (for reference, actual ports mapped at runtime)
+# 9001-9007: PQ-NTOR node ports
+# 5000: Directory server port
+EXPOSE 9001-9007 5000
+
+# Create startup script
+RUN echo '#!/bin/bash\n\
+echo "PQ-NTOR SAGIN Node Container"\n\
+echo "============================"\n\
+echo "Available executables:"\n\
+echo "  - /root/pq-ntor/relay"\n\
+echo "  - /root/pq-ntor/client"\n\
+echo "  - /root/pq-ntor/directory"\n\
+echo "  - /root/pq-ntor/benchmark_pq_ntor"\n\
+echo ""\n\
+echo "Network configuration:"\n\
+ip addr show\n\
+echo ""\n\
+echo "Container ready. Keeping alive..."\n\
+exec tail -f /dev/null\n\
+' > /root/start.sh && chmod +x /root/start.sh
+
+# Default command
+CMD ["/root/start.sh"]

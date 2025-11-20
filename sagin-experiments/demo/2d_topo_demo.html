@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SAGIN NOMA 2D拓扑演示</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #000814 0%, #001f3f 100%);
+            color: white;
+            overflow: hidden;
+        }
+
+        /* 星空背景 */
+        .stars {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+        }
+
+        .star {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: white;
+            border-radius: 50%;
+            animation: twinkle 3s infinite ease-in-out;
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.3; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.5); }
+        }
+
+        #container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        canvas {
+            border: 2px solid #00ffff;
+            border-radius: 10px;
+            box-shadow: 0 0 30px rgba(0, 255, 255, 0.5);
+            background: rgba(0, 10, 20, 0.8);
+        }
+
+        #info-panel {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.9);
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px solid #00ffff;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
+            max-width: 350px;
+        }
+
+        #info-panel h2 {
+            color: #00ffff;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #00ffff;
+            padding-bottom: 10px;
+        }
+
+        .info-item {
+            margin: 10px 0;
+            line-height: 1.8;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin: 8px 0;
+        }
+
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            margin-right: 10px;
+            border-radius: 3px;
+            border: 1px solid #fff;
+        }
+
+        .legend-line {
+            width: 40px;
+            height: 3px;
+            margin-right: 10px;
+        }
+
+        #topology-selector {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.9);
+            padding: 15px;
+            border-radius: 10px;
+            border: 2px solid #00ff00;
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.3);
+        }
+
+        #topology-selector h3 {
+            color: #00ff00;
+            margin-bottom: 10px;
+        }
+
+        .btn-group-title {
+            color: #ffcc00;
+            font-weight: bold;
+            margin: 10px 0 5px 0;
+        }
+
+        .topo-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            color: white;
+            padding: 10px 15px;
+            margin: 5px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s;
+        }
+
+        .topo-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 15px rgba(102, 126, 234, 0.5);
+        }
+
+        .topo-btn.active {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            box-shadow: 0 0 20px rgba(245, 87, 108, 0.7);
+        }
+
+        #stats {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.9);
+            padding: 15px;
+            border-radius: 10px;
+            border: 2px solid #ff00ff;
+            box-shadow: 0 0 20px rgba(255, 0, 255, 0.3);
+        }
+
+        .tooltip {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.95);
+            color: white;
+            padding: 12px;
+            border-radius: 8px;
+            border: 2px solid #00ffff;
+            pointer-events: none;
+            display: none;
+            z-index: 1000;
+            max-width: 300px;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+        }
+    </style>
+</head>
+<body>
+    <!-- 星空背景 -->
+    <div class="stars" id="stars"></div>
+
+    <div id="container">
+        <canvas id="canvas" width="1200" height="800"></canvas>
+    </div>
+
+    <div class="tooltip" id="tooltip"></div>
+
+    <div id="info-panel">
+        <h2>🛰️ SAGIN NOMA演示系统</h2>
+        <div class="info-item">
+            <strong>当前拓扑:</strong><br>
+            <span id="current-topo">拓扑1 - Z1 Up-1</span>
+        </div>
+        <div class="info-item">
+            <strong>类型:</strong> <span id="topo-type">上行通信/直连NOMA</span>
+        </div>
+
+        <div style="margin-top: 20px;">
+            <strong>节点图例:</strong>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #ffff00;"></div>
+                <span>🛰️ 卫星</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #00ffff;"></div>
+                <span>✈️ 无人机</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #00ff00;"></div>
+                <span>📡 地面站</span>
+            </div>
+        </div>
+
+        <div style="margin-top: 15px;">
+            <strong>链路图例:</strong>
+            <div class="legend-item">
+                <div class="legend-line" style="background: #00ff00;"></div>
+                <span>高RSSI</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-line" style="background: #ff9900;"></div>
+                <span>低RSSI</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-line" style="background: #ff00ff;"></div>
+                <span>协作链路</span>
+            </div>
+        </div>
+    </div>
+
+    <div id="topology-selector">
+        <h3>🎯 拓扑选择器</h3>
+        <div class="btn-group-title">⬆️ 上行通信 (6种)</div>
+        <div>
+            <button class="topo-btn active" onclick="switchTopology(1)">拓扑1</button>
+            <button class="topo-btn" onclick="switchTopology(2)">拓扑2</button>
+            <button class="topo-btn" onclick="switchTopology(3)">拓扑3</button>
+            <button class="topo-btn" onclick="switchTopology(4)">拓扑4</button>
+            <button class="topo-btn" onclick="switchTopology(5)">拓扑5</button>
+            <button class="topo-btn" onclick="switchTopology(6)">拓扑6</button>
+        </div>
+        <div class="btn-group-title">⬇️ 下行通信 (6种)</div>
+        <div>
+            <button class="topo-btn" onclick="switchTopology(7)">拓扑7</button>
+            <button class="topo-btn" onclick="switchTopology(8)">拓扑8</button>
+            <button class="topo-btn" onclick="switchTopology(9)">拓扑9</button>
+            <button class="topo-btn" onclick="switchTopology(10)">拓扑10</button>
+            <button class="topo-btn" onclick="switchTopology(11)">拓扑11</button>
+            <button class="topo-btn" onclick="switchTopology(12)">拓扑12</button>
+        </div>
+    </div>
+
+    <div id="stats">
+        <strong>📊 实时统计</strong><br>
+        节点数: <span id="node-count">0</span><br>
+        链路数: <span id="link-count">0</span><br>
+        PQ-Tor握手: <span id="handshake-status" style="color: #00ff00;">就绪</span>
+    </div>
+
+    <script>
+        // 生成星空
+        function createStars() {
+            const container = document.getElementById('stars');
+            for (let i = 0; i < 150; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                star.style.left = Math.random() * 100 + '%';
+                star.style.top = Math.random() * 100 + '%';
+                star.style.animationDelay = Math.random() * 3 + 's';
+                container.appendChild(star);
+            }
+        }
+        createStars();
+
+        // 拓扑数据
+        const topologyData = {
+            1: {
+                name: "拓扑1: Z1 Up-1 (直连NOMA)",
+                type: "上行通信/直连场景",
+                nodes: [
+                    { id: "SAT", x: 600, y: 100, type: "satellite", label: "🛰️ 卫星 SAT", addr: "赤道上空" },
+                    { id: "S1", x: 700, y: 400, type: "aircraft", label: "✈️ S1 无人机", addr: "北京上空(高RSSI)" },
+                    { id: "S2", x: 500, y: 650, type: "ground", label: "📡 S2 地面站", addr: "上海(低RSSI)" }
+                ],
+                links: [
+                    { from: "S2", to: "SAT", type: "low", label: "低RSSI天基上行\n30ms, 20Mbps" },
+                    { from: "S1", to: "SAT", type: "high", label: "高RSSI天基上行\n10ms, 50Mbps" }
+                ]
+            },
+            2: {
+                name: "拓扑2: Z1 Up-2 (混合协作)",
+                type: "上行通信/协作场景",
+                nodes: [
+                    { id: "SAT", x: 600, y: 100, type: "satellite", label: "🛰️ 卫星 SAT", addr: "赤道上空" },
+                    { id: "S2_R1", x: 400, y: 650, type: "ground", label: "📡 S2/R1", addr: "上海地面终端" },
+                    { id: "S1_R2", x: 700, y: 400, type: "aircraft", label: "✈️ S1/R2", addr: "北京上空无人机" }
+                ],
+                links: [
+                    { from: "S2_R1", to: "S1_R2", type: "high", label: "空/地链路\n5ms, 100Mbps" },
+                    { from: "S1_R2", to: "SAT", type: "high", label: "高RSSI天基上行\n10ms, 50Mbps" }
+                ]
+            },
+            3: {
+                name: "拓扑3: Z2 Up-1 (2跳协作)",
+                type: "上行通信/协作场景",
+                nodes: [
+                    { id: "SAT", x: 600, y: 100, type: "satellite", label: "🛰️ 卫星 SAT", addr: "赤道上空" },
+                    { id: "S_R", x: 600, y: 350, type: "aircraft", label: "✈️ S/R 中继", addr: "西安上空" },
+                    { id: "T1", x: 450, y: 650, type: "ground", label: "📡 T1", addr: "上海(高RSSI)" },
+                    { id: "T2", x: 750, y: 650, type: "ground", label: "📡 T2", addr: "北京(低RSSI)" }
+                ],
+                links: [
+                    { from: "T1", to: "S_R", type: "high", label: "高RSSI空/地\n5ms, 100Mbps" },
+                    { from: "T2", to: "S_R", type: "low", label: "低RSSI空/地\n15ms, 50Mbps" },
+                    { from: "S_R", to: "SAT", type: "high", label: "高RSSI天基上行\n10ms, 50Mbps" }
+                ]
+            },
+            7: {
+                name: "拓扑7: Z1 Down (直连NOMA+协作)",
+                type: "下行通信/协作场景",
+                nodes: [
+                    { id: "SAT", x: 600, y: 100, type: "satellite", label: "🛰️ 卫星 SAT", addr: "赤道上空" },
+                    { id: "S1", x: 700, y: 400, type: "aircraft", label: "✈️ S1 无人机", addr: "北京上空(高RSSI)" },
+                    { id: "S2", x: 500, y: 650, type: "ground", label: "📡 S2 地面站", addr: "上海(低RSSI)" }
+                ],
+                links: [
+                    { from: "SAT", to: "S1", type: "high", label: "高RSSI天基下行\n10ms, 100Mbps" },
+                    { from: "SAT", to: "S2", type: "low", label: "低RSSI天基下行\n30ms, 50Mbps" },
+                    { from: "S1", to: "S2", type: "coop", label: "协作链路\n5ms, 100Mbps" }
+                ]
+            }
+        };
+
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const tooltip = document.getElementById('tooltip');
+
+        let currentTopo = 1;
+        let hoveredNode = null;
+        let hoveredLink = null;
+
+        // 绘制函数
+        function draw() {
+            const topo = topologyData[currentTopo];
+            if (!topo) return;
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // 绘制链路
+            topo.links.forEach(link => {
+                const fromNode = topo.nodes.find(n => n.id === link.from);
+                const toNode = topo.nodes.find(n => n.id === link.to);
+
+                if (!fromNode || !toNode) return;
+
+                const colors = {
+                    high: '#00ff00',
+                    low: '#ff9900',
+                    coop: '#ff00ff'
+                };
+
+                ctx.save();
+                ctx.strokeStyle = colors[link.type];
+                ctx.lineWidth = hoveredLink === link ? 5 : 3;
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = colors[link.type];
+
+                if (link.type === 'coop') {
+                    ctx.setLineDash([10, 5]);
+                }
+
+                // 绘制箭头
+                drawArrow(ctx, fromNode.x, fromNode.y, toNode.x, toNode.y);
+
+                ctx.restore();
+            });
+
+            // 绘制节点
+            topo.nodes.forEach(node => {
+                const colors = {
+                    satellite: '#ffff00',
+                    aircraft: '#00ffff',
+                    ground: '#00ff00'
+                };
+
+                const isHovered = hoveredNode === node;
+                const size = isHovered ? 35 : 30;
+
+                ctx.save();
+                ctx.fillStyle = colors[node.type];
+                ctx.shadowBlur = isHovered ? 20 : 10;
+                ctx.shadowColor = colors[node.type];
+
+                // 绘制不同形状
+                if (node.type === 'satellite') {
+                    // 卫星：菱形
+                    ctx.beginPath();
+                    ctx.moveTo(node.x, node.y - size);
+                    ctx.lineTo(node.x + size, node.y);
+                    ctx.lineTo(node.x, node.y + size);
+                    ctx.lineTo(node.x - size, node.y);
+                    ctx.closePath();
+                    ctx.fill();
+                } else if (node.type === 'aircraft') {
+                    // 无人机：三角形
+                    ctx.beginPath();
+                    ctx.moveTo(node.x, node.y - size);
+                    ctx.lineTo(node.x + size, node.y + size);
+                    ctx.lineTo(node.x - size, node.y + size);
+                    ctx.closePath();
+                    ctx.fill();
+                } else {
+                    // 地面站：圆形
+                    ctx.beginPath();
+                    ctx.arc(node.x, node.y, size, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+
+                // 绘制标签
+                ctx.fillStyle = 'white';
+                ctx.font = isHovered ? 'bold 16px Arial' : '14px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText(node.label, node.x, node.y + 60);
+
+                ctx.restore();
+            });
+
+            // 更新统计
+            document.getElementById('node-count').textContent = topo.nodes.length;
+            document.getElementById('link-count').textContent = topo.links.length;
+        }
+
+        // 绘制箭头
+        function drawArrow(ctx, fromX, fromY, toX, toY) {
+            const angle = Math.atan2(toY - fromY, toX - fromX);
+            const headLength = 15;
+
+            ctx.beginPath();
+            ctx.moveTo(fromX, fromY);
+            ctx.lineTo(toX, toY);
+            ctx.stroke();
+
+            ctx.beginPath();
+            ctx.moveTo(toX, toY);
+            ctx.lineTo(toX - headLength * Math.cos(angle - Math.PI / 6), toY - headLength * Math.sin(angle - Math.PI / 6));
+            ctx.lineTo(toX - headLength * Math.cos(angle + Math.PI / 6), toY - headLength * Math.sin(angle + Math.PI / 6));
+            ctx.closePath();
+            ctx.fill();
+        }
+
+        // 鼠标事件
+        canvas.addEventListener('mousemove', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+
+            const topo = topologyData[currentTopo];
+            if (!topo) return;
+
+            // 检查节点悬停
+            hoveredNode = null;
+            for (const node of topo.nodes) {
+                const dist = Math.sqrt((x - node.x) ** 2 + (y - node.y) ** 2);
+                if (dist < 30) {
+                    hoveredNode = node;
+                    tooltip.style.display = 'block';
+                    tooltip.style.left = e.clientX + 15 + 'px';
+                    tooltip.style.top = e.clientY + 15 + 'px';
+                    tooltip.innerHTML = `<strong>${node.label}</strong><br>${node.addr}`;
+                    break;
+                }
+            }
+
+            if (!hoveredNode) {
+                tooltip.style.display = 'none';
+            }
+
+            draw();
+        });
+
+        // 切换拓扑
+        function switchTopology(id) {
+            if (!topologyData[id]) return;
+
+            currentTopo = id;
+            const topo = topologyData[id];
+
+            document.getElementById('current-topo').textContent = topo.name;
+            document.getElementById('topo-type').textContent = topo.type;
+
+            document.querySelectorAll('.topo-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+
+            document.getElementById('handshake-status').textContent = '执行中...';
+            document.getElementById('handshake-status').style.color = '#ffff00';
+
+            setTimeout(() => {
+                document.getElementById('handshake-status').textContent = '完成 ✓';
+                document.getElementById('handshake-status').style.color = '#00ff00';
+            }, 1500);
+
+            draw();
+        }
+
+        // 初始绘制
+        draw();
+    </script>
+</body>
+</html>

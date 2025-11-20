@@ -1,0 +1,218 @@
+{
+  "version": "1.0",
+  "description": "SAGIN 7-node network topology configuration for PQ-NTOR testing",
+  "created": "2025-11-12",
+
+  "satellites": {
+    "Sat-1": {
+      "type": "LEO",
+      "orbit_type": "Starlink-like",
+      "altitude_km": 550,
+      "inclination_deg": 53.0,
+      "line1": "1 44713U 19074A   25316.50000000  .00001845  00000-0  13857-3 0  9998",
+      "line2": "2 44713  53.0542 123.4567 0001234  90.1234 269.8765 15.05123456234567",
+      "ip": "172.20.1.11",
+      "port": 9001,
+      "frequency_ghz": 12.5,
+      "max_range_km": 2000,
+      "handover_threshold_deg": 10
+    },
+    "Sat-2": {
+      "type": "MEO",
+      "orbit_type": "O3b-like",
+      "altitude_km": 8000,
+      "inclination_deg": 0.0,
+      "line1": "1 38867U 12049A   25316.50000000  .00000045  00000-0  00000+0 0  9990",
+      "line2": "2 38867   0.0358 201.2345 0001845 123.4567 236.5432 12.76543210345678",
+      "ip": "172.20.1.12",
+      "port": 9002,
+      "frequency_ghz": 18.5,
+      "max_range_km": 5000,
+      "handover_threshold_deg": 10
+    }
+  },
+
+  "aircraft": {
+    "Aircraft-1": {
+      "route": "Beijing-London",
+      "flight_number": "AC001",
+      "cruise_altitude_km": 10.0,
+      "cruise_speed_m_s": 250.0,
+      "start_location": {
+        "name": "Beijing Capital Airport",
+        "latitude": 40.0801,
+        "longitude": 116.5846
+      },
+      "end_location": {
+        "name": "London Heathrow Airport",
+        "latitude": 51.4700,
+        "longitude": -0.4543
+      },
+      "waypoints": [
+        {"latitude": 48.0, "longitude": 90.0, "name": "Central Asia"},
+        {"latitude": 52.0, "longitude": 40.0, "name": "Eastern Europe"}
+      ],
+      "ip": "172.20.2.21",
+      "port": 9003,
+      "communication_radius_km": 500,
+      "update_interval_sec": 60
+    },
+    "Aircraft-2": {
+      "route": "London-NewYork",
+      "flight_number": "AC002",
+      "cruise_altitude_km": 11.0,
+      "cruise_speed_m_s": 260.0,
+      "start_location": {
+        "name": "London Heathrow Airport",
+        "latitude": 51.4700,
+        "longitude": -0.4543
+      },
+      "end_location": {
+        "name": "JFK International Airport",
+        "latitude": 40.6413,
+        "longitude": -73.7781
+      },
+      "waypoints": [
+        {"latitude": 54.0, "longitude": -20.0, "name": "North Atlantic"},
+        {"latitude": 50.0, "longitude": -45.0, "name": "Mid Atlantic"}
+      ],
+      "ip": "172.20.2.22",
+      "port": 9004,
+      "communication_radius_km": 500,
+      "update_interval_sec": 60
+    }
+  },
+
+  "ground_stations": {
+    "GS-Beijing": {
+      "name": "Beijing Ground Station",
+      "location": "China",
+      "latitude": 39.9042,
+      "longitude": 116.4074,
+      "elevation_m": 50,
+      "min_elevation_deg": 10,
+      "ip": "172.20.3.31",
+      "port": 9005,
+      "antenna_gain_dbi": 45.0,
+      "max_tracking_satellites": 4
+    },
+    "GS-London": {
+      "name": "London Ground Station",
+      "location": "United Kingdom",
+      "latitude": 51.5074,
+      "longitude": -0.1278,
+      "elevation_m": 25,
+      "min_elevation_deg": 10,
+      "ip": "172.20.3.32",
+      "port": 9006,
+      "antenna_gain_dbi": 45.0,
+      "max_tracking_satellites": 4
+    },
+    "GS-NewYork": {
+      "name": "New York Ground Station",
+      "location": "United States",
+      "latitude": 40.7128,
+      "longitude": -74.0060,
+      "elevation_m": 10,
+      "min_elevation_deg": 10,
+      "ip": "172.20.3.33",
+      "port": 9007,
+      "antenna_gain_dbi": 45.0,
+      "max_tracking_satellites": 4
+    }
+  },
+
+  "link_constraints": {
+    "inter_satellite_link": {
+      "max_distance_km": 10000,
+      "min_distance_km": 100,
+      "optical_link": false,
+      "rf_frequency_ghz": 60.0,
+      "data_rate_mbps": 1000
+    },
+    "satellite_ground_link": {
+      "max_distance_km": 2500,
+      "min_elevation_deg": 10,
+      "max_elevation_deg": 90,
+      "frequency_ghz": 12.5,
+      "data_rate_mbps": 100
+    },
+    "satellite_aircraft_link": {
+      "max_distance_km": 1500,
+      "min_elevation_deg": 5,
+      "frequency_ghz": 14.0,
+      "data_rate_mbps": 50
+    },
+    "aircraft_ground_link": {
+      "max_distance_km": 500,
+      "line_of_sight_required": true,
+      "frequency_ghz": 5.0,
+      "data_rate_mbps": 50
+    }
+  },
+
+  "network_parameters": {
+    "topology_update_interval_sec": 10,
+    "propagation_speed_km_s": 300000,
+    "enable_handover": true,
+    "handover_margin_deg": 2,
+    "max_hops": 3,
+    "timeout_sec": 90
+  },
+
+  "docker_network": {
+    "name": "sagin_net",
+    "subnet": "172.20.0.0/16",
+    "gateway": "172.20.0.1",
+    "driver": "bridge"
+  },
+
+  "test_scenarios": [
+    {
+      "id": "scenario_1",
+      "name": "Inter-Satellite Link (ISL)",
+      "description": "Test PQ-NTOR over ISL between two satellites",
+      "path": ["Sat-1", "Sat-2"],
+      "expected_delay_ms": 10,
+      "expected_distance_km": 3000
+    },
+    {
+      "id": "scenario_2",
+      "name": "Satellite-Ground Link",
+      "description": "Test PQ-NTOR from satellite to ground station",
+      "path": ["Sat-1", "GS-Beijing"],
+      "expected_delay_ms": 5,
+      "expected_distance_km": 1000
+    },
+    {
+      "id": "scenario_3",
+      "name": "Multi-hop Hybrid Link",
+      "description": "Test PQ-NTOR through satellite-aircraft-ground",
+      "path": ["GS-Beijing", "Sat-1", "Aircraft-1", "GS-London"],
+      "expected_delay_ms": 50,
+      "expected_distance_km": 8000
+    },
+    {
+      "id": "scenario_4",
+      "name": "Global End-to-End",
+      "description": "Test PQ-NTOR across continents via satellites",
+      "path": ["GS-Beijing", "Sat-1", "Sat-2", "GS-NewYork"],
+      "expected_delay_ms": 100,
+      "expected_distance_km": 13000
+    },
+    {
+      "id": "scenario_5",
+      "name": "Dynamic Handover",
+      "description": "Test PQ-NTOR during satellite visibility change",
+      "path": ["GS-Beijing", "Sat-1", "GS-London"],
+      "dynamic": true,
+      "duration_min": 30
+    }
+  ],
+
+  "tle_update": {
+    "source": "https://celestrak.org/NORAD/elements/",
+    "update_frequency_days": 7,
+    "auto_update": false
+  }
+}

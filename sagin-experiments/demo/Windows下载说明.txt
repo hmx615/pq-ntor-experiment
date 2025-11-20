@@ -1,0 +1,104 @@
+====================================================
+  SAGIN NOMA 3D可视化 - Windows下载资源说明
+====================================================
+
+问题：WSL没有配置代理，无法下载CDN资源
+解决：在Windows 11中下载，然后在WSL中使用
+
+====================================================
+方法1：使用PowerShell脚本（推荐）
+====================================================
+
+1. 在Windows中打开PowerShell
+   - 按Win+X，选择"Windows PowerShell"或"终端"
+
+2. 进入demo目录：
+   cd \\wsl$\Ubuntu\home\ccc\pq-ntor-experiment\sagin-experiments\demo
+
+3. 运行下载脚本：
+   .\download_in_windows.ps1
+
+   如果提示执行策略限制，先运行：
+   Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+
+4. 下载完成后，验证文件：
+   dir *.js
+
+====================================================
+方法2：手动用浏览器下载（最简单）
+====================================================
+
+1. 在Windows浏览器中打开以下链接并下载：
+
+   Three.js:
+   https://cdn.jsdelivr.net/npm/three@0.154.0/build/three.min.js
+
+   Globe.GL:
+   https://cdn.jsdelivr.net/npm/globe.gl@2.31.0/dist/globe.gl.min.js
+
+2. 将下载的文件重命名为：
+   - three.min.js
+   - globe.gl.min.js
+
+3. 将文件复制到WSL目录：
+   \\wsl$\Ubuntu\home\ccc\pq-ntor-experiment\sagin-experiments\demo\
+
+====================================================
+方法3：使用curl（如果Windows有curl）
+====================================================
+
+在Windows PowerShell中运行：
+
+cd \\wsl$\Ubuntu\home\ccc\pq-ntor-experiment\sagin-experiments\demo
+
+curl -L https://cdn.jsdelivr.net/npm/three@0.154.0/build/three.min.js -o three.min.js
+
+curl -L https://cdn.jsdelivr.net/npm/globe.gl@2.31.0/dist/globe.gl.min.js -o globe.gl.min.js
+
+====================================================
+下载完成后的使用方法
+====================================================
+
+1. 确认文件存在：
+   在WSL中运行：
+   ls -lh /home/ccc/pq-ntor-experiment/sagin-experiments/demo/*.js
+
+2. 在浏览器访问：
+   http://localhost:8080/3d_globe_local.html
+
+   (使用本地JS文件，不再依赖CDN)
+
+====================================================
+需要下载的文件清单
+====================================================
+
+必需文件（2个）：
+✓ three.min.js      (~600KB)  - Three.js 3D引擎
+✓ globe.gl.min.js   (~150KB)  - Globe.GL地球库
+
+可选文件（纹理和数据，可以继续使用CDN）：
+○ earth-blue-marble.jpg  - 地球纹理
+○ earth-topology.png     - 地球地形
+○ night-sky.png          - 星空背景
+○ countries-110m.json    - 国界线数据
+
+====================================================
+常见问题
+====================================================
+
+Q: PowerShell提示无法运行脚本？
+A: 运行 Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+
+Q: 找不到\\wsl$路径？
+A: 确保WSL正在运行，或者直接在文件资源管理器地址栏输入
+
+Q: 下载的文件很小（几KB）或打不开？
+A: 可能是下载了错误页面，请使用方法2手动下载
+
+Q: 还是显示"加载失败"？
+A: 检查文件是否在正确位置，使用 ls -lh 查看文件大小
+
+====================================================
+创建时间：2025-11-14
+状态：已就绪
+====================================================

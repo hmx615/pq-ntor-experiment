@@ -1,0 +1,5 @@
+scenario_id,scenario_name,path,num_hops,status,circuit_time_ms,min_time_ms,max_time_ms,std_dev_ms,success_rate,timeout_rate,iterations,timestamp,use_pq
+scenario_1,Inter-Satellite Link (ISL),Sat-1 -> Sat-2,1,success,23.177471155653087,9.376677807037805,28.553131345911453,5.478358589799437,100.0,0.0,10,2025-11-12T08:25:10.139161,True
+scenario_2,Satellite-Ground Link,Sat-1 -> GS-Beijing,1,success,21.946841567193033,15.120677080157964,30.57711962985649,4.429053816513338,90.0,10.0,10,2025-11-12T08:25:10.139255,True
+scenario_3,Multi-hop Hybrid Link,GS-Beijing -> Sat-1 -> Aircraft-1 -> GS-London,3,success,49.24891669619511,37.949186361296455,59.515062920644624,7.63434308703728,100.0,0.0,10,2025-11-12T08:25:10.139321,True
+scenario_4,Global End-to-End,GS-Beijing -> Sat-1 -> Sat-2 -> GS-NewYork,3,success,48.995580312880364,35.09307806550244,62.129300591007585,9.337550649969483,90.0,10.0,10,2025-11-12T08:25:10.139383,True

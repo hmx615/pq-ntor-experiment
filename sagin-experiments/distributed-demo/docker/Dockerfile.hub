@@ -1,0 +1,17 @@
+# Dockerfile for WebSocket Hub (Pi-7)
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# 安装依赖
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# 复制应用代码
+COPY websocket_hub.py .
+
+# 暴露WebSocket端口
+EXPOSE 9000
+
+# 运行WebSocket Hub
+CMD ["python", "websocket_hub.py"]

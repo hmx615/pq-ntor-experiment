@@ -1,0 +1,61 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+dist/
+build/
+venv/
+env/
+ENV/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+*.Zone.Identifier
+
+# Logs
+*.log
+logs/
+
+# Backup files
+*.backup
+*.bak
+*-backup-*.tar.gz
+*backup*.tar.gz
+
+# Results and temporary files
+*.tmp
+*.temp
+
+# Compiled C/C++
+*.o
+*.out
+*.exe
+a.out
+
+# Archives (optional - uncomment if you don't want to track them)
+# *.tar.gz
+# *.zip
+# *.rar
+
+# Environment files with sensitive data
+.env
+*.pem
+*.key
+credentials.json
+
+# Claude artifacts
+.claude/

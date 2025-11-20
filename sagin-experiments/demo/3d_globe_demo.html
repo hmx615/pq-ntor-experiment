@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SAGIN NOMA 3D可视化演示 - Globe.GL</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #000;
+            font-family: 'Arial', sans-serif;
+            overflow: hidden;
+        }
+
+        #globe-container {
+            width: 100vw;
+            height: 100vh;
+        }
+
+        #info-panel {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px solid #00ffff;
+            max-width: 350px;
+            z-index: 1000;
+        }
+
+        #info-panel h2 {
+            margin-top: 0;
+            color: #00ffff;
+            font-size: 20px;
+            border-bottom: 2px solid #00ffff;
+            padding-bottom: 10px;
+        }
+
+        .topology-info {
+            margin: 15px 0;
+            line-height: 1.8;
+        }
+
+        .node-legend {
+            display: flex;
+            align-items: center;
+            margin: 8px 0;
+        }
+
+        .node-color {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            margin-right: 10px;
+            display: inline-block;
+        }
+
+        .link-legend {
+            display: flex;
+            align-items: center;
+            margin: 8px 0;
+        }
+
+        .link-line {
+            width: 30px;
+            height: 3px;
+            margin-right: 10px;
+            display: inline-block;
+        }
+
+        #topology-selector {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            color: #fff;
+            padding: 15px;
+            border-radius: 10px;
+            border: 2px solid #00ff00;
+            z-index: 1000;
+        }
+
+        #topology-selector h3 {
+            margin-top: 0;
+            color: #00ff00;
+            font-size: 16px;
+        }
+
+        .topo-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            color: white;
+            padding: 10px 15px;
+            margin: 5px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s;
+        }
+
+        .topo-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 15px rgba(102, 126, 234, 0.5);
+        }
+
+        .topo-btn.active {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            box-shadow: 0 0 20px rgba(245, 87, 108, 0.7);
+        }
+
+        .btn-group {
+            margin: 10px 0;
+        }
+
+        .btn-group-title {
+            color: #ffcc00;
+            font-size: 14px;
+            font-weight: bold;
+            margin: 10px 0 5px 0;
+        }
+
+        #stats {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            color: #fff;
+            padding: 15px;
+            border-radius: 10px;
+            border: 2px solid #ff00ff;
+            z-index: 1000;
+            font-size: 14px;
+        }
+
+        .loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #00ffff;
+            font-size: 24px;
+            z-index: 999;
+        }
+    </style>
+</head>
+<body>
+    <div id="globe-container"></div>
+
+    <div class="loading" id="loading">加载中...</div>
+
+    <div id="info-panel">
+        <h2>🛰️ SAGIN NOMA演示系统</h2>
+        <div class="topology-info">
+            <strong>当前拓扑:</strong> <span id="current-topo">拓扑1 - Z1 Up Direct</span><br>
+            <strong>类型:</strong> <span id="topo-type">上行通信 / 直连NOMA</span>
+        </div>
+
+        <div style="margin-top: 15px;">
+            <strong>节点图例:</strong>
+            <div class="node-legend">
+                <span class="node-color" style="background: #ffff00;"></span>
+                <span>卫星 (SAT)</span>
+            </div>
+            <div class="node-legend">
+                <span class="node-color" style="background: #00ffff;"></span>
+                <span>无人机 (Aircraft)</span>
+            </div>
+            <div class="node-legend">
+                <span class="node-color" style="background: #00ff00;"></span>
+                <span>地面终端 (Ground)</span>
+            </div>
+        </div>
+
+        <div style="margin-top: 15px;">
+            <strong>链路图例:</strong>
+            <div class="link-legend">
+                <span class="link-line" style="background: #00ff00;"></span>
+                <span>高RSSI (优秀)</span>
+            </div>
+            <div class="link-legend">
+                <span class="link-line" style="background: #ff9900;"></span>
+                <span>低RSSI (一般)</span>
+            </div>
+            <div class="link-legend">
+                <span class="link-line" style="background: #ff00ff;"></span>
+                <span>协作链路</span>
+            </div>
+        </div>
+    </div>
+
+    <div id="topology-selector">
+        <h3>🎯 拓扑选择器</h3>
+        <div class="btn-group-title">⬆️ 上行通信 (6种)</div>
+        <div class="btn-group">
+            <button class="topo-btn active" onclick="switchTopology(1)">拓扑1: Z1 Up-1</button>
+            <button class="topo-btn" onclick="switchTopology(2)">拓扑2: Z1 Up-2</button>
+            <button class="topo-btn" onclick="switchTopology(3)">拓扑3: Z2 Up-1</button>
+            <button class="topo-btn" onclick="switchTopology(4)">拓扑4: Z2 Up-2</button>
+            <button class="topo-btn" onclick="switchTopology(5)">拓扑5: Z3 Up-1</button>
+            <button class="topo-btn" onclick="switchTopology(6)">拓扑6: Z3 Up-2</button>
+        </div>
+
+        <div class="btn-group-title">⬇️ 下行通信 (6种)</div>
+        <div class="btn-group">
+            <button class="topo-btn" onclick="switchTopology(7)">拓扑7: Z1 Down</button>
+            <button class="topo-btn" onclick="switchTopology(8)">拓扑8: Z2 Down</button>
+            <button class="topo-btn" onclick="switchTopology(9)">拓扑9: Z3 Down</button>
+            <button class="topo-btn" onclick="switchTopology(10)">拓扑10: H1 Down-1</button>
+            <button class="topo-btn" onclick="switchTopology(11)">拓扑11: H1 Down-2</button>
+            <button class="topo-btn" onclick="switchTopology(12)">拓扑12: H2 Down</button>
+        </div>
+    </div>
+
+    <div id="stats">
+        <strong>📊 实时统计</strong><br>
+        节点数: <span id="node-count">0</span><br>
+        链路数: <span id="link-count">0</span><br>
+        PQ-Tor握手: <span id="handshake-status" style="color: #00ff00;">就绪</span>
+    </div>
+
+    <!-- Globe.GL library from CDN -->
+    <script src="//unpkg.com/globe.gl"></script>
+
+    <script>
+        // 拓扑定义数据
+        const topologyData = {
+            1: {
+                name: "拓扑1: Z1 Up-1 (直连NOMA)",
+                type: "上行通信 / 直连场景",
+                nodes: [
+                    { id: "SAT", lat: 0, lng: 0, alt: 0.5, label: "卫星 SAT", type: "satellite" },
+                    { id: "S1", lat: 39.9, lng: 116.4, alt: 0.05, label: "S1 无人机 (高RSSI)", type: "aircraft" },
+                    { id: "S2", lat: 31.2, lng: 121.5, alt: 0, label: "S2 地面终端 (低RSSI)", type: "ground" }
+                ],
+                links: [
+                    { source: "S2", target: "SAT", rssi: "low", label: "低RSSI天基上行 (30ms, 20Mbps)" },
+                    { source: "S1", target: "SAT", rssi: "high", label: "高RSSI天基上行 (10ms, 50Mbps)" }
+                ]
+            },
+            2: {
+                name: "拓扑2: Z1 Up-2 (混合协作)",
+                type: "上行通信 / 协作场景",
+                nodes: [
+                    { id: "SAT", lat: 0, lng: 0, alt: 0.5, label: "卫星 SAT", type: "satellite" },
+                    { id: "S2_R1", lat: 31.2, lng: 121.5, alt: 0, label: "S2/R1 地面终端", type: "ground" },
+                    { id: "S1_R2", lat: 39.9, lng: 116.4, alt: 0.05, label: "S1/R2 无人机", type: "aircraft" }
+                ],
+                links: [
+                    { source: "S2_R1", target: "S1_R2", rssi: "high", label: "空/地链路 (5ms, 100Mbps)" },
+                    { source: "S1_R2", target: "SAT", rssi: "high", label: "高RSSI天基上行 (10ms, 50Mbps)" }
+                ]
+            },
+            3: {
+                name: "拓扑3: Z2 Up-1 (2跳协作)",
+                type: "上行通信 / 协作场景",
+                nodes: [
+                    { id: "SAT", lat: 0, lng: 0, alt: 0.5, label: "卫星 SAT", type: "satellite" },
+                    { id: "S_R", lat: 35, lng: 110, alt: 0.05, label: "S/R 无人机中继", type: "aircraft" },
+                    { id: "T1", lat: 31.2, lng: 121.5, alt: 0, label: "T1 地面终端 (高RSSI)", type: "ground" },
+                    { id: "T2", lat: 39.9, lng: 116.4, alt: 0, label: "T2 地面终端 (低RSSI)", type: "ground" }
+                ],
+                links: [
+                    { source: "T1", target: "S_R", rssi: "high", label: "高RSSI空/地 (5ms, 100Mbps)" },
+                    { source: "T2", target: "S_R", rssi: "low", label: "低RSSI空/地 (15ms, 50Mbps)" },
+                    { source: "S_R", target: "SAT", rssi: "high", label: "高RSSI天基上行 (10ms, 50Mbps)" }
+                ]
+            },
+            7: {
+                name: "拓扑7: Z1 Down (直连NOMA+协作)",
+                type: "下行通信 / 协作场景",
+                nodes: [
+                    { id: "SAT", lat: 0, lng: 0, alt: 0.5, label: "卫星 SAT", type: "satellite" },
+                    { id: "S1", lat: 39.9, lng: 116.4, alt: 0.05, label: "S1 无人机 (高RSSI)", type: "aircraft" },
+                    { id: "S2", lat: 31.2, lng: 121.5, alt: 0, label: "S2 地面终端 (低RSSI)", type: "ground" }
+                ],
+                links: [
+                    { source: "SAT", target: "S1", rssi: "high", label: "高RSSI天基下行 (10ms, 100Mbps)" },
+                    { source: "SAT", target: "S2", rssi: "low", label: "低RSSI天基下行 (30ms, 50Mbps)" },
+                    { source: "S1", target: "S2", rssi: "coop", label: "协作链路 (5ms, 100Mbps)" }
+                ]
+            }
+        };
+
+        let currentTopology = 1;
+        let world;
+
+        // 初始化Globe
+        function initGlobe() {
+            const container = document.getElementById('globe-container');
+
+            world = Globe()
+                (container)
+                .globeImageUrl('//unpkg.com/three-globe/example/img/earth-night.jpg')
+                .backgroundColor('#000011')
+                .showAtmosphere(true)
+                .atmosphereColor('#3a228a')
+                .atmosphereAltitude(0.15);
+
+            // 初始化拓扑1
+            loadTopology(1);
+
+            // 隐藏加载提示
+            document.getElementById('loading').style.display = 'none';
+
+            // 自动旋转
+            world.controls().autoRotate = true;
+            world.controls().autoRotateSpeed = 0.5;
+        }
+
+        // 加载拓扑
+        function loadTopology(topoId) {
+            const topo = topologyData[topoId] || topologyData[1];
+
+            // 更新信息面板
+            document.getElementById('current-topo').textContent = topo.name;
+            document.getElementById('topo-type').textContent = topo.type;
+            document.getElementById('node-count').textContent = topo.nodes.length;
+            document.getElementById('link-count').textContent = topo.links.length;
+
+            // 节点颜色映射
+            const nodeColorMap = {
+                satellite: '#ffff00',
+                aircraft: '#00ffff',
+                ground: '#00ff00'
+            };
+
+            // 链路颜色映射
+            const linkColorMap = {
+                high: '#00ff00',
+                low: '#ff9900',
+                coop: '#ff00ff'
+            };
+
+            // 设置节点数据
+            world.pointsData(topo.nodes)
+                .pointLat(d => d.lat)
+                .pointLng(d => d.lng)
+                .pointAltitude(d => d.alt)
+                .pointColor(d => nodeColorMap[d.type])
+                .pointRadius(0.3)
+                .pointLabel(d => `<div style="background: rgba(0,0,0,0.8); padding: 10px; border-radius: 5px; color: white;">
+                    <strong>${d.label}</strong><br>
+                    类型: ${d.type}<br>
+                    经度: ${d.lng.toFixed(2)}°<br>
+                    纬度: ${d.lat.toFixed(2)}°
+                </div>`);
+
+            // 设置链路数据
+            world.arcsData(topo.links)
+                .arcStartLat(d => {
+                    const node = topo.nodes.find(n => n.id === d.source);
+                    return node ? node.lat : 0;
+                })
+                .arcStartLng(d => {
+                    const node = topo.nodes.find(n => n.id === d.source);
+                    return node ? node.lng : 0;
+                })
+                .arcEndLat(d => {
+                    const node = topo.nodes.find(n => n.id === d.target);
+                    return node ? node.lat : 0;
+                })
+                .arcEndLng(d => {
+                    const node = topo.nodes.find(n => n.id === d.target);
+                    return node ? node.lng : 0;
+                })
+                .arcColor(d => linkColorMap[d.rssi])
+                .arcStroke(0.5)
+                .arcDashLength(d => d.rssi === 'coop' ? 0.5 : 1)
+                .arcDashGap(d => d.rssi === 'coop' ? 0.2 : 0)
+                .arcDashAnimateTime(d => d.rssi === 'coop' ? 2000 : 0)
+                .arcLabel(d => `<div style="background: rgba(0,0,0,0.8); padding: 10px; border-radius: 5px; color: white;">
+                    <strong>${d.source} → ${d.target}</strong><br>
+                    ${d.label}
+                </div>`);
+        }
+
+        // 切换拓扑
+        function switchTopology(topoId) {
+            if (topologyData[topoId]) {
+                currentTopology = topoId;
+                loadTopology(topoId);
+
+                // 更新按钮状态
+                document.querySelectorAll('.topo-btn').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                event.target.classList.add('active');
+
+                // 模拟握手状态
+                document.getElementById('handshake-status').textContent = '执行中...';
+                document.getElementById('handshake-status').style.color = '#ffff00';
+
+                setTimeout(() => {
+                    document.getElementById('handshake-status').textContent = '完成 ✓';
+                    document.getElementById('handshake-status').style.color = '#00ff00';
+                }, 1500);
+            }
+        }
+
+        // 页面加载完成后初始化
+        window.addEventListener('load', initGlobe);
+    </script>
+</body>
+</html>

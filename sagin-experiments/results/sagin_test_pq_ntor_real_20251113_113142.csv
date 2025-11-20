@@ -1,0 +1,4 @@
+scenario_id,scenario_name,client_node,status,circuit_time_ms,min_time_ms,max_time_ms,success_rate,timeout_rate,iterations,timestamp,use_pq
+scenario_1,Ground to Ground (GS-London),GS-London,failure,0,0,0,0,100,1,2025-11-13T03:31:29.886122,True
+scenario_2,Satellite to Ground (Sat-1),Sat-1,failure,0,0,0,0,100,1,2025-11-13T03:31:33.950618,True
+scenario_3,Aircraft to Ground (Aircraft-1),Aircraft-1,failure,0,0,0,0,100,1,2025-11-13T03:31:39.812893,True

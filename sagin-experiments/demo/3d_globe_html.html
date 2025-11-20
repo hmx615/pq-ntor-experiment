@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SAGIN NOMA 3D Visualization</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #000814;
+            font-family: 'Arial', sans-serif;
+            overflow: hidden;
+        }
+
+        #globe-container {
+            width: 100vw;
+            height: 100vh;
+        }
+
+        #info-panel {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.85);
+            color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px solid #00ffff;
+            max-width: 350px;
+            z-index: 1000;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
+        }
+
+        #info-panel h2 {
+            margin-top: 0;
+            color: #00ffff;
+            font-size: 20px;
+            border-bottom: 2px solid #00ffff;
+            padding-bottom: 10px;
+        }
+
+        .topology-info {
+            margin: 15px 0;
+            line-height: 1.8;
+        }
+
+        .node-legend, .link-legend {
+            display: flex;
+            align-items: center;
+            margin: 8px 0;
+        }
+
+        .node-color {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+
+        .link-line {
+            width: 30px;
+            height: 3px;
+            margin-right: 10px;
+        }
+
+        #topology-selector {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.85);
+            color: #fff;
+            padding: 15px;
+            border-radius: 10px;
+            border: 2px solid #00ff00;
+            z-index: 1000;
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.3);
+        }
+
+        #topology-selector h3 {
+            margin-top: 0;
+            color: #00ff00;
+            font-size: 16px;
+        }
+
+        .topo-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            color: white;
+            padding: 10px 15px;
+            margin: 5px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s;
+        }
+
+        .topo-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 15px rgba(102, 126, 234, 0.5);
+        }
+
+        .topo-btn.active {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            box-shadow: 0 0 20px rgba(245, 87, 108, 0.7);
+        }
+
+        .btn-group {
+            margin: 10px 0;
+        }
+
+        .btn-group-title {
+            color: #ffcc00;
+            font-size: 14px;
+            font-weight: bold;
+            margin: 10px 0 5px 0;
+        }
+
+        #stats {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.85);
+            color: #fff;
+            padding: 15px;
+            border-radius: 10px;
+            border: 2px solid #ff00ff;
+            z-index: 1000;
+            font-size: 14px;
+            box-shadow: 0 0 20px rgba(255, 0, 255, 0.3);
+        }
+
+        .loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #00ffff;
+            font-size: 18px;
+            z-index: 999;
+            text-align: center;
+            background: rgba(0, 0, 0, 0.9);
+            padding: 30px;
+            border-radius: 10px;
+            border: 2px solid #00ffff;
+        }
+
+        .loading-spinner {
+            border: 4px solid rgba(0, 255, 255, 0.3);
+            border-top: 4px solid #00ffff;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* HTML元素图标样式 */
+        .node-marker {
+            width: 40px;
+            height: 40px;
+            font-size: 32px;
+            text-align: center;
+            line-height: 40px;
+            cursor: pointer;
+            filter: drop-shadow(0 0 8px currentColor);
+        }
+
+        .satellite-icon {
+            color: #ffff00;
+        }
+
+        .aircraft-icon {
+            color: #00ffff;
+        }
+
+        .ground-icon {
+            color: #00ff00;
+        }
+    </style>
+</head>
+<body>
+    <div id="globe-container"></div>
+
+    <div class="loading" id="loading">
+        <div class="loading-spinner"></div>
+        <div>Loading...</div>
+        <div style="font-size: 14px; margin-top: 10px; color: #999;">
+            <span id="load-status">Initializing...</span>
+        </div>
+    </div>
+
+    <div id="info-panel" style="display: none;">
+        <h2>SAGIN NOMA Demo</h2>
+        <div class="topology-info">
+            <strong>Current:</strong> <span id="current-topo">Topology 1</span><br>
+            <strong>Type:</strong> <span id="topo-type">Uplink</span>
+        </div>
+
+        <div style="margin-top: 15px;">
+            <strong>Node Legend:</strong>
+            <div class="node-legend">
+                <span class="node-color" style="background: #ffff00;"></span>
+                <span>🛰 Satellite</span>
+            </div>
+            <div class="node-legend">
+                <span class="node-color" style="background: #00ffff;"></span>
+                <span>✈ Aircraft</span>
+            </div>
+            <div class="node-legend">
+                <span class="node-color" style="background: #00ff00;"></span>
+                <span>📱 Mobile Device</span>
+            </div>
+        </div>
+
+        <div style="margin-top: 15px;">
+            <strong>Link Legend:</strong>
+            <div class="link-legend">
+                <span class="link-line" style="background: #00ff00;"></span>
+                <span>📶 High-RSSI</span>
+            </div>
+            <div class="link-legend">
+                <span class="link-line" style="background: #ff0000;"></span>
+                <span>📡 Low-RSSI</span>
+            </div>
+            <div class="link-legend">
+                <span class="link-line" style="background: #ff00ff;"></span>
+                <span>🔗 Cooperation</span>
+            </div>
+        </div>
+    </div>
+
+    <div id="topology-selector" style="display: none;">
+        <h3>🎯 Topology Selector</h3>
+        <div class="btn-group-title">⬆ Uplink (6)</div>
+        <div class="btn-group">
+            <button class="topo-btn active" onclick="switchTopology(1)">Topology 1</button>
+            <button class="topo-btn" onclick="switchTopology(2)">Topology 2</button>
+            <button class="topo-btn" onclick="switchTopology(3)">Topology 3</button>
+            <button class="topo-btn" onclick="switchTopology(4)">Topology 4</button>
+            <button class="topo-btn" onclick="switchTopology(5)">Topology 5</button>
+            <button class="topo-btn" onclick="switchTopology(6)">Topology 6</button>
+        </div>
+
+        <div class="btn-group-title">⬇ Downlink (6)</div>
+        <div class="btn-group">
+            <button class="topo-btn" onclick="switchTopology(7)">Topology 7</button>
+            <button class="topo-btn" onclick="switchTopology(8)">Topology 8</button>
+            <button class="topo-btn" onclick="switchTopology(9)">Topology 9</button>
+            <button class="topo-btn" onclick="switchTopology(10)">Topology 10</button>
+            <button class="topo-btn" onclick="switchTopology(11)">Topology 11</button>
+            <button class="topo-btn" onclick="switchTopology(12)">Topology 12</button>
+        </div>
+    </div>
+
+    <div id="stats" style="display: none;">
+        <strong>📊 Real-time Stats</strong><br>
+        Nodes: <span id="node-count">0</span><br>
+        Links: <span id="link-count">0</span><br>
+        Status: <span id="handshake-status" style="color: #00ff00;">Ready</span>
+    </div>
+
+    <script src="three.min.js"></script>
+    <script src="globe.gl.min.js"></script>
+
+    <script>
+        function updateLoadStatus(msg) {
+            const status = document.getElementById('load-status');
+            if (status) status.textContent = msg;
+        }
+
+        // 拓扑数据
+        const topologyData = {
+            1: {
+                name: "Topology 1: Z1 Up-1 (Direct NOMA)",
+                type: "Uplink / Direct",
+                nodes: [
+                    { id: "SAT", lat: 30, lng: 100, alt: 0.2, label: "SAT", addr: "SW China", type: "satellite", rssi: "" },
+                    { id: "S1", lat: 39.9, lng: 116.4, alt: 0.05, label: "S1", addr: "Beijing", type: "aircraft", rssi: "high" },
+                    { id: "S2", lat: 31.2, lng: 121.5, alt: 0, label: "S2", addr: "Shanghai", type: "ground", rssi: "low" }
+                ],
+                links: [
+                    { source: "S2", target: "SAT", rssi: "low", label: "Low-RSSI Sat Uplink (30ms, 20Mbps)" },
+                    { source: "S1", target: "SAT", rssi: "high", label: "High-RSSI Sat Uplink (10ms, 50Mbps)" }
+                ]
+            },
+            2: {
+                name: "Topology 2: Z1 Up-2 (Hybrid Coop)",
+                type: "Uplink / Cooperation",
+                nodes: [
+                    { id: "SAT", lat: 30, lng: 100, alt: 0.2, label: "SAT", addr: "SW China", type: "satellite", rssi: "" },
+                    { id: "S2_R1", lat: 31.2, lng: 121.5, alt: 0, label: "S2", addr: "Shanghai", type: "ground", rssi: "" },
+                    { id: "S1_R2", lat: 39.9, lng: 116.4, alt: 0.05, label: "S1", addr: "Beijing", type: "aircraft", rssi: "high" }
+                ],
+                links: [
+                    { source: "S2_R1", target: "S1_R2", rssi: "high", label: "Air-Ground Link (5ms, 100Mbps)" },
+                    { source: "S1_R2", target: "SAT", rssi: "high", label: "High-RSSI Sat Uplink (10ms, 50Mbps)" }
+                ]
+            },
+            3: {
+                name: "Topology 3: Z2 Up-1 (2-hop Coop)",
+                type: "Uplink / Cooperation",
+                nodes: [
+                    { id: "SAT", lat: 30, lng: 100, alt: 0.2, label: "SAT", addr: "SW China", type: "satellite", rssi: "" },
+                    { id: "S_R", lat: 35, lng: 110, alt: 0.05, label: "SR", addr: "Xian", type: "aircraft", rssi: "" },
+                    { id: "T1", lat: 31.2, lng: 121.5, alt: 0, label: "T1", addr: "Shanghai", type: "ground", rssi: "high" },
+                    { id: "T2", lat: 39.9, lng: 116.4, alt: 0, label: "T2", addr: "Beijing", type: "ground", rssi: "low" }
+                ],
+                links: [
+                    { source: "T1", target: "S_R", rssi: "high", label: "High-RSSI Air-Ground (5ms, 100Mbps)" },
+                    { source: "T2", target: "S_R", rssi: "low", label: "Low-RSSI Air-Ground (15ms, 50Mbps)" },
+                    { source: "S_R", target: "SAT", rssi: "high", label: "High-RSSI Sat Uplink (10ms, 50Mbps)" }
+                ]
+            },
+            4: {
+                name: "Topology 4: Z2 Up-2 (2-hop NOMA)",
+                type: "Uplink / NOMA Cooperation",
+                nodes: [
+                    { id: "SAT", lat: 30, lng: 100, alt: 0.2, label: "SAT", addr: "SW China", type: "satellite", rssi: "" },
+                    { id: "S_R", lat: 35, lng: 110, alt: 0.05, label: "SR", addr: "Xian", type: "aircraft", rssi: "" },
+                    { id: "T1", lat: 31.2, lng: 121.5, alt: 0, label: "T1", addr: "Shanghai", type: "ground", rssi: "high" },
+                    { id: "T2", lat: 39.9, lng: 116.4, alt: 0, label: "T2", addr: "Beijing", type: "ground", rssi: "low" }
+                ],
+                links: [
+                    { source: "T1", target: "S_R", rssi: "high", label: "High-RSSI Air-Ground (5ms, 100Mbps)" },
+                    { source: "T2", target: "S_R", rssi: "low", label: "Low-RSSI Air-Ground (15ms, 50Mbps)" },
+                    { source: "S_R", target: "SAT", rssi: "high", label: "High-RSSI Sat Uplink (10ms, 50Mbps)" },
+                    { source: "T1", target: "T2", rssi: "coop", label: "Cooperation Link (5ms, 100Mbps)" }
+                ]
+            },
+            5: {
+                name: "Topology 5: Z3 Up-1 (Multi-hop)",
+                type: "Uplink / Multi-hop",
+                nodes: [
+                    { id: "SAT", lat: 30, lng: 100, alt: 0.2, label: "SAT", addr: "SW China", type: "satellite", rssi: "" },
+                    { id: "S1", lat: 30, lng: 105, alt: 0.05, label: "S1", addr: "Chengdu", type: "aircraft", rssi: "" },
+                    { id: "S2", lat: 35, lng: 115, alt: 0.05, label: "S2", addr: "Zhengzhou", type: "aircraft", rssi: "" },
+                    { id: "T1", lat: 31.2, lng: 121.5, alt: 0, label: "T1", addr: "Shanghai", type: "ground", rssi: "high" },
+                    { id: "T2", lat: 39.9, lng: 116.4, alt: 0, label: "T2", addr: "Beijing", type: "ground", rssi: "low" }
+                ],
+                links: [
+                    { source: "T1", target: "S1", rssi: "high", label: "High-RSSI Air-Ground (5ms, 100Mbps)" },
+                    { source: "T2", target: "S2", rssi: "low", label: "Low-RSSI Air-Ground (15ms, 50Mbps)" },
+                    { source: "S1", target: "SAT", rssi: "high", label: "High-RSSI Sat Uplink (10ms, 50Mbps)" },
+                    { source: "S2", target: "SAT", rssi: "low", label: "Low-RSSI Sat Uplink (30ms, 20Mbps)" }
+                ]
+            },
+            6: {
+                name: "Topology 6: Z3 Up-2 (Multi-hop NOMA)",
+                type: "Uplink / Multi-hop NOMA",
+                nodes: [
+                    { id: "SAT", lat: 30, lng: 100, alt: 0.2, label: "SAT", addr: "SW China", type: "satellite", rssi: "" },
+                    { id: "S1", lat: 30, lng: 105, alt: 0.05, label: "S1", addr: "Chengdu", type: "aircraft", rssi: "" },
+                    { id: "S2", lat: 35, lng: 115, alt: 0.05, label: "S2", addr: "Zhengzhou", type: "aircraft", rssi: "" },
+                    { id: "T1", lat: 31.2, lng: 121.5, alt: 0, label: "T1", addr: "Shanghai", type: "ground", rssi: "high" },
+                    { id: "T2", lat: 39.9, lng: 116.4, alt: 0, label: "T2", addr: "Beijing", type: "ground", rssi: "low" }
+                ],
+                links: [
+                    { source: "T1", target: "S1", rssi: "high", label: "High-RSSI Air-Ground (5ms, 100Mbps)" },
+                    { source: "T2", target: "S2", rssi: "low", label: "Low-RSSI Air-Ground (15ms, 50Mbps)" },
+                    { source: "S1", target: "SAT", rssi: "high", label: "High-RSSI Sat Uplink (10ms, 50Mbps)" },
+                    { source: "S2", target: "SAT", rssi: "low", label: "Low-RSSI Sat Uplink (30ms, 20Mbps)" },
+                    { source: "S1", target: "S2", rssi: "coop", label: "Cooperation Link (5ms, 100Mbps)" }
+                ]
+            },
+            7: {
+                name: "Topology 7: Z1 Down (Direct+Coop)",
+                type: "Downlink / Cooperation",
+                nodes: [
+                    { id: "SAT", lat: 30, lng: 100, alt: 0.2, label: "SAT", addr: "SW China", type: "satellite", rssi: "" },
+                    { id: "S1", lat: 39.9, lng: 116.4, alt: 0.05, label: "S1", addr: "Beijing", type: "aircraft", rssi: "high" },
+                    { id: "S2", lat: 31.2, lng: 121.5, alt: 0, label: "S2", addr: "Shanghai", type: "ground", rssi: "low" }
+                ],
+                links: [
+                    { source: "SAT", target: "S1", rssi: "high", label: "High-RSSI Sat Downlink (10ms, 100Mbps)" },
+                    { source: "SAT", target: "S2", rssi: "low", label: "Low-RSSI Sat Downlink (30ms, 50Mbps)" },
+                    { source: "S1", target: "S2", rssi: "coop", label: "Cooperation Link (5ms, 100Mbps)" }
+                ]
+            },
+            8: {
+                name: "Topology 8: Z2 Down (2-hop Down)",
+                type: "Downlink / 2-hop",
+                nodes: [
+                    { id: "SAT", lat: 30, lng: 100, alt: 0.2, label: "SAT", addr: "SW China", type: "satellite", rssi: "" },
+                    { id: "S_R", lat: 35, lng: 110, alt: 0.05, label: "SR", addr: "Xian", type: "aircraft", rssi: "" },
+                    { id: "T1", lat: 31.2, lng: 121.5, alt: 0, label: "T1", addr: "Shanghai", type: "ground", rssi: "high" },
+                    { id: "T2", lat: 39.9, lng: 116.4, alt: 0, label: "T2", addr: "Beijing", type: "ground", rssi: "low" }
+                ],
+                links: [
+                    { source: "SAT", target: "S_R", rssi: "high", label: "High-RSSI Sat Downlink (10ms, 50Mbps)" },
+                    { source: "S_R", target: "T1", rssi: "high", label: "High-RSSI Air-Ground (5ms, 100Mbps)" },
+                    { source: "S_R", target: "T2", rssi: "low", label: "Low-RSSI Air-Ground (15ms, 50Mbps)" }
+                ]
+            },
+            9: {
+                name: "Topology 9: Z3 Down (Multi-hop Down)",
+                type: "Downlink / Multi-hop",
+                nodes: [
+                    { id: "SAT", lat: 30, lng: 100, alt: 0.2, label: "SAT", addr: "SW China", type: "satellite", rssi: "" },
+                    { id: "S1", lat: 30, lng: 105, alt: 0.05, label: "S1", addr: "Chengdu", type: "aircraft", rssi: "" },
+                    { id: "S2", lat: 35, lng: 115, alt: 0.05, label: "S2", addr: "Zhengzhou", type: "aircraft", rssi: "" },
+                    { id: "T1", lat: 31.2, lng: 121.5, alt: 0, label: "T1", addr: "Shanghai", type: "ground", rssi: "high" },
+                    { id: "T2", lat: 39.9, lng: 116.4, alt: 0, label: "T2", addr: "Beijing", type: "ground", rssi: "low" }
+                ],
+                links: [
+                    { source: "SAT", target: "S1", rssi: "high", label: "High-RSSI Sat Downlink (10ms, 100Mbps)" },
+                    { source: "SAT", target: "S2", rssi: "low", label: "Low-RSSI Sat Downlink (30ms, 50Mbps)" },
+                    { source: "S1", target: "T1", rssi: "high", label: "High-RSSI Air-Ground (5ms, 100Mbps)" },
+                    { source: "S2", target: "T2", rssi: "low", label: "Low-RSSI Air-Ground (15ms, 50Mbps)" }
+                ]
+            },
+            10: {
+                name: "Topology 10: H1 Down-1 (Hybrid Down)",
+                type: "Downlink / Hybrid",
+                nodes: [
+                    { id: "SAT", lat: 30, lng: 100, alt: 0.2, label: "SAT", addr: "SW China", type: "satellite", rssi: "" },
+                    { id: "S1", lat: 30, lng: 105, alt: 0.05, label: "S1", addr: "Chengdu", type: "aircraft", rssi: "" },
+                    { id: "S2", lat: 35, lng: 115, alt: 0.05, label: "S2", addr: "Zhengzhou", type: "aircraft", rssi: "" },
+                    { id: "T1", lat: 31.2, lng: 121.5, alt: 0, label: "T1", addr: "Shanghai", type: "ground", rssi: "high" },
+                    { id: "T2", lat: 39.9, lng: 116.4, alt: 0, label: "T2", addr: "Beijing", type: "ground", rssi: "low" }
+                ],
+                links: [
+                    { source: "SAT", target: "S1", rssi: "high", label: "High-RSSI Sat Downlink (10ms, 100Mbps)" },
+                    { source: "SAT", target: "S2", rssi: "low", label: "Low-RSSI Sat Downlink (30ms, 50Mbps)" },
+                    { source: "S1", target: "T1", rssi: "high", label: "High-RSSI Air-Ground (5ms, 100Mbps)" },
+                    { source: "S2", target: "T2", rssi: "low", label: "Low-RSSI Air-Ground (15ms, 50Mbps)" },
+                    { source: "S1", target: "S2", rssi: "coop", label: "Cooperation Link (5ms, 100Mbps)" }
+                ]
+            },
+            11: {
+                name: "Topology 11: H1 Down-2 (Hybrid NOMA Down)",
+                type: "Downlink / Hybrid NOMA",
+                nodes: [
+                    { id: "SAT", lat: 30, lng: 100, alt: 0.2, label: "SAT", addr: "SW China", type: "satellite", rssi: "" },
+                    { id: "S1", lat: 30, lng: 105, alt: 0.05, label: "S1", addr: "Chengdu", type: "aircraft", rssi: "" },
+                    { id: "S2", lat: 35, lng: 115, alt: 0.05, label: "S2", addr: "Zhengzhou", type: "aircraft", rssi: "" },
+                    { id: "T1", lat: 31.2, lng: 121.5, alt: 0, label: "T1", addr: "Shanghai", type: "ground", rssi: "high" },
+                    { id: "T2", lat: 39.9, lng: 116.4, alt: 0, label: "T2", addr: "Beijing", type: "ground", rssi: "low" }
+                ],
+                links: [
+                    { source: "SAT", target: "S1", rssi: "high", label: "High-RSSI Sat Downlink (10ms, 100Mbps)" },
+                    { source: "SAT", target: "S2", rssi: "low", label: "Low-RSSI Sat Downlink (30ms, 50Mbps)" },
+                    { source: "S1", target: "T1", rssi: "high", label: "High-RSSI Air-Ground (5ms, 100Mbps)" },
+                    { source: "S2", target: "T2", rssi: "low", label: "Low-RSSI Air-Ground (15ms, 50Mbps)" },
+                    { source: "S1", target: "S2", rssi: "coop", label: "Cooperation Link (5ms, 100Mbps)" },
+                    { source: "S1", target: "T2", rssi: "coop", label: "Cross Cooperation (5ms, 100Mbps)" }
+                ]
+            },
+            12: {
+                name: "Topology 12: H2 Down (Full Hybrid)",
+                type: "Downlink / Full Hybrid",
+                nodes: [
+                    { id: "SAT", lat: 30, lng: 100, alt: 0.2, label: "SAT", addr: "SW China", type: "satellite", rssi: "" },
+                    { id: "S_R", lat: 35, lng: 110, alt: 0.05, label: "SR", addr: "Xian", type: "aircraft", rssi: "" },
+                    { id: "T1", lat: 31.2, lng: 121.5, alt: 0, label: "T1", addr: "Shanghai", type: "ground", rssi: "high" },
+                    { id: "T2", lat: 39.9, lng: 116.4, alt: 0, label: "T2", addr: "Beijing", type: "ground", rssi: "low" }
+                ],
+                links: [
+                    { source: "SAT", target: "T1", rssi: "high", label: "High-RSSI Sat Downlink (10ms, 100Mbps)" },
+                    { source: "SAT", target: "S_R", rssi: "low", label: "Low-RSSI Sat Downlink (30ms, 50Mbps)" },
+                    { source: "S_R", target: "T2", rssi: "low", label: "Low-RSSI Air-Ground (15ms, 50Mbps)" },
+                    { source: "T1", target: "T2", rssi: "coop", label: "Cooperation Link (5ms, 100Mbps)" }
+                ]
+            }
+        };
+
+        let currentTopology = 1;
+        let world;
+
+        // WIFI信号图标（SVG）
+        const wifiIcons = {
+            high: '📶',  // 高信号
+            low: '📡',   // 低信号
+            none: ''     // 无
+        };
+
+        // 节点图标
+        const nodeIcons = {
+            satellite: '🛰',
+            aircraft: '✈',
+            ground: '📱'  // 地面终端用手机图标
+        };
+
+        function initGlobe() {
+            try {
+                const container = document.getElementById('globe-container');
+
+                world = Globe()
+                    (container)
+                    .globeImageUrl('//unpkg.com/three-globe/example/img/earth-blue-marble.jpg')
+                    .bumpImageUrl('//unpkg.com/three-globe/example/img/earth-topology.png')
+                    .backgroundImageUrl('//unpkg.com/three-globe/example/img/night-sky.png')
+                    .showAtmosphere(true)
+                    .atmosphereColor('#4488ff')
+                    .atmosphereAltitude(0.2);
+
+                // 禁用自动旋转
+                world.controls().autoRotate = false;
+                world.controls().enableDamping = true;
+                world.controls().dampingFactor = 0.1;
+
+                // 加载国界线
+                updateLoadStatus('Loading country borders...');
+                fetch('//unpkg.com/world-atlas@2/countries-110m.json')
+                    .then(res => res.json())
+                    .then(countries => {
+                        world
+                            .polygonsData(countries.features.filter(d => d.properties.ISO_A2 !== 'AQ'))
+                            .polygonAltitude(0.001)
+                            .polygonCapColor(() => 'rgba(0, 50, 0, 0.15)')
+                            .polygonSideColor(() => 'rgba(150, 150, 150, 0.4)')
+                            .polygonStrokeColor(() => '#ffcc00')
+                            .polygonLabel(({ properties: d }) => `
+                                <div style="background: rgba(0,0,0,0.9); padding: 10px; border-radius: 5px; color: white;">
+                                    <strong>${d.ADMIN || d.NAME}</strong>
+                                </div>
+                            `);
+                        console.log('Borders loaded');
+                    })
+                    .catch(err => {
+                        console.error('Border loading failed:', err);
+                    });
+
+                // 初始化拓扑
+                loadTopology(1);
+
+                // 隐藏加载提示，显示UI
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('info-panel').style.display = 'block';
+                document.getElementById('topology-selector').style.display = 'block';
+                document.getElementById('stats').style.display = 'block';
+
+            } catch (error) {
+                console.error('Globe init error:', error);
+                document.getElementById('loading').innerHTML = `
+                    <div style="color: #ff6666; padding: 20px;">
+                        <h3>❌ Init Failed</h3>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        function loadTopology(topoId) {
+            const topo = topologyData[topoId] || topologyData[1];
+
+            document.getElementById('current-topo').textContent = topo.name;
+            document.getElementById('topo-type').textContent = topo.type;
+            document.getElementById('node-count').textContent = topo.nodes.length;
+            document.getElementById('link-count').textContent = topo.links.length;
+
+            const nodeColorMap = {
+                satellite: '#ffff00',
+                aircraft: '#00ffff',
+                ground: '#00ff00'
+            };
+
+            const linkColorMap = {
+                high: '#00ff00',  // 绿色 - 高信号
+                low: '#ff0000',   // 红色 - 低信号（加强对比）
+                coop: '#ff00ff'   // 紫色 - 协作链路
+            };
+
+            // 使用HTML元素显示节点（图标+文字合并，避免重叠和残留）
+            world.htmlElementsData(topo.nodes)
+                .htmlLat(d => d.lat)
+                .htmlLng(d => d.lng)
+                .htmlAltitude(d => d.alt)  // 使用节点自己的高度
+                .htmlElement(d => {
+                    const el = document.createElement('div');
+                    el.className = 'node-marker ' + d.type + '-icon';
+
+                    const icon = nodeIcons[d.type] || '●';
+                    const color = nodeColorMap[d.type];
+
+                    // 图标和文字垂直排列，作为一个整体
+                    el.innerHTML = `
+                        <div style="text-align: center; filter: drop-shadow(0 0 3px rgba(0,0,0,0.8));">
+                            <div style="font-size: 48px; color: ${color}; line-height: 1;">${icon}</div>
+                            <div style="
+                                font-size: 16px;
+                                font-weight: bold;
+                                color: ${color};
+                                margin-top: 5px;
+                                text-shadow: 0 0 4px black, 0 0 8px black;
+                                font-family: Arial, sans-serif;
+                            ">${d.label}</div>
+                        </div>
+                    `;
+
+                    el.title = `${d.label} - ${d.addr}`;
+                    return el;
+                });
+
+            // 不再使用独立的 labelsData，避免重叠
+
+            // 设置链路（细线条，连接到节点位置）
+            world.arcsData(topo.links)
+                .arcStartLat(d => topo.nodes.find(n => n.id === d.source)?.lat || 0)
+                .arcStartLng(d => topo.nodes.find(n => n.id === d.source)?.lng || 0)
+                .arcEndLat(d => topo.nodes.find(n => n.id === d.target)?.lat || 0)
+                .arcEndLng(d => topo.nodes.find(n => n.id === d.target)?.lng || 0)
+                .arcColor(d => linkColorMap[d.rssi])
+                .arcStroke(0.4)
+                .arcDashLength(d => d.rssi === 'coop' ? 0.5 : 1)
+                .arcDashGap(d => d.rssi === 'coop' ? 0.2 : 0)
+                .arcDashAnimateTime(d => d.rssi === 'coop' ? 2000 : 0)
+                .arcLabel(d => {
+                    const rssiIcon = wifiIcons[d.rssi] || '🔗';
+                    const rssiText = d.rssi === 'high' ? 'High Signal' : d.rssi === 'low' ? 'Low Signal' : 'Cooperation';
+                    return `
+                        <div style="background: rgba(0,0,0,0.9); padding: 8px 12px; border-radius: 8px; color: white; border: 2px solid ${linkColorMap[d.rssi]};">
+                            <div style="font-size: 24px; text-align: center; margin-bottom: 5px;">${rssiIcon}</div>
+                            <strong style="font-size: 14px;">${d.source} → ${d.target}</strong><br>
+                            <span style="color: #aaa; font-size: 12px;">${rssiText}</span>
+                        </div>
+                    `;
+                });
+
+            // 暂时移除轨道可视化（之前实现方法都有问题：栅栏、光环、圆柱）
+            // 仅保留卫星节点在正确高度显示
+        }
+
+        function switchTopology(topoId) {
+            if (!topologyData[topoId]) return;
+
+            currentTopology = topoId;
+
+            // 立即更新UI状态
+            document.querySelectorAll('.topo-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+
+            document.getElementById('handshake-status').textContent = 'Processing...';
+            document.getElementById('handshake-status').style.color = '#ffff00';
+
+            // 强制清空所有旧数据
+            world.htmlElementsData([]);
+            world.arcsData([]);
+
+            // 强制渲染一帧确保清空完成，然后加载新数据
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    loadTopology(topoId);
+
+                    document.getElementById('handshake-status').textContent = 'Complete ✓';
+                    document.getElementById('handshake-status').style.color = '#00ff00';
+                });
+            });
+        }
+
+        // 检查库并初始化
+        window.addEventListener('load', () => {
+            if (typeof THREE !== 'undefined' && typeof Globe !== 'undefined') {
+                initGlobe();
+            } else {
+                document.getElementById('loading').innerHTML = `
+                    <div style="color: #ff6666; padding: 20px;">
+                        <h3>❌ Libraries not loaded</h3>
+                        <p>Please check JS files</p>
+                    </div>
+                `;
+            }
+        });
+    </script>
+</body>
+</html>

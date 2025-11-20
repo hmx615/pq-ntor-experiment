@@ -1,0 +1,29 @@
+=== Skyfield 环境配置信息 ===
+配置日期: 2025-11-12
+配置位置: 飞腾派 (ARM64)
+
+=== Python版本 ===
+Python 3.10.12
+
+=== 安装的包版本 ===
+astropy             6.1.7
+astropy-iers-data   0.2025.11.10.0.38.31
+jplephem            2.23
+matplotlib          3.10.7
+matplotlib-inline   0.2.1
+numpy               2.2.6
+scipy               1.15.3
+sgp4                2.25
+skyfield            1.53
+
+=== 操作系统信息 ===
+Linux DESKTOP-H9OFSNV 6.6.87.2-microsoft-standard-WSL2 #1 SMP PREEMPT_DYNAMIC Thu Jun  5 18:30:46 UTC 2025 x86_64 x86_64 x86_64 GNU/Linux
+
+=== 测试结果 ===
+✅ 所有6个测试通过
+✅ 模块导入成功
+✅ 时间尺度加载正常
+✅ 卫星位置计算正确
+✅ 地面站功能正常
+✅ 可见性判断正确
+✅ 距离计算正确

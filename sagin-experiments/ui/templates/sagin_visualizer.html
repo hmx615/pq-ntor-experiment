@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SAGIN PQ-NTOR 网络拓扑可视化</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: linear-gradient(to bottom, #000428, #004e92);
+            color: #00ff00;
+            overflow: hidden;
+        }
+
+        #container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            font-size: 28px;
+            text-shadow: 0 0 10px #00ff00;
+            letter-spacing: 2px;
+        }
+
+        #main-content {
+            display: flex;
+            gap: 20px;
+            flex: 1;
+        }
+
+        #canvas-container {
+            flex: 3;
+            background: rgba(0, 0, 0, 0.5);
+            border: 2px solid #00ff00;
+            border-radius: 10px;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #networkCanvas {
+            display: block;
+            max-width: 100%;
+            max-height: 100%;
+        }
+
+        #stats-panel {
+            flex: 1;
+            background: rgba(0, 0, 0, 0.7);
+            border: 2px solid #00ff00;
+            border-radius: 10px;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .stat-section {
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #004400;
+        }
+
+        .stat-section:last-child {
+            border-bottom: none;
+        }
+
+        .stat-title {
+            color: #ffaa00;
+            font-size: 16px;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        .stat-item {
+            margin: 8px 0;
+            font-size: 14px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .stat-label {
+            color: #aaaaaa;
+        }
+
+        .stat-value {
+            color: #00ff00;
+            font-weight: bold;
+        }
+
+        #legend {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 15px;
+            border: 1px solid #00ff00;
+            border-radius: 5px;
+            font-size: 12px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin: 5px 0;
+        }
+
+        .legend-icon {
+            width: 20px;
+            height: 3px;
+            margin-right: 8px;
+        }
+
+        .link-active {
+            background: #00ff00;
+        }
+
+        .link-inactive {
+            background: #444444;
+        }
+
+        #timestamp {
+            text-align: center;
+            margin-top: 10px;
+            color: #888888;
+            font-size: 12px;
+        }
+
+        .blink {
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0.3; }
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <header>
+            <h1>🛰️ SAGIN PQ-NTOR 网络拓扑实时演示 🌍</h1>
+        </header>
+
+        <div id="main-content">
+            <div id="canvas-container">
+                <canvas id="networkCanvas" width="1000" height="800"></canvas>
+
+                <div id="legend">
+                    <div style="font-weight: bold; margin-bottom: 8px;">图例</div>
+                    <div class="legend-item">
+                        <div class="legend-icon link-active"></div>
+                        <span>活跃链路</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-icon link-inactive"></div>
+                        <span>不可见链路</span>
+                    </div>
+                    <div style="margin-top: 10px;">
+                        <div>🟢 卫星节点</div>
+                        <div>🟠 飞行器节点</div>
+                        <div>🔴 地面站</div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="stats-panel">
+                <div class="stat-section">
+                    <div class="stat-title">📊 PQ-NTOR 统计</div>
+                    <div class="stat-item">
+                        <span class="stat-label">握手次数:</span>
+                        <span class="stat-value" id="handshakes">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">平均延迟:</span>
+                        <span class="stat-value" id="avg-delay">49 μs</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">活跃电路:</span>
+                        <span class="stat-value" id="circuits">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">传输流量:</span>
+                        <span class="stat-value" id="data-transfer">0 MB</span>
+                    </div>
+                </div>
+
+                <div class="stat-section">
+                    <div class="stat-title">🔗 链路状态</div>
+                    <div id="link-status">
+                        <!-- 动态填充 -->
+                    </div>
+                </div>
+
+                <div class="stat-section">
+                    <div class="stat-title">🌐 网络节点</div>
+                    <div class="stat-item">
+                        <span class="stat-label">卫星:</span>
+                        <span class="stat-value">2个 (Sat-1, Sat-2)</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">飞行器:</span>
+                        <span class="stat-value">2个 (Aircraft)</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">地面站:</span>
+                        <span class="stat-value">3个 (GS)</span>
+                    </div>
+                </div>
+
+                <div class="stat-section">
+                    <div class="stat-title">⚙️ 系统状态</div>
+                    <div class="stat-item">
+                        <span class="stat-label">协议:</span>
+                        <span class="stat-value">PQ-NTOR (Kyber-512)</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">网络:</span>
+                        <span class="stat-value blink">运行中</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="timestamp">UTC时间: --</div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('networkCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // Canvas固定尺寸（确保不变形）
+        const CANVAS_WIDTH = 1000;
+        const CANVAS_HEIGHT = 800;
+        canvas.width = CANVAS_WIDTH;
+        canvas.height = CANVAS_HEIGHT;
+
+        // 地球参数（居中）
+        const EARTH_CENTER_X = CANVAS_WIDTH / 2;   // 500
+        const EARTH_CENTER_Y = CANVAS_HEIGHT / 2;  // 400
+        const EARTH_RADIUS = 80;
+
+        // 轨道半径（从地球中心到卫星的距离）
+        const ORBIT_RADIUS = {
+            satellite: 280,   // 卫星轨道
+            aircraft: 180,    // 飞行器轨道
+            ground: 110       // 地面站（在地球表面附近）
+        };
+
+        // 绘制3D立体地球
+        function drawEarth(cx, cy, radius) {
+            ctx.save();
+
+            // 1. 外层大气光晕（蓝色大气层）
+            const atmosphereGlow = ctx.createRadialGradient(cx, cy, radius * 0.95, cx, cy, radius + 25);
+            atmosphereGlow.addColorStop(0, 'rgba(100, 180, 255, 0)');
+            atmosphereGlow.addColorStop(0.7, 'rgba(100, 180, 255, 0.4)');
+            atmosphereGlow.addColorStop(1, 'rgba(50, 100, 200, 0)');
+            ctx.fillStyle = atmosphereGlow;
+            ctx.beginPath();
+            ctx.arc(cx, cy, radius + 25, 0, Math.PI * 2);
+            ctx.fill();
+
+            // 2. 地球基础球体 - 深蓝色海洋（使用更真实的渐变）
+            // 光源在左上方，创建明暗对比
+            const oceanGradient = ctx.createRadialGradient(
+                cx - radius * 0.35, cy - radius * 0.35, radius * 0.2,  // 高光位置（左上）
+                cx, cy, radius * 1.2  // 球体边缘
+            );
+            oceanGradient.addColorStop(0, '#5dade2');    // 高光区域 - 亮蓝色
+            oceanGradient.addColorStop(0.25, '#3498db'); // 过渡区 - 标准蓝
+            oceanGradient.addColorStop(0.6, '#2874a6');  // 中间区 - 中蓝
+            oceanGradient.addColorStop(0.85, '#1b4f72'); // 边缘区 - 深蓝
+            oceanGradient.addColorStop(1, '#0d2a42');    // 最暗区 - 极深蓝
+
+            ctx.fillStyle = oceanGradient;
+            ctx.beginPath();
+            ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+            ctx.fill();
+
+            // 3. 绘制大陆（使用正确的地理位置）
+            ctx.fillStyle = '#27ae60';  // 陆地绿色
+            ctx.globalAlpha = 0.85;
+
+            // 裁剪到地球圆形内
+            ctx.beginPath();
+            ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+            ctx.clip();
+
+            // === 欧洲和非洲（中间偏右）===
+            // 欧洲
+            ctx.beginPath();
+            ctx.ellipse(cx + 8, cy - 25, 18, 15, -0.2, 0, Math.PI * 2);
+            ctx.fill();
+
+            // 非洲（欧洲下方）
+            ctx.beginPath();
+            ctx.moveTo(cx + 5, cy - 8);
+            ctx.quadraticCurveTo(cx + 25, cy + 5, cx + 20, cy + 30);
+            ctx.quadraticCurveTo(cx + 10, cy + 35, cx, cy + 25);
+            ctx.quadraticCurveTo(cx - 5, cy, cx + 5, cy - 8);
+            ctx.fill();
+
+            // === 亚洲（右侧）===
+            // 西亚
+            ctx.beginPath();
+            ctx.ellipse(cx + 28, cy - 10, 12, 18, 0.3, 0, Math.PI * 2);
+            ctx.fill();
+
+            // 东亚（中国、日本）- 右边缘
+            ctx.beginPath();
+            ctx.ellipse(cx + 55, cy - 5, 20, 25, 0.1, 0, Math.PI * 2);
+            ctx.fill();
+
+            // === 美洲（左侧）===
+            // 北美（左上）
+            ctx.beginPath();
+            ctx.moveTo(cx - 55, cy - 30);
+            ctx.quadraticCurveTo(cx - 35, cy - 35, cx - 25, cy - 25);
+            ctx.quadraticCurveTo(cx - 20, cy - 10, cx - 30, cy + 5);
+            ctx.quadraticCurveTo(cx - 50, cy + 5, cx - 55, cy - 10);
+            ctx.lineTo(cx - 55, cy - 30);
+            ctx.fill();
+
+            // 南美（左下）
+            ctx.beginPath();
+            ctx.ellipse(cx - 38, cy + 20, 12, 22, 0.4, 0, Math.PI * 2);
+            ctx.fill();
+
+            // === 澳大利亚（右下）===
+            ctx.beginPath();
+            ctx.ellipse(cx + 50, cy + 30, 15, 12, -0.2, 0, Math.PI * 2);
+            ctx.fill();
+
+            // === 南极洲（底部）===
+            ctx.beginPath();
+            ctx.ellipse(cx, cy + 65, 50, 18, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.globalAlpha = 1.0;
+
+            // 4. 大陆阴影（增强3D效果）
+            const landShadow = ctx.createRadialGradient(
+                cx + radius * 0.3, cy + radius * 0.3, 0,
+                cx + radius * 0.3, cy + radius * 0.3, radius * 0.8
+            );
+            landShadow.addColorStop(0, 'rgba(0, 0, 0, 0)');
+            landShadow.addColorStop(1, 'rgba(0, 0, 0, 0.35)');
+            ctx.fillStyle = landShadow;
+            ctx.beginPath();
+            ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+            ctx.fill();
+
+            // 5. 云层效果（白色半透明）
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
+            ctx.globalAlpha = 0.6;
+
+            // 多个云团
+            ctx.beginPath();
+            ctx.ellipse(cx - 30, cy - 15, 18, 10, 0.3, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.beginPath();
+            ctx.ellipse(cx + 25, cy - 30, 15, 8, -0.2, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.beginPath();
+            ctx.ellipse(cx - 15, cy + 20, 20, 12, 0.5, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.globalAlpha = 1.0;
+
+            // 6. 恢复裁剪
+            ctx.restore();
+            ctx.save();
+
+            // 7. 球体高光（左上角强光反射）
+            const highlight = ctx.createRadialGradient(
+                cx - radius * 0.4, cy - radius * 0.4, 0,
+                cx - radius * 0.4, cy - radius * 0.4, radius * 0.5
+            );
+            highlight.addColorStop(0, 'rgba(255, 255, 255, 0.4)');
+            highlight.addColorStop(0.5, 'rgba(255, 255, 255, 0.15)');
+            highlight.addColorStop(1, 'rgba(255, 255, 255, 0)');
+            ctx.fillStyle = highlight;
+            ctx.beginPath();
+            ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+            ctx.fill();
+
+            // 8. 地球边缘高光（3D立体边缘）
+            ctx.strokeStyle = 'rgba(150, 200, 255, 0.6)';
+            ctx.lineWidth = 2.5;
+            ctx.shadowColor = '#5dade2';
+            ctx.shadowBlur = 8;
+            ctx.beginPath();
+            ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+            ctx.stroke();
+            ctx.shadowBlur = 0;
+
+            // 9. 地球标签
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 16px Arial';
+            ctx.textAlign = 'center';
+            ctx.shadowColor = '#000000';
+            ctx.shadowBlur = 5;
+            ctx.fillText('EARTH', cx, cy + radius + 25);
+            ctx.shadowBlur = 0;
+
+            ctx.restore();
+        }
+
+        // 绘制轨道圆圈（每个卫星/飞行器独立的轨道）
+        function drawOrbit(cx, cy, radius, color, label) {
+            ctx.save();
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 1.5;
+            ctx.setLineDash([8, 8]);
+            ctx.globalAlpha = 0.4;
+
+            ctx.beginPath();
+            ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+            ctx.stroke();
+
+            ctx.setLineDash([]);
+            ctx.globalAlpha = 1.0;
+
+            // 轨道标签
+            ctx.fillStyle = color;
+            ctx.font = '11px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText(label, cx + radius, cy - 5);
+
+            ctx.restore();
+        }
+
+        // 绘制节点
+        function drawNode(x, y, name, type, color, isActive = true) {
+            ctx.save();
+
+            // 确保节点在画布内
+            x = Math.max(30, Math.min(CANVAS_WIDTH - 30, x));
+            y = Math.max(30, Math.min(CANVAS_HEIGHT - 30, y));
+
+            if (isActive) {
+                // 节点光晕
+                const glowGradient = ctx.createRadialGradient(x, y, 0, x, y, 20);
+                glowGradient.addColorStop(0, color);
+                glowGradient.addColorStop(1, 'rgba(0,0,0,0)');
+                ctx.fillStyle = glowGradient;
+                ctx.fillRect(x - 20, y - 20, 40, 40);
+            }
+
+            // 节点本体
+            ctx.fillStyle = color;
+            ctx.beginPath();
+            ctx.arc(x, y, 8, 0, Math.PI * 2);
+            ctx.fill();
+
+            // 节点边框
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            // 节点标签（名称）
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 13px Arial';
+            ctx.textAlign = 'center';
+            ctx.shadowColor = '#000000';
+            ctx.shadowBlur = 3;
+            ctx.fillText(name, x, y - 15);
+
+            // 节点类型图标
+            let icon = '';
+            if (type === 'satellite') icon = '🛰️';
+            else if (type === 'aircraft') icon = '✈️';
+            else icon = '📡';
+            ctx.font = '18px Arial';
+            ctx.fillText(icon, x, y + 25);
+
+            ctx.shadowBlur = 0;
+            ctx.restore();
+        }
+
+        // 绘制链路
+        function drawLink(x1, y1, x2, y2, isActive, linkType, delay) {
+            ctx.save();
+
+            if (isActive) {
+                ctx.strokeStyle = '#00ff00';
+                ctx.lineWidth = 2.5;
+                ctx.shadowColor = '#00ff00';
+                ctx.shadowBlur = 5;
+                ctx.setLineDash([]);
+            } else {
+                ctx.strokeStyle = '#444444';
+                ctx.lineWidth = 1;
+                ctx.setLineDash([5, 5]);
+            }
+
+            ctx.beginPath();
+            ctx.moveTo(x1, y1);
+            ctx.lineTo(x2, y2);
+            ctx.stroke();
+
+            ctx.shadowBlur = 0;
+
+            // 链路标签（只在活跃时显示）
+            if (isActive) {
+                const midX = (x1 + x2) / 2;
+                const midY = (y1 + y2) / 2;
+
+                // 标签背景
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+                const labelText = `${linkType} ${delay}ms`;
+                ctx.font = '11px Arial';
+                const textWidth = ctx.measureText(labelText).width;
+                ctx.fillRect(midX - textWidth/2 - 4, midY - 10, textWidth + 8, 18);
+
+                // 标签文字
+                ctx.fillStyle = '#ffaa00';
+                ctx.textAlign = 'center';
+                ctx.fillText(labelText, midX, midY + 3);
+            }
+
+            ctx.setLineDash([]);
+            ctx.restore();
+        }
+
+        // 更新显示
+        function updateVisualization(data) {
+            // 清空画布
+            ctx.fillStyle = '#000000';
+            ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+
+            // 绘制星空背景
+            ctx.fillStyle = '#ffffff';
+            for (let i = 0; i < 150; i++) {
+                const x = Math.random() * CANVAS_WIDTH;
+                const y = Math.random() * CANVAS_HEIGHT;
+                const size = Math.random() * 2;
+                const alpha = 0.3 + Math.random() * 0.7;
+                ctx.globalAlpha = alpha;
+                ctx.fillRect(x, y, size, size);
+            }
+            ctx.globalAlpha = 1.0;
+
+            // 绘制轨道圆圈（在绘制地球之前，作为背景）
+            drawOrbit(EARTH_CENTER_X, EARTH_CENTER_Y, ORBIT_RADIUS.satellite, '#00ff00', 'LEO 550km');
+            drawOrbit(EARTH_CENTER_X, EARTH_CENTER_Y, ORBIT_RADIUS.aircraft, '#ffaa00', 'Aircraft Layer');
+
+            // 绘制地球（居中）
+            drawEarth(EARTH_CENTER_X, EARTH_CENTER_Y, EARTH_RADIUS);
+
+            // 绘制链路（在节点之前，避免遮挡）
+            data.links.forEach(link => {
+                const fromNode = data.nodes[link.from];
+                const toNode = data.nodes[link.to];
+
+                // 重新计算节点位置（确保基于地球中心）
+                const fromX = fromNode.x;
+                const fromY = fromNode.y;
+                const toX = toNode.x;
+                const toY = toNode.y;
+
+                drawLink(fromX, fromY, toX, toY, link.active, link.type, link.delay);
+            });
+
+            // 绘制节点
+            Object.entries(data.nodes).forEach(([name, node]) => {
+                drawNode(node.x, node.y, name, node.type, node.color);
+            });
+
+            // 更新统计面板
+            document.getElementById('handshakes').textContent = data.stats.handshakes;
+            document.getElementById('avg-delay').textContent = data.stats.avg_delay_us + ' μs';
+            document.getElementById('circuits').textContent = data.stats.circuits;
+            document.getElementById('data-transfer').textContent = data.stats.data_transferred_mb + ' MB';
+
+            // 更新链路状态
+            let linkStatusHTML = '';
+            data.links.forEach(link => {
+                const status = link.active ? '🟢' : '🔴';
+                const color = link.active ? '#00ff00' : '#ff0000';
+                linkStatusHTML += `
+                    <div class="stat-item" style="font-size: 12px;">
+                        <span>${status} ${link.from} → ${link.to}</span>
+                        <span style="color: ${color}">${link.active ? 'ON' : 'OFF'}</span>
+                    </div>
+                `;
+            });
+            document.getElementById('link-status').innerHTML = linkStatusHTML;
+
+            // 更新时间戳
+            document.getElementById('timestamp').textContent = 'UTC时间: ' + data.timestamp;
+        }
+
+        // 定期获取数据并更新
+        function fetchAndUpdate() {
+            fetch('/api/topology')
+                .then(response => response.json())
+                .then(data => {
+                    updateVisualization(data);
+                })
+                .catch(error => {
+                    console.error('获取数据失败:', error);
+                });
+        }
+
+        // 启动更新循环（每100ms更新一次，实现流畅动画）
+        fetchAndUpdate();
+        setInterval(fetchAndUpdate, 100);
+    </script>
+</body>
+</html>
