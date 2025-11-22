@@ -1,0 +1,43 @@
+# Docker Compose 优化配置 - 地球节点 (Pi-1 到 Pi-6)
+# 精简版: 移除Nginx, 使用Lite Agent, 严格限制资源
+# 适用于飞腾派性能受限环境
+
+version: '3.8'
+
+services:
+  # Lite Node Agent - 精简版数据采集Agent
+  node-agent-lite:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.agent-lite
+    container_name: sagin_node_lite_${NODE_ID}
+    environment:
+      - NODE_ID=${NODE_ID}
+      - NODE_ROLE=${NODE_ROLE}
+      - HUB_URL=ws://192.168.100.17:9000
+      - UPDATE_INTERVAL=2.0        # 2秒更新间隔
+    restart: unless-stopped
+
+    # 资源限制 - 关键优化
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'              # 限制最多0.5核CPU
+          memory: 50M              # 限制内存50MB
+        reservations:
+          cpus: '0.1'              # 预留0.1核
+          memory: 20M              # 预留20MB
+
+    # 日志限制
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "1m"
+        max-file: "2"
+
+    networks:
+      - sagin_network
+
+networks:
+  sagin_network:
+    driver: bridge

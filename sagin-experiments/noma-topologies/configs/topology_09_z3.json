@@ -1,0 +1,38 @@
+{
+  "topology_id": 9,
+  "name": "Z3 Down (Hybrid Downlink)",
+  "direction": "downlink",
+  "hops": 2.5,
+  "cooperation": false,
+  "description": "NOMA Topology 9: Z3 Down (Hybrid Downlink)",
+  "links": [
+    {
+      "type": "space_ground_downlink_high",
+      "delay_ms": 10,
+      "bandwidth_mbps": 100,
+      "loss_percent": 0.5
+    },
+    {
+      "type": "space_ground_downlink_low",
+      "delay_ms": 30,
+      "bandwidth_mbps": 50,
+      "loss_percent": 2.0
+    }
+  ],
+  "tor_circuit": {
+    "hops_count": 2,
+    "description": "2-hop Tor circuit"
+  },
+  "noma_config": {
+    "enabled": true,
+    "cooperation": false,
+    "sic_enabled": true
+  },
+  "expected_performance": {
+    "total_delay_ms": 30,
+    "pq_handshake_us": 147,
+    "bottleneck_bw_mbps": 100,
+    "success_rate_percent": 90,
+    "pq_overhead_percent": 0.49
+  }
+}

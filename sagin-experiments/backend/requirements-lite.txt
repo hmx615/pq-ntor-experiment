@@ -1,0 +1,2 @@
+# Lite Node Agent - 精简依赖
+websockets==11.0.3

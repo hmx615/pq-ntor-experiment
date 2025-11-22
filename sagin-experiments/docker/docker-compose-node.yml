@@ -1,0 +1,40 @@
+# Docker Compose 配置 - 节点 (Pi-1 到 Pi-6)
+# 用于飞腾派1-6，运行节点Agent和节点视图前端
+# 使用环境变量 NODE_ID 和 NODE_ROLE 来配置
+
+version: '3.8'
+
+services:
+  # Node Agent - 节点数据采集Agent
+  node-agent:
+    build:
+      context: ../backend
+      dockerfile: ../docker/Dockerfile.agent
+    container_name: sagin_node_${NODE_ID}
+    environment:
+      - NODE_ID=${NODE_ID}
+      - NODE_ROLE=${NODE_ROLE}
+      - HUB_URL=ws://192.168.100.17:9000
+    restart: unless-stopped
+    networks:
+      - sagin_network
+
+  # Nginx - 节点视图前端
+  nginx:
+    image: nginx:alpine
+    container_name: sagin_node_nginx_${NODE_ID}
+    ports:
+      - "80:80"
+    volumes:
+      - ../frontend/node-view:/usr/share/nginx/html
+      - ../frontend/shared:/usr/share/nginx/html/shared
+      - ./nginx-node.conf:/etc/nginx/nginx.conf:ro
+    restart: unless-stopped
+    networks:
+      - sagin_network
+    depends_on:
+      - node-agent
+
+networks:
+  sagin_network:
+    driver: bridge

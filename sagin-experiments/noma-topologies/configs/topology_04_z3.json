@@ -1,0 +1,25 @@
+{
+  "topology_id": 4,
+  "name": "Z3 Up (Hybrid)",
+  "direction": "uplink",
+  "hops": 2.5,
+  "cooperation": false,
+  "description": "NOMA Topology 4: Z3 Up (Hybrid)",
+  "links": [],
+  "tor_circuit": {
+    "hops_count": 2,
+    "description": "2-hop Tor circuit"
+  },
+  "noma_config": {
+    "enabled": true,
+    "cooperation": false,
+    "sic_enabled": true
+  },
+  "expected_performance": {
+    "total_delay_ms": 25,
+    "pq_handshake_us": 147,
+    "bottleneck_bw_mbps": 50,
+    "success_rate_percent": 92,
+    "pq_overhead_percent": 0.59
+  }
+}

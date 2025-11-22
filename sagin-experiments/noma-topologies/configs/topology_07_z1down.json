@@ -1,0 +1,64 @@
+{
+  "topology_id": 7,
+  "name": "Z1 Down (Direct Downlink + Cooperation)",
+  "direction": "downlink",
+  "hops": 2,
+  "cooperation": true,
+  "description": "Direct satellite downlink with NOMA cooperation",
+  "nodes": {
+    "SAT": {"type": "satellite", "role": "guard_middle", "altitude_km": 800},
+    "S1": {"type": "terminal", "role": "exit", "rssi": "high"},
+    "S2": {"type": "terminal", "role": "none", "rssi": "low"}
+  },
+  "links": [
+    {
+      "source": "SAT",
+      "target": "S1",
+      "type": "space_ground_downlink_high",
+      "delay_ms": 10,
+      "bandwidth_mbps": 100,
+      "loss_percent": 0.5,
+      "jitter_ms": 2
+    },
+    {
+      "source": "SAT",
+      "target": "S2",
+      "type": "space_ground_downlink_low",
+      "delay_ms": 30,
+      "bandwidth_mbps": 50,
+      "loss_percent": 2.0,
+      "jitter_ms": 5
+    },
+    {
+      "source": "S1",
+      "target": "S2",
+      "type": "noma_cooperation",
+      "delay_ms": 5,
+      "bandwidth_mbps": 100,
+      "loss_percent": 0.1,
+      "jitter_ms": 1,
+      "is_cooperation": true
+    }
+  ],
+  "tor_circuit": {
+    "path": ["Client", "SAT_Guard", "SAT_Middle", "S1_Exit", "Target"],
+    "guard": "SAT",
+    "middle": "SAT",
+    "exit": "S1"
+  },
+  "noma_config": {
+    "group": ["S1_near", "S2_far"],
+    "power_allocation": {"S1": 0.3, "S2": 0.7},
+    "sic_enabled": true,
+    "cooperation_link": "S1_to_S2",
+    "cooperation_description": "S1 decodes first, then helps S2 via SIC"
+  },
+  "expected_performance": {
+    "total_delay_ms": 25,
+    "pq_handshake_us": 147,
+    "cooperation_overhead_ms": 5,
+    "bottleneck_bw_mbps": 100,
+    "success_rate_percent": 90,
+    "pq_overhead_percent": 0.59
+  }
+}

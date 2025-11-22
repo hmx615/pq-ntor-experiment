@@ -1,0 +1,3 @@
+topology_id,topology_name,run_id,protocol,start_time,end_time,duration_s,success,exit_code,satellite_delay_ms,satellite_distance_km
+1,"Z1 Up-1 (Direct Uplink)",1,PQ-NTOR,1763709702.5024078,1763709757.1797347,54.677326917648315,true,0,9.22,2764.6
+1,"Z1 Up-1 (Direct Uplink)",2,PQ-NTOR,1763709762.2645674,1763709816.954672,54.690104722976685,true,0,9.09,2725.7

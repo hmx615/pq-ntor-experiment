@@ -1,0 +1,51 @@
+{
+  "topology_id": 1,
+  "name": "Z1 Up-1 (Direct Uplink)",
+  "direction": "uplink",
+  "hops": 2,
+  "cooperation": false,
+  "description": "Direct satellite uplink with NOMA pairing",
+  "nodes": {
+    "S1": {"type": "terminal", "role": "guard", "rssi": "high"},
+    "S2": {"type": "terminal", "role": "none", "rssi": "low"},
+    "SAT": {"type": "satellite", "role": "middle_exit", "altitude_km": 800}
+  },
+  "links": [
+    {
+      "source": "S1",
+      "target": "SAT",
+      "type": "space_ground_uplink_high",
+      "delay_ms": 10,
+      "bandwidth_mbps": 50,
+      "loss_percent": 0.5,
+      "jitter_ms": 2
+    },
+    {
+      "source": "S2",
+      "target": "SAT",
+      "type": "space_ground_uplink_low",
+      "delay_ms": 30,
+      "bandwidth_mbps": 20,
+      "loss_percent": 2.0,
+      "jitter_ms": 5
+    }
+  ],
+  "tor_circuit": {
+    "path": ["Client", "S1_Guard", "SAT_Middle", "SAT_Exit", "Target"],
+    "guard": "S1",
+    "middle": "SAT",
+    "exit": "SAT"
+  },
+  "noma_config": {
+    "group": ["S1_near", "S2_far"],
+    "power_allocation": {"S1": 0.3, "S2": 0.7},
+    "sic_enabled": true
+  },
+  "expected_performance": {
+    "total_delay_ms": 20,
+    "pq_handshake_us": 147,
+    "bottleneck_bw_mbps": 50,
+    "success_rate_percent": 95,
+    "pq_overhead_percent": 0.74
+  }
+}

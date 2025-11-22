@@ -1,0 +1,61 @@
+{
+  "topology_id": 2,
+  "name": "Z1 Up-2 (Single UAV Uplink)",
+  "direction": "uplink",
+  "hops": 3,
+  "cooperation": false,
+  "description": "Uplink via single UAV relay with NOMA",
+  "nodes": {
+    "S1": {"type": "terminal", "role": "guard", "rssi": "high"},
+    "S2": {"type": "terminal", "role": "none", "rssi": "low"},
+    "SR": {"type": "uav", "role": "middle", "altitude_km": 10},
+    "SAT": {"type": "satellite", "role": "exit", "altitude_km": 800}
+  },
+  "links": [
+    {
+      "source": "S1",
+      "target": "SR",
+      "type": "air_ground_high",
+      "delay_ms": 5,
+      "bandwidth_mbps": 100,
+      "loss_percent": 0.1,
+      "jitter_ms": 1
+    },
+    {
+      "source": "S2",
+      "target": "SR",
+      "type": "air_ground_low",
+      "delay_ms": 15,
+      "bandwidth_mbps": 50,
+      "loss_percent": 1.0,
+      "jitter_ms": 2
+    },
+    {
+      "source": "SR",
+      "target": "SAT",
+      "type": "air_space",
+      "delay_ms": 10,
+      "bandwidth_mbps": 50,
+      "loss_percent": 0.5,
+      "jitter_ms": 2
+    }
+  ],
+  "tor_circuit": {
+    "path": ["Client", "S1_Guard", "SR_Middle", "SAT_Exit", "Target"],
+    "guard": "S1",
+    "middle": "SR",
+    "exit": "SAT"
+  },
+  "noma_config": {
+    "group": ["S1_near", "S2_far"],
+    "power_allocation": {"S1": 0.3, "S2": 0.7},
+    "sic_enabled": true
+  },
+  "expected_performance": {
+    "total_delay_ms": 30,
+    "pq_handshake_us": 147,
+    "bottleneck_bw_mbps": 50,
+    "success_rate_percent": 90,
+    "pq_overhead_percent": 0.49
+  }
+}

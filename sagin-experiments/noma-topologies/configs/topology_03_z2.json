@@ -1,0 +1,44 @@
+{
+  "topology_id": 3,
+  "name": "Z2 Up (Dual UAV)",
+  "direction": "uplink",
+  "hops": 3,
+  "cooperation": false,
+  "description": "NOMA Topology 3: Z2 Up (Dual UAV)",
+  "links": [
+    {
+      "type": "air_ground_high",
+      "delay_ms": 5,
+      "bandwidth_mbps": 100,
+      "loss_percent": 0.1
+    },
+    {
+      "type": "air_ground_low",
+      "delay_ms": 15,
+      "bandwidth_mbps": 50,
+      "loss_percent": 1.0
+    },
+    {
+      "type": "air_space",
+      "delay_ms": 10,
+      "bandwidth_mbps": 50,
+      "loss_percent": 0.5
+    }
+  ],
+  "tor_circuit": {
+    "hops_count": 3,
+    "description": "3-hop Tor circuit"
+  },
+  "noma_config": {
+    "enabled": true,
+    "cooperation": false,
+    "sic_enabled": true
+  },
+  "expected_performance": {
+    "total_delay_ms": 35,
+    "pq_handshake_us": 147,
+    "bottleneck_bw_mbps": 50,
+    "success_rate_percent": 90,
+    "pq_overhead_percent": 0.42
+  }
+}

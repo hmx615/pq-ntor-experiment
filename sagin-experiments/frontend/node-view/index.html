@@ -1,0 +1,1207 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>节点视图 - ${NODE_NAME}</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI Emoji', 'Apple Color Emoji', 'Noto Color Emoji', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
+            color: #fff;
+            overflow: hidden;
+        }
+
+        /* 节点类型特色主题 */
+        body.theme-satellite {
+            background: linear-gradient(135deg, #1a0a2e 0%, #2e1a47 50%, #4a2c5e 100%);
+        }
+
+        body.theme-aircraft {
+            background: linear-gradient(135deg, #0a2e3e 0%, #1a4e5e 50%, #2a6e8e 100%);
+        }
+
+        body.theme-ground {
+            background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
+        }
+
+        .container {
+            display: flex;
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* 左侧：3D地球视图（节点视角）*/
+        #globe-container {
+            flex: 2;
+            position: relative;
+            background: #000;
+            overflow: hidden;
+        }
+
+        #globe-view {
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+
+        #globe-view > div {
+            width: 100% !important;
+            height: 100% !important;
+            position: relative !important;
+        }
+
+        #globe-view canvas {
+            position: absolute !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100% !important;
+            height: 100% !important;
+            max-width: 100% !important;
+            max-height: 100% !important;
+        }
+
+        /* 防止任何子元素逃出容器 */
+        #globe-view * {
+            max-width: 100%;
+            max-height: 100%;
+        }
+
+        .globe-overlay {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 15px 20px;
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+        }
+
+        .globe-overlay h1 {
+            font-size: 28px;
+            margin-bottom: 5px;
+        }
+
+        .globe-overlay .node-type {
+            font-size: 14px;
+            opacity: 0.7;
+        }
+
+        /* 右侧：节点状态面板 */
+        #status-panel {
+            flex: 1;
+            min-width: 400px;
+            max-width: 500px;
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(20px);
+            padding: 30px;
+            overflow-y: auto;
+            position: relative;
+            z-index: 10;
+            border-left: 3px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .status-section {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .status-section h2 {
+            font-size: 18px;
+            margin-bottom: 15px;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.3);
+            padding-bottom: 10px;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .info-row:last-child {
+            border-bottom: none;
+        }
+
+        .info-label {
+            opacity: 0.7;
+        }
+
+        .info-value {
+            font-weight: bold;
+        }
+
+        /* 拓扑标题 */
+        .topology-title {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .topology-title h2 {
+            font-size: 22px;
+            margin-bottom: 5px;
+        }
+
+        .topology-title p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        /* 链路列表 */
+        .link-list {
+            margin-top: 10px;
+        }
+
+        .link-item {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 8px;
+        }
+
+        .link-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .link-target {
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        .link-rssi {
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .link-rssi.high {
+            background: #4ade80;
+            color: #000;
+        }
+
+        .link-rssi.low {
+            background: #ef4444;
+            color: #fff;
+        }
+
+        .link-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            font-size: 13px;
+        }
+
+        .link-detail {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 6px;
+            border-radius: 4px;
+        }
+
+        /* PQ-NTOR状态 */
+        .pqntor-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .pqntor-stat {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .pqntor-stat .value {
+            font-size: 28px;
+            font-weight: bold;
+            color: #4ade80;
+            margin-bottom: 5px;
+        }
+
+        .pqntor-stat .label {
+            font-size: 12px;
+            opacity: 0.7;
+        }
+
+        /* 在线状态指示器 */
+        .online-indicator {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px;
+            background: rgba(74, 222, 128, 0.2);
+            border: 2px solid #4ade80;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .online-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #4ade80;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.6; transform: scale(0.9); }
+        }
+
+        /* 连接状态 */
+        .connection-status {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 10px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+            border: 2px solid #ef4444;
+        }
+
+        .connection-status.connected {
+            border-color: #4ade80;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 左侧：3D地球视图（节点视角）-->
+        <div id="globe-container">
+            <div class="globe-overlay">
+                <h1 id="node-title">节点视图</h1>
+                <p class="node-type" id="node-subtitle">初始化中...</p>
+            </div>
+
+            <!-- 左上角时间显示 -->
+            <div style="
+                position: absolute;
+                top: 20px;
+                left: 20px;
+                background: rgba(0, 0, 0, 0.7);
+                padding: 12px 20px;
+                border-radius: 10px;
+                border: 2px solid #4ade80;
+                box-shadow: 0 0 15px rgba(74, 222, 128, 0.5);
+                font-family: 'Courier New', monospace;
+                z-index: 100;">
+                <div style="color: #fbbf24; font-size: 14px; font-weight: bold; margin-bottom: 4px;">
+                    📅 当前时间
+                </div>
+                <div id="current-time" style="color: #4ade80; font-size: 18px; font-weight: bold; letter-spacing: 1px;">
+                    --
+                </div>
+            </div>
+
+            <!-- 链路图例 -->
+            <div style="
+                position: absolute;
+                bottom: 80px;
+                left: 20px;
+                background: rgba(0, 0, 0, 0.7);
+                padding: 15px 20px;
+                border-radius: 10px;
+                border: 2px solid #fbbf24;
+                box-shadow: 0 0 15px rgba(251, 191, 36, 0.5);
+                z-index: 100;">
+                <div style="color: #fbbf24; font-size: 14px; font-weight: bold; margin-bottom: 10px;">
+                    🔗 链路类型
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 8px;">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <div style="width: 40px; height: 3px; background: #00ff00; border-radius: 2px;"></div>
+                        <span style="color: #fff; font-size: 13px;">高RSSI</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <div style="width: 40px; height: 3px; background: #ff6600; border-radius: 2px;"></div>
+                        <span style="color: #fff; font-size: 13px;">低RSSI</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <div style="width: 40px; height: 3px; background: #ff00ff; border-radius: 2px;
+                                   background-image: repeating-linear-gradient(
+                                       90deg,
+                                       #ff00ff,
+                                       #ff00ff 5px,
+                                       transparent 5px,
+                                       transparent 10px
+                                   );"></div>
+                        <span style="color: #fff; font-size: 13px;">协作NOMA</span>
+                    </div>
+                </div>
+            </div>
+            <!-- 当前节点固定标识 -->
+            <div id="current-node-badge" style="
+                position: absolute;
+                bottom: 30px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: rgba(0, 0, 0, 0.8);
+                padding: 15px 25px;
+                border-radius: 12px;
+                border: 2px solid #ffff00;
+                text-align: center;
+                box-shadow: 0 0 20px rgba(255, 255, 0, 0.5);
+                z-index: 100;
+            ">
+                <div style="font-size: 48px; margin-bottom: 5px;" id="current-node-icon">🛰</div>
+                <div style="font-size: 16px; color: #ffff00; font-weight: bold;" id="current-node-name">当前节点</div>
+            </div>
+            <div id="globe-view"></div>
+        </div>
+
+        <!-- 右侧：节点状态面板 -->
+        <div id="status-panel">
+            <!-- 在线状态 -->
+            <div class="online-indicator">
+                <div class="online-dot"></div>
+                <span id="online-status">节点在线</span>
+            </div>
+
+            <!-- 拓扑信息 -->
+            <div class="topology-title">
+                <h2 id="topology-name">Topology 1: Z1 Up-1</h2>
+                <p id="topology-desc">初始拓扑</p>
+            </div>
+
+            <!-- 节点信息 -->
+            <div class="status-section">
+                <h2>📡 节点信息</h2>
+                <div class="info-row">
+                    <span class="info-label">角色</span>
+                    <span class="info-value" id="info-role">-</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">高度</span>
+                    <span class="info-value" id="info-altitude">-</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">IP地址</span>
+                    <span class="info-value" id="info-ip">-</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">容器IP</span>
+                    <span class="info-value" id="info-container-ip">-</span>
+                </div>
+            </div>
+
+            <!-- 角色特征数据 -->
+            <div class="status-section" id="role-features">
+                <h2 id="role-features-title">🌟 节点特征</h2>
+                <div id="role-features-content">
+                    <!-- 动态生成内容 -->
+                </div>
+            </div>
+
+            <!-- 通信链路 -->
+            <div class="status-section">
+                <h2>🔗 通信链路</h2>
+                <div class="link-list" id="link-list">
+                    <p style="opacity: 0.5; text-align: center;">暂无链路数据</p>
+                </div>
+            </div>
+
+            <!-- PQ-NTOR状态 -->
+            <div class="status-section">
+                <h2>🔐 PQ-NTOR</h2>
+                <div class="pqntor-stats">
+                    <div class="pqntor-stat">
+                        <div class="value" id="pqntor-handshakes">0</div>
+                        <div class="label">握手次数</div>
+                    </div>
+                    <div class="pqntor-stat">
+                        <div class="value" id="pqntor-time">0.0ms</div>
+                        <div class="label">平均耗时</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 流量统计 -->
+            <div class="status-section">
+                <h2>📊 流量统计</h2>
+                <div class="info-row">
+                    <span class="info-label">上行流量</span>
+                    <span class="info-value" id="traffic-up">0 KB/s</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">下行流量</span>
+                    <span class="info-value" id="traffic-down">0 KB/s</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 连接状态指示器 -->
+    <div class="connection-status" id="connection-status">
+        WebSocket: 连接中...
+    </div>
+
+    <!-- 引入Three.js和Globe.GL -->
+    <script src="../shared/three.min.js"></script>
+    <script src="../shared/globe.gl.min.js"></script>
+
+    <script>
+        // 从URL参数或环境变量获取节点ID
+        const urlParams = new URLSearchParams(window.location.search);
+        const NODE_ID = urlParams.get('node_id') || 'SAT';
+
+        // 节点配置
+        const nodeConfigs = {
+            'SAT': { icon: '🛰', name: '卫星', role: 'Satellite', lat: 35, lon: 122, alt: 0.15, type: 'satellite' },
+            'SR': { icon: '✈', name: '无人机1', role: 'Aircraft', lat: 35, lon: 110, alt: 0.05, type: 'aircraft' },
+            'S1R2': { icon: '✈', name: '无人机2', role: 'Aircraft', lat: 31.2, lon: 121.5, alt: 0.05, type: 'aircraft' },
+            'S1': { icon: '📱', name: '终端1', role: 'Ground', lat: 39.9, lon: 116.4, alt: 0, type: 'ground' },
+            'S2': { icon: '📱', name: '终端2', role: 'Ground', lat: 30, lon: 105, alt: 0, type: 'ground' },
+            'T': { icon: '📱', name: '终端3', role: 'Ground', lat: 28, lon: 115, alt: 0, type: 'ground' }
+        };
+
+        const currentNodeConfig = nodeConfigs[NODE_ID];
+
+        // 节点颜色映射
+        const nodeColorMap = {
+            satellite: 0xffff00,  // 黄色（卫星）
+            aircraft: 0x00ffff,   // 青色（无人机）
+            ground: 0x00ff00      // 绿色（地面站/终端）
+        };
+
+        // 拓扑名称
+        const topologyNames = [
+            'Z1 Up-1', 'Z1 Up-2', 'Z2 Up-1', 'Z2 Up-2', 'Z3 Up', 'Z4 Up',
+            'Z1 Down', 'Z2 Down', 'Z3 Down', 'Z4 Down', 'Z5 Down', 'Z6 Down'
+        ];
+
+        // 拓扑链路定义（12种拓扑的连接关系）
+        const topologyLinks = {
+            1: [ // Z1 Up-1: S1→SAT, S2→SAT (直连NOMA)
+                { source: 'S1', target: 'SAT', rssi: 'high', label: '高RSSI天基上行' },
+                { source: 'S2', target: 'SAT', rssi: 'low', label: '低RSSI天基上行' }
+            ],
+            2: [ // Z1 Up-2: S2→S1R2→SAT (协作)
+                { source: 'S2', target: 'S1R2', rssi: 'high', label: '空/地链路' },
+                { source: 'S1R2', target: 'SAT', rssi: 'high', label: '高RSSI天基上行' }
+            ],
+            3: [ // Z2 Up-1: S1→SR→SAT, S2→SR→SAT (2跳协作)
+                { source: 'S1', target: 'SR', rssi: 'high', label: '高RSSI空/地' },
+                { source: 'S2', target: 'SR', rssi: 'low', label: '低RSSI空/地' },
+                { source: 'SR', target: 'SAT', rssi: 'high', label: '高RSSI天基上行' }
+            ],
+            4: [ // Z2 Up-2: S2→S1R2, S1R2→SR→SAT (混合协作)
+                { source: 'S2', target: 'S1R2', rssi: 'high', label: '空/地链路' },
+                { source: 'S1R2', target: 'SR', rssi: 'high', label: '空/空链路' },
+                { source: 'SR', target: 'SAT', rssi: 'high', label: '高RSSI天基上行' }
+            ],
+            5: [ // Z3 Up: T→SR→SAT (中继)
+                { source: 'T', target: 'SR', rssi: 'high', label: '空/地链路' },
+                { source: 'SR', target: 'SAT', rssi: 'high', label: '高RSSI天基上行' }
+            ],
+            6: [ // Z4 Up: T→S1R2→SR→SAT (多跳中继)
+                { source: 'T', target: 'S1R2', rssi: 'high', label: '空/地链路' },
+                { source: 'S1R2', target: 'SR', rssi: 'high', label: '空/空链路' },
+                { source: 'SR', target: 'SAT', rssi: 'high', label: '高RSSI天基上行' }
+            ],
+            7: [ // Z1 Down: SAT→S1, SAT→S2, S1→S2 (直连+协作)
+                { source: 'SAT', target: 'S1', rssi: 'high', label: '高RSSI天基下行' },
+                { source: 'SAT', target: 'S2', rssi: 'low', label: '低RSSI天基下行' },
+                { source: 'S1', target: 'S2', rssi: 'coop', label: '协作链路' }
+            ],
+            8: [ // Z2 Down: SAT→SR→S1, SAT→SR→S2 (中继下行+协作)
+                { source: 'SAT', target: 'SR', rssi: 'high', label: '高RSSI天基下行' },
+                { source: 'SR', target: 'S1', rssi: 'high', label: '高RSSI空/地' },
+                { source: 'SR', target: 'S2', rssi: 'low', label: '低RSSI空/地' },
+                { source: 'S1', target: 'S2', rssi: 'coop', label: 'NOMA协作链路' }
+            ],
+            9: [ // Z3 Down: SAT→SR→T (中继下行)
+                { source: 'SAT', target: 'SR', rssi: 'high', label: '高RSSI天基下行' },
+                { source: 'SR', target: 'T', rssi: 'high', label: '空/地链路' }
+            ],
+            10: [ // Z4 Down: SAT→SR→S1R2→T (多跳下行)
+                { source: 'SAT', target: 'SR', rssi: 'high', label: '高RSSI天基下行' },
+                { source: 'SR', target: 'S1R2', rssi: 'high', label: '空/空链路' },
+                { source: 'S1R2', target: 'T', rssi: 'high', label: '空/地链路' }
+            ],
+            11: [ // Z5 Down: SAT→SR→S1R2, SR→S1, S1R2→S2 (广播下行+协作)
+                { source: 'SAT', target: 'SR', rssi: 'high', label: '高RSSI天基下行' },
+                { source: 'SR', target: 'S1R2', rssi: 'high', label: '空/空链路' },
+                { source: 'SR', target: 'S1', rssi: 'high', label: '高RSSI空/地' },
+                { source: 'S1R2', target: 'S2', rssi: 'low', label: '低RSSI空/地' },
+                { source: 'S1', target: 'S2', rssi: 'coop', label: 'NOMA协作链路' }
+            ],
+            12: [ // Z6 Down: SAT→SR, SR→S1R2→T, SR→S1, SR→S2 (多点下行+协作)
+                { source: 'SAT', target: 'SR', rssi: 'high', label: '高RSSI天基下行' },
+                { source: 'SR', target: 'S1R2', rssi: 'high', label: '空/空链路' },
+                { source: 'S1R2', target: 'T', rssi: 'high', label: '空/地链路' },
+                { source: 'SR', target: 'S1', rssi: 'high', label: '高RSSI空/地' },
+                { source: 'SR', target: 'S2', rssi: 'low', label: '低RSSI空/地' },
+                { source: 'S1', target: 'S2', rssi: 'coop', label: 'NOMA协作链路' }
+            ]
+        };
+
+        // 链路颜色映射
+        const linkColorMap = {
+            high: '#00ff00',    // 绿色 - 高RSSI
+            low: '#ff6600',     // 橙色 - 低RSSI
+            coop: '#ff00ff'     // 紫色 - 协作链路
+        };
+
+        // 全局状态
+        const state = {
+            websocket: null,
+            nodeData: null,
+            currentTopology: 1
+        };
+
+        // 更新时间显示
+        function updateTime() {
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+
+            document.getElementById('current-time').textContent =
+                `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+        }
+
+        // 每秒更新时间
+        updateTime();
+        setInterval(updateTime, 1000);
+
+        // 初始化页面标题
+        document.getElementById('node-title').textContent =
+            `${currentNodeConfig.icon} ${currentNodeConfig.name} (${NODE_ID})`;
+        document.getElementById('node-subtitle').textContent =
+            `${currentNodeConfig.role} Node`;
+
+        // 更新当前节点徽章
+        document.getElementById('current-node-icon').textContent = currentNodeConfig.icon;
+        document.getElementById('current-node-name').textContent = `${currentNodeConfig.name} (${NODE_ID})`;
+
+        // 根据节点类型设置徽章颜色
+        const badgeColors = {
+            satellite: '#ffff00',
+            aircraft: '#00ffff',
+            ground: '#00ff00'
+        };
+        const badgeColor = badgeColors[currentNodeConfig.type];
+        const badge = document.getElementById('current-node-badge');
+        badge.style.borderColor = badgeColor;
+        badge.style.boxShadow = `0 0 20px ${badgeColor}`;
+        document.getElementById('current-node-name').style.color = badgeColor;
+
+        // 初始化3D地球
+        let globe;
+        function initGlobe() {
+            const container = document.getElementById('globe-view');
+
+            globe = Globe()
+                (container)
+                .width(container.offsetWidth)
+                .height(container.offsetHeight)
+                // 🚀 飞腾派优化: 使用更轻量的配置
+                .globeImageUrl('https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg')  // 保持原版纹理
+                .backgroundImageUrl('https://unpkg.com/three-globe/example/img/night-sky.png')  // 保持背景
+                .showAtmosphere(true)  // 保持大气层
+                .atmosphereColor('lightskyblue')
+                .atmosphereAltitude(0.15)
+                .pointOfView({
+                    lat: currentNodeConfig.lat,
+                    lng: currentNodeConfig.lon,
+                    altitude: 1.5
+                });
+
+            console.log('✅ Globe初始化成功', `节点: ${NODE_ID}, 尺寸: ${container.offsetWidth}x${container.offsetHeight}`);
+
+            // 检查右侧面板是否还可见
+            setTimeout(() => {
+                const panel = document.getElementById('status-panel');
+                const panelRect = panel.getBoundingClientRect();
+                console.log('状态面板位置:', {
+                    visible: panelRect.width > 0 && panelRect.height > 0,
+                    width: panelRect.width,
+                    height: panelRect.height,
+                    left: panelRect.left,
+                    top: panelRect.top
+                });
+            }, 100);
+
+            // 显示所有节点，包括当前节点（当前节点高亮显示）
+            const allNodesData = Object.keys(nodeConfigs)
+                .map(nodeId => ({
+                    id: nodeId,
+                    lat: nodeConfigs[nodeId].lat,
+                    lng: nodeConfigs[nodeId].lon,
+                    alt: nodeConfigs[nodeId].alt,
+                    icon: nodeConfigs[nodeId].icon,
+                    name: nodeConfigs[nodeId].name,
+                    type: nodeConfigs[nodeId].type,
+                    isCurrent: nodeId === NODE_ID  // 标记当前节点
+                }));
+
+            console.log('📍 所有节点数据:', allNodesData);
+            console.log('📍 当前节点ID:', NODE_ID, '(在地球上高亮显示)');
+
+            // 颜色映射
+            const colors = {
+                satellite: '#ffff00',
+                aircraft: '#00ffff',
+                ground: '#00ff00'
+            };
+
+            // 使用htmlElementsData显示所有节点emoji图标（当前节点高亮显示）
+            globe.htmlElementsData(allNodesData)
+                .htmlLat(d => d.lat)
+                .htmlLng(d => d.lng)
+                .htmlAltitude(d => d.alt)
+                .htmlElement(d => {
+                    const el = document.createElement('div');
+
+                    // 🚀 飞腾派优化: 减少视觉效果以提升性能
+                    // 当前节点：稍大、不透明、无发光效果
+                    // 其他节点：半透明显示
+                    if (d.isCurrent) {
+                        el.style.fontSize = '36px';  // 当前节点稍大 (原48px)
+                        el.style.opacity = '1.0';     // 完全不透明
+                        // 移除发光效果以节省GPU资源
+                    } else {
+                        el.style.fontSize = '24px';   // 其他节点更小 (原32px)
+                        el.style.opacity = '0.5';     // 更透明以减少渲染
+                    }
+
+                    el.style.cursor = 'pointer';
+                    el.style.textAlign = 'center';
+                    el.style.pointerEvents = 'auto';
+
+                    // 🚀 飞腾派优化: 简化HTML结构和样式
+                    el.innerHTML = `
+                        <div style="text-align: center;">
+                            <div style="font-size: ${d.isCurrent ? '36px' : '24px'};">
+                                ${d.icon}
+                            </div>
+                            <div style="font-size: ${d.isCurrent ? '12px' : '10px'};
+                                        color: ${colors[d.type]};
+                                        margin-top: 2px;
+                                        font-weight: ${d.isCurrent ? 'bold' : 'normal'};">
+                                ${d.name}${d.isCurrent ? ' ★' : ''}
+                            </div>
+                        </div>
+                    `;
+
+                    return el;
+                });
+
+            console.log(`✅ 显示${allNodesData.length}个节点，当前节点${NODE_ID}高亮显示`);
+        }
+
+        // 更新3D地球链路显示
+        function updateGlobeLinks() {
+            if (!globe) {
+                console.warn('Globe未初始化，无法更新链路');
+                return;
+            }
+
+            try {
+                const topologyId = state.currentTopology;
+                const links = topologyLinks[topologyId] || [];
+
+                console.log(`🔗 更新拓扑${topologyId}的链路，共${links.length}条`);
+
+                globe.arcsData(links)
+                    .arcStartLat(d => {
+                        const sourceNode = nodeConfigs[d.source];
+                        const lat = sourceNode ? sourceNode.lat : 0;
+                        console.log(`🔍 ${d.source} 起点纬度: ${lat}`);
+                        return lat;
+                    })
+                    .arcStartLng(d => {
+                        const sourceNode = nodeConfigs[d.source];
+                        const lon = sourceNode ? sourceNode.lon : 0;
+                        console.log(`🔍 ${d.source} 起点经度: ${lon}`);
+                        return lon;
+                    })
+                    .arcEndLat(d => {
+                        const targetNode = nodeConfigs[d.target];
+                        const lat = targetNode ? targetNode.lat : 0;
+                        console.log(`🔍 ${d.target} 终点纬度: ${lat}`);
+                        return lat;
+                    })
+                    .arcEndLng(d => {
+                        const targetNode = nodeConfigs[d.target];
+                        const lon = targetNode ? targetNode.lon : 0;
+                        console.log(`🔍 ${d.target} 终点经度: ${lon}`);
+                        return lon;
+                    })
+                    .arcAltitude(d => {
+                        // 计算弧线高度
+                        const sourceNode = nodeConfigs[d.source];
+                        const targetNode = nodeConfigs[d.target];
+                        const sourceAlt = sourceNode ? (sourceNode.alt || 0) : 0;
+                        const targetAlt = targetNode ? (targetNode.alt || 0) : 0;
+                        const maxAlt = Math.max(sourceAlt, targetAlt);
+                        const arcAlt = maxAlt > 0 ? maxAlt * 1.5 : 0.3;
+                        return arcAlt;
+                    })
+                    .arcAltitudeAutoScale(d => {
+                        const sourceNode = nodeConfigs[d.source];
+                        const targetNode = nodeConfigs[d.target];
+                        const isSatellite = (sourceNode && sourceNode.type === 'satellite') ||
+                                          (targetNode && targetNode.type === 'satellite');
+                        return isSatellite ? 0.8 : 0.5;
+                    })
+                    .arcColor(d => {
+                        // 高亮显示当前节点的链路
+                        const isCurrentNode = d.source === NODE_ID || d.target === NODE_ID;
+                        const baseColor = linkColorMap[d.rssi] || '#ffffff';
+
+                        if (isCurrentNode) {
+                            return baseColor;  // 当前节点链路：全亮
+                        } else {
+                            // 其他节点链路：半透明
+                            const rgb = baseColor.match(/\w\w/g).map(x => parseInt(x, 16));
+                            return `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, 0.3)`;
+                        }
+                    })
+                    .arcStroke(2.0)  // 统一线宽标准
+                    .arcDashLength(d => {
+                        // 协作链路用虚线，其他链路用实线段来产生流动效果
+                        if (d.rssi === 'coop') return 0.5;  // 虚线
+                        return 0.4;  // 实线段（所有链路都有流动效果）
+                    })
+                    .arcDashGap(d => {
+                        if (d.rssi === 'coop') return 0.2;  // 虚线间隙
+                        return 0.1;  // 实线段间隙
+                    })
+                    .arcDashAnimateTime(d => {
+                        // 🚀 飞腾派优化: 减慢动画速度以降低GPU负载
+                        if (d.rssi === 'coop') return 3000;   // 协作链路：更慢（3秒，原2秒）
+                        if (d.rssi === 'high') return 1200;   // 高RSSI：较快（1.2秒，原0.8秒）
+                        if (d.rssi === 'low') return 1800;    // 低RSSI：中速（1.8秒，原1.2秒）
+                        return 1500;  // 默认（1.5秒，原1秒）
+                    })
+                    .arcLabel(d => `
+                        <div style="background: rgba(0,0,0,0.9); padding: 12px; border-radius: 8px; color: white; border: 2px solid ${linkColorMap[d.rssi]};">
+                            <strong style="font-size: 16px;">${d.source} → ${d.target}</strong><br>
+                            <span style="color: #ccc;">${d.label} (RSSI: ${d.rssi})</span>
+                        </div>
+                    `);
+
+                console.log(`✅ 链路显示已更新`);
+            } catch (error) {
+                console.error('❌ 更新链路失败:', error);
+            }
+        }
+
+        // 初始化角色特征面板
+        function initRoleFeatures() {
+            const featuresContent = document.getElementById('role-features-content');
+            const featuresTitle = document.getElementById('role-features-title');
+
+            if (currentNodeConfig.type === 'satellite') {
+                // 🛰️ 卫星节点特征
+                featuresTitle.textContent = '🛰️ 卫星特性';
+                featuresContent.innerHTML = `
+                    <div class="info-row">
+                        <span class="info-label">轨道高度</span>
+                        <span class="info-value">${(currentNodeConfig.alt * 6371).toFixed(0)} km</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">覆盖半径</span>
+                        <span class="info-value">~2000 km</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">波束数量</span>
+                        <span class="info-value">多波束</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">工作模式</span>
+                        <span class="info-value">透明转发</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">中继能力</span>
+                        <span class="info-value">✅ 支持</span>
+                    </div>
+                `;
+            } else if (currentNodeConfig.type === 'aircraft') {
+                // ✈️ 无人机节点特征
+                featuresTitle.textContent = '✈️ 无人机特性';
+                featuresContent.innerHTML = `
+                    <div class="info-row">
+                        <span class="info-label">飞行高度</span>
+                        <span class="info-value">${(currentNodeConfig.alt * 6371).toFixed(1)} km</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">飞行状态</span>
+                        <span class="info-value">🟢 巡航</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">电池电量</span>
+                        <span class="info-value">85%</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">飞行模式</span>
+                        <span class="info-value">中继模式</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">覆盖范围</span>
+                        <span class="info-value">~50 km</span>
+                    </div>
+                `;
+            } else {
+                // 📱 地面终端特征
+                const groundHeight = Math.floor(Math.random() * 11); // 0-10m随机高度
+                featuresTitle.textContent = '📱 终端特性';
+                featuresContent.innerHTML = `
+                    <div class="info-row">
+                        <span class="info-label">设备类型</span>
+                        <span class="info-value">移动终端</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">地面高度</span>
+                        <span class="info-value">${groundHeight} m</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">接入方式</span>
+                        <span class="info-value">NOMA</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">信号强度</span>
+                        <span class="info-value" id="signal-strength">良好</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">协作能力</span>
+                        <span class="info-value">✅ 支持</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">应用场景</span>
+                        <span class="info-value">数据传输</span>
+                    </div>
+                `;
+            }
+
+            console.log(`✅ 初始化${currentNodeConfig.type}节点特征面板`);
+        }
+
+        // 更新节点信息显示
+        function updateNodeInfo(data) {
+            if (!data || !data.status) {
+                console.warn('updateNodeInfo: 数据为空');
+                return;
+            }
+            const status = data.status;
+            console.log('更新节点信息:', status);
+
+            document.getElementById('info-role').textContent = status.role || '-';
+            document.getElementById('info-altitude').textContent =
+                status.altitude ? `${(status.altitude * 6371).toFixed(0)} km` : '-';
+            document.getElementById('info-ip').textContent = status.ip || '-';
+            document.getElementById('info-container-ip').textContent = status.container_ip || '-';
+
+            console.log('节点信息已更新到DOM');
+        }
+
+        // 更新链路列表
+        function updateLinkList(links) {
+            const linkList = document.getElementById('link-list');
+
+            if (!links || links.length === 0) {
+                console.log('链路列表为空');
+                linkList.innerHTML = '<p style="opacity: 0.5; text-align: center;">暂无活跃链路</p>';
+                return;
+            }
+
+            console.log(`更新链路列表: ${links.length}条链路`);
+            linkList.innerHTML = '';
+
+            links.forEach(link => {
+                const item = document.createElement('div');
+                item.className = 'link-item';
+
+                item.innerHTML = `
+                    <div class="link-header">
+                        <span class="link-target">→ ${link.target}</span>
+                        <span class="link-rssi ${link.rssi}">${link.rssi.toUpperCase()} RSSI</span>
+                    </div>
+                    <div class="link-details">
+                        <div class="link-detail">延迟: ${link.delay_ms}ms</div>
+                        <div class="link-detail">带宽: ${link.bandwidth_mbps}Mbps</div>
+                        <div class="link-detail">丢包率: ${link.packet_loss}%</div>
+                        <div class="link-detail">状态: ${link.active ? '🟢 活跃' : '🔴 断开'}</div>
+                    </div>
+                `;
+
+                linkList.appendChild(item);
+            });
+        }
+
+        // 更新PQ-NTOR统计
+        function updatePQNTORStats(pqntor) {
+            if (!pqntor) {
+                console.log('PQ-NTOR数据为空');
+                return;
+            }
+            console.log('更新PQ-NTOR统计:', pqntor);
+
+            document.getElementById('pqntor-handshakes').textContent = pqntor.handshakes || 0;
+            document.getElementById('pqntor-time').textContent =
+                (pqntor.avg_time_ms || 0).toFixed(1) + 'ms';
+        }
+
+        // 更新流量统计
+        function updateTraffic(traffic) {
+            if (!traffic) {
+                console.log('流量数据为空');
+                return;
+            }
+            console.log('更新流量统计:', traffic);
+
+            document.getElementById('traffic-up').textContent = `${traffic.up_kbps || 0} KB/s`;
+            document.getElementById('traffic-down').textContent = `${traffic.down_kbps || 0} KB/s`;
+        }
+
+        // 生成模拟流量数据
+        function generateSimulatedTraffic() {
+            // 根据节点类型生成不同范围的流量
+            let upRange, downRange;
+
+            if (currentNodeConfig.type === 'satellite') {
+                // 卫星：高流量
+                upRange = [500, 2000];
+                downRange = [1000, 3000];
+            } else if (currentNodeConfig.type === 'aircraft') {
+                // 无人机：中等流量
+                upRange = [200, 800];
+                downRange = [300, 1200];
+            } else {
+                // 地面终端：较低流量
+                upRange = [50, 300];
+                downRange = [100, 500];
+            }
+
+            const upTraffic = Math.floor(Math.random() * (upRange[1] - upRange[0]) + upRange[0]);
+            const downTraffic = Math.floor(Math.random() * (downRange[1] - downRange[0]) + downRange[0]);
+
+            updateTraffic({
+                up_kbps: upTraffic,
+                down_kbps: downTraffic
+            });
+        }
+
+        // 启动流量模拟
+        function startTrafficSimulation() {
+            // 立即生成一次
+            generateSimulatedTraffic();
+
+            // 每2秒更新一次流量数据
+            setInterval(() => {
+                generateSimulatedTraffic();
+            }, 2000);
+
+            console.log('✅ 流量模拟已启动');
+        }
+
+        // 更新拓扑信息
+        function updateTopology(topologyId) {
+            state.currentTopology = topologyId;
+            document.getElementById('topology-name').textContent =
+                `Topology ${topologyId}: ${topologyNames[topologyId - 1]}`;
+
+            // 更新3D地球链路显示
+            updateGlobeLinks();
+
+            // 更新右侧链路列表（根据当前拓扑生成）
+            updateLinkListFromTopology(topologyId);
+        }
+
+        // 根据拓扑生成链路列表
+        function updateLinkListFromTopology(topologyId) {
+            const allLinks = topologyLinks[topologyId] || [];
+            // 过滤出当前节点相关的链路
+            const nodeLinks = allLinks.filter(link =>
+                link.source === NODE_ID || link.target === NODE_ID
+            );
+
+            console.log(`拓扑${topologyId}中节点${NODE_ID}的链路:`, nodeLinks);
+
+            const linkList = document.getElementById('link-list');
+
+            if (nodeLinks.length === 0) {
+                console.log(`节点${NODE_ID}在拓扑${topologyId}中无链路`);
+                linkList.innerHTML = '<p style="opacity: 0.5; text-align: center;">当前拓扑中无活跃链路</p>';
+                return;
+            }
+
+            linkList.innerHTML = '';
+
+            nodeLinks.forEach(link => {
+                const item = document.createElement('div');
+                item.className = 'link-item';
+
+                // 确定链路方向和对端节点
+                const isSource = link.source === NODE_ID;
+                const peerNode = isSource ? link.target : link.source;
+                const direction = isSource ? '发送到' : '接收自';
+                const peerConfig = nodeConfigs[peerNode];
+                const peerName = peerConfig ? peerConfig.name : peerNode;
+                const peerIcon = peerConfig ? peerConfig.icon : '📡';
+
+                // RSSI颜色映射
+                const rssiColors = {
+                    high: '#4ade80',
+                    low: '#ef4444',
+                    coop: '#a855f7'
+                };
+
+                item.innerHTML = `
+                    <div class="link-header">
+                        <span class="link-target">${isSource ? '→' : '←'} ${peerIcon} ${peerName}</span>
+                        <span class="link-rssi ${link.rssi}" style="background: ${rssiColors[link.rssi]}; color: ${link.rssi === 'high' ? '#000' : '#fff'};">
+                            ${link.rssi.toUpperCase()}
+                        </span>
+                    </div>
+                    <div class="link-details">
+                        <div class="link-detail">方向: ${direction}</div>
+                        <div class="link-detail">类型: ${link.label}</div>
+                        <div class="link-detail">对端: ${peerNode}</div>
+                        <div class="link-detail">状态: 🟢 活跃</div>
+                    </div>
+                `;
+
+                linkList.appendChild(item);
+            });
+
+            console.log(`✅ 更新链路列表: ${nodeLinks.length}条链路`);
+        }
+
+        // WebSocket连接
+        function connectWebSocket() {
+            // 自动检测WebSocket地址：本地测试用localhost，部署时用实际IP
+            const hostname = window.location.hostname;
+            const wsHost = hostname === 'localhost' || hostname === '127.0.0.1'
+                ? 'localhost'
+                : '192.168.100.17';
+            const wsUrl = `ws://${wsHost}:9000`;
+            console.log('Connecting to WebSocket Hub:', wsUrl);
+
+            state.websocket = new WebSocket(wsUrl);
+
+            state.websocket.onopen = () => {
+                console.log('WebSocket connected');
+
+                // 注册为前端（节点视图也是前端）
+                state.websocket.send(JSON.stringify({
+                    client_type: 'frontend'
+                }));
+
+                document.getElementById('connection-status').textContent = 'WebSocket: 已连接';
+                document.getElementById('connection-status').className = 'connection-status connected';
+            };
+
+            state.websocket.onmessage = (event) => {
+                try {
+                    const data = JSON.parse(event.data);
+                    console.log('✅ Received:', data.type);
+
+                    if (data.type === 'all_nodes') {
+                        // 接收所有节点数据
+                        console.log(`收到所有节点数据，共 ${Object.keys(data.nodes).length} 个节点`);
+                        console.log(`当前节点 ${NODE_ID} 的数据:`, data.nodes[NODE_ID]);
+
+                        state.nodeData = data.nodes[NODE_ID];
+                        if (state.nodeData) {
+                            console.log('✅ 开始更新节点信息');
+                            updateNodeInfo(state.nodeData);
+                            // 链路数据从拓扑生成，不使用WebSocket的links
+                            updatePQNTORStats(state.nodeData.pq_ntor);
+                            updateTraffic(state.nodeData.traffic);
+                            console.log('✅ 节点信息更新完成');
+                        } else {
+                            console.warn(`⚠️ 节点 ${NODE_ID} 的数据不存在`);
+                        }
+                        updateTopology(data.topology_id);
+
+                    } else if (data.type === 'node_update' && data.node_id === NODE_ID) {
+                        // 当前节点更新
+                        console.log(`收到节点 ${NODE_ID} 的更新`);
+                        state.nodeData = data.data;
+                        updateNodeInfo(state.nodeData);
+                        // 链路数据从拓扑生成，不使用WebSocket的links
+                        updatePQNTORStats(state.nodeData.pq_ntor);
+                        updateTraffic(state.nodeData.traffic);
+
+                    } else if (data.type === 'topology_changed') {
+                        // 拓扑切换
+                        console.log(`拓扑切换到: ${data.topology_id}`);
+                        updateTopology(data.topology_id);
+                    }
+                } catch (error) {
+                    console.error('❌ 处理WebSocket消息失败:', error);
+                    console.error('消息内容:', event.data);
+                }
+            };
+
+            state.websocket.onerror = (error) => {
+                console.error('WebSocket error:', error);
+            };
+
+            state.websocket.onclose = () => {
+                console.log('WebSocket disconnected');
+                document.getElementById('connection-status').textContent = 'WebSocket: 断开，重连中...';
+                document.getElementById('connection-status').className = 'connection-status';
+
+                // 重连
+                setTimeout(connectWebSocket, 3000);
+            };
+        }
+
+        // 页面加载完成后初始化
+        window.addEventListener('DOMContentLoaded', () => {
+            console.log('🚀 节点视图页面加载完成, 节点ID:', NODE_ID);
+
+            // 应用节点类型主题
+            document.body.classList.add(`theme-${currentNodeConfig.type}`);
+            console.log(`✅ 应用${currentNodeConfig.type}节点主题`);
+
+            // 初始化角色特征面板
+            initRoleFeatures();
+
+            // 启动流量模拟
+            startTrafficSimulation();
+
+            // 先连接WebSocket获取数据
+            connectWebSocket();
+
+            // 延迟加载Globe，避免阻塞页面
+            setTimeout(() => {
+                console.log('开始加载3D地球...');
+                initGlobe();
+
+                // 初始化后显示默认拓扑链路
+                setTimeout(() => {
+                    updateGlobeLinks();
+                    updateLinkListFromTopology(state.currentTopology);
+                    console.log('✅ 初始化时显示拓扑1的链路和链路列表');
+                }, 500);
+            }, 500);
+        });
+    </script>
+</body>
+</html>

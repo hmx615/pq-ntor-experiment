@@ -1,0 +1,17 @@
+# Lite Node Agent Dockerfile - 精简优化版
+FROM python:3.9-slim
+
+# 设置工作目录
+WORKDIR /app
+
+# 只复制必要文件
+COPY backend/requirements-lite.txt .
+
+# 安装依赖（无缓存，减小镜像体积）
+RUN pip install --no-cache-dir -r requirements-lite.txt
+
+# 复制Agent代码
+COPY backend/node_agent_lite.py .
+
+# 运行Agent
+CMD ["python", "-u", "node_agent_lite.py"]
