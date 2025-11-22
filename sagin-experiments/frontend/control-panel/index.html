@@ -929,11 +929,9 @@
 
         // WebSocket连接
         function connectWebSocket() {
-            // 自动检测WebSocket地址：本地测试用localhost，部署时用实际IP
-            const hostname = window.location.hostname;
-            const wsHost = hostname === 'localhost' || hostname === '127.0.0.1'
-                ? 'localhost'
-                : '192.168.100.17';
+            // 🚀 自动使用当前页面的主机名连接WebSocket
+            // 这样可以从任何IP访问（本地localhost或远程服务器IP）
+            const wsHost = window.location.hostname;
             const wsUrl = `ws://${wsHost}:9000`;
             console.log('Connecting to WebSocket Hub:', wsUrl);
 
