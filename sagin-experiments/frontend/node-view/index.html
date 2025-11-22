@@ -617,15 +617,12 @@
                 (container)
                 .width(container.offsetWidth)
                 .height(container.offsetHeight)
-                // 🚀 飞腾派性能优化: 降低资源占用
-                .globeImageUrl('https://unpkg.com/three-globe/example/img/earth-night.jpg')  // 低分辨率夜景纹理
-                .backgroundImageUrl('')  // 移除星空背景，节省显存
-                .showAtmosphere(false)  // 关闭大气层，减少GPU负担
-                .rendererConfig({
-                    antialias: false,               // 关闭抗锯齿
-                    alpha: false,                   // 关闭透明通道
-                    powerPreference: 'low-power'    // 低功耗模式
-                })
+                // 🚀 飞腾派优化: 使用更轻量的配置
+                .globeImageUrl('https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg')  // 保持原版纹理
+                .backgroundImageUrl('https://unpkg.com/three-globe/example/img/night-sky.png')  // 保持背景
+                .showAtmosphere(true)  // 保持大气层
+                .atmosphereColor('lightskyblue')
+                .atmosphereAltitude(0.15)
                 .pointOfView({
                     lat: currentNodeConfig.lat,
                     lng: currentNodeConfig.lon,
@@ -783,7 +780,7 @@
                             return `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, 0.3)`;
                         }
                     })
-                    .arcStroke(1.5)  // 🚀 优化: 减小线宽以降低渲染负担
+                    .arcStroke(2.0)  // 统一线宽标准
                     .arcDashLength(d => {
                         // 协作链路用虚线，其他链路用实线段来产生流动效果
                         if (d.rssi === 'coop') return 0.5;  // 虚线
