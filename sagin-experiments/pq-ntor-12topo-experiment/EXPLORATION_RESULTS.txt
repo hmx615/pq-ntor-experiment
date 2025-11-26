@@ -1,0 +1,504 @@
+================================================================================
+           PQ-NTOR 12拓扑实验框架 - 代码探索分析结果
+================================================================================
+
+分析时间: 2025-11-24
+分析对象: /home/ccc/pq-ntor-experiment/sagin-experiments/pq-ntor-12topo-experiment
+分析工具: Claude Code File Search Specialist
+
+================================================================================
+
+PART 1: 项目整体概览
+================================================================================
+
+项目名称: PQ-NTOR 12拓扑自动化测试框架
+
+项目描述:
+  这是一个完整的后量子加密协议(PQ-NTOR)在空天地一体化网络(SAGIN NOMA)
+  中的性能评估框架。框架支持在12种NOMA拓扑上运行PQ-NTOR协议，包括本地
+  仿真和飞腾派物理设备测试两个阶段。
+
+创建日期: 2025-11-24
+框架完成度: 80% (框架搭建完成，待全量测试和飞腾派集成)
+
+主要目标:
+  1. 在12种SAGIN NOMA拓扑下自动化测试PQ-NTOR性能
+  2. 对比上行/下行链路的密码性能差异
+  3. 整合卫星轨道数据进行动态参数调整
+  4. 支持本地仿真和飞腾派分布式物理测试
+
+================================================================================
+
+PART 2: 目录结构完整清单
+================================================================================
+
+文件统计:
+  总文件数:       71个
+  总大小:         316 KB
+  配置文件:       12个
+  脚本文件:       5个
+  结果文件:       3个
+  日志文件:       70+个
+
+目录树:
+  pq-ntor-12topo-experiment/
+  ├── README.md                          (8.4 KB) 项目文档
+  ├── DETAILED_ANALYSIS_REPORT.md        (24 KB) 详细分析报告
+  ├── ANALYSIS_SUMMARY.md                (6.4 KB) 快速摘要
+  │
+  ├── configs/                           12个拓扑配置
+  │   ├── topo01_tor_mapping.json        Z1 Up - 直连NOMA
+  │   ├── topo02_tor_mapping.json        Z1 Up - 双路径
+  │   ├── topo03_tor_mapping.json        Z3 Up - 双终端中继
+  │   ├── topo04_tor_mapping.json        Z4 Up - 混合直连+协作
+  │   ├── topo05_tor_mapping.json        Z5 Up - 多层树形
+  │   ├── topo06_tor_mapping.json        Z6 Up - 无人机+终端双中继
+  │   ├── topo07_tor_mapping.json        Z1 Down - 直连NOMA+协作
+  │   ├── topo08_tor_mapping.json        Z2 Down - 多跳协作下行
+  │   ├── topo09_tor_mapping.json        Z3 Down - T用户协作下行
+  │   ├── topo10_tor_mapping.json        Z4 Down - 混合直连+单跳协作
+  │   ├── topo11_tor_mapping.json        Z5 Down - 混合多跳协作
+  │   └── topo12_tor_mapping.json        Z6 Down - 双中继协作下行
+  │
+  ├── scripts/                           5个脚本
+  │   ├── run_pq_ntor_12topologies.py    (600+行) 主测试脚本
+  │   ├── satellite_integration.py       (336行) 卫星轨道集成
+  │   ├── analyze_results.py             (199行) 结果分析
+  │   ├── generate_all_tor_mappings.py   配置生成器
+  │   ├── quick_test.sh                  快速验证
+  │   └── monitor_test.sh                监控脚本
+  │
+  ├── results/                           实验结果
+  │   ├── local_wsl/                     本地WSL仿真结果
+  │   │   ├── topo01_results.json        (已有)
+  │   │   ├── topo02_results.json        (已有)
+  │   │   ├── topo03_results.json        (已有)
+  │   │   └── overall_report_*.json      总体报告
+  │   │
+  │   ├── phytium_pi/                    飞腾派结果 (待填充)
+  │   │
+  │   └── analysis/                      分析报告
+  │       └── comparison_report_*.md     拓扑对比报告
+  │
+  └── logs/                              详细日志 (70+个)
+      ├── directory_topo*_run*.log       Directory服务器日志
+      ├── guard_topo*_run*.log           Guard中继日志
+      ├── middle_topo*_run*.log          Middle中继日志
+      ├── exit_topo*_run*.log            Exit中继日志
+      ├── client_topo*_run*.log          Client日志
+      └── full_test_run.log              完整测试日志
+
+================================================================================
+
+PART 3: 核心组件详解
+================================================================================
+
+【配置文件】(12个 JSON)
+  命名规则: topo{XX}_tor_mapping.json
+  内容包括:
+    - 拓扑ID和名称
+    - Tor电路映射（Client→Guard→Middle→Exit）
+    - 物理拓扑定义（上行/下行）
+    - 网络参数（延迟、带宽、丢包率）
+    - Linux tc/netem配置命令
+    - 卫星轨道集成参数
+    - 期望性能指标
+    - 测试配置
+
+  网络参数范围:
+    延迟: 15-40 ms
+    带宽: 22-60 Mbps
+    丢包率: 0.5-2.5%
+
+【主测试脚本】(run_pq_ntor_12topologies.py)
+  代码行数: 600+行
+  功能:
+    - 自动读取配置文件
+    - 启动/关闭PQ-NTOR节点(Directory, Guard, Middle, Exit, Client)
+    - 配置Linux tc/netem网络参数
+    - 运行客户端测试
+    - 收集和保存性能指标
+    - 生成JSON结果报告
+
+  关键函数:
+    - configure_network(): 配置tc/netem
+    - start_directory_server(): 启动Directory
+    - start_relay_nodes(): 启动Guard/Middle/Exit
+    - run_client_test(): 运行客户端测试
+    - parse_client_log(): 从日志提取指标
+    - test_single_topology(): 测试单个拓扑
+    - test_all_topologies(): 遍历所有拓扑
+    - cleanup_processes(): 进程清理
+
+  运行模式:
+    # 快速测试 (拓扑1, 3次)
+    python3 run_pq_ntor_12topologies.py --quick
+
+    # 完整测试 (所有12拓扑, 每个10次)
+    python3 run_pq_ntor_12topologies.py
+
+    # 单个拓扑 (拓扑1, 5次)
+    python3 run_pq_ntor_12topologies.py --topo 1 --runs 5
+
+    # 拓扑范围 (拓扑1-6, 10次)
+    python3 run_pq_ntor_12topologies.py --start 1 --end 6 --runs 10
+
+【卫星轨道集成】(satellite_integration.py)
+  代码行数: 336行
+  核心类: SatelliteLinkCalculator
+  功能:
+    - 初始化卫星轨道模块(SatelliteOrbit)
+    - 支持静态快照模式(可重复)和动态模式(实时)
+    - 获取卫星状态(位置、仰角、距离)
+    - 计算电磁波传播延迟(基于距离)
+    - 根据仰角动态调整网络参数
+    - 检测通信窗口(仰角>10°)
+    - 生成测试时间槽
+
+  关键方法:
+    - get_satellite_state(): 获取卫星状态
+    - calculate_propagation_delay(): 计算延迟
+    - adjust_network_params_for_satellite(): 调整参数
+    - is_in_communication_window(): 检测通信窗口
+    - generate_test_time_slots(): 生成时间槽
+
+【结果分析工具】(analyze_results.py)
+  代码行数: 199行
+  功能:
+    - 读取JSON结果文件
+    - 统计成功率
+    - 计算性能指标(延迟、吞吐量等)
+    - 分析单个和全部拓扑
+    - 生成Markdown对比报告
+    - 支持上/下行分组统计
+
+  关键函数:
+    - load_topology_results(): 加载结果
+    - analyze_single_topology(): 分析单个
+    - analyze_all_topologies(): 分析全部
+    - generate_comparison_report(): 生成报告
+
+【快速验证脚本】(quick_test.sh)
+  功能: 快速验证框架整体流程
+    - 检查依赖(python3, sudo, PQ-NTOR)
+    - 清理残留进程
+    - 运行拓扑1的3次测试
+    - 耗时: 1-2分钟
+
+【监控脚本】(monitor_test.sh)
+  功能: 实时监控测试进度
+
+================================================================================
+
+PART 4: 与主项目的关系
+================================================================================
+
+项目层级:
+  /home/ccc/pq-ntor-experiment/
+    └── sagin-experiments/ (主项目)
+        ├── docker/build_context/c/ ← PQ-NTOR源码(directory/relay/client)
+        ├── noma-topologies/ ← 12种NOMA拓扑定义
+        ├── satellite_orbit.py ← 卫星轨道模块
+        ├── distributed-demo/ ← WebSocket分布式系统
+        └── pq-ntor-12topo-experiment/ ← 本项目(新增)
+
+关键依赖:
+  1. PQ-NTOR程序 (directory, relay, client可执行文件)
+     位置: ../docker/build_context/c/
+     用途: 被主测试脚本调用执行
+
+  2. NOMA拓扑定义
+     位置: ../noma-topologies/configs/
+     用途: 参考拓扑定义，生成tor_mapping配置
+
+  3. 卫星轨道模块
+     位置: ../satellite_orbit.py
+     用途: satellite_integration.py导入使用，计算卫星状态
+
+  4. Python库
+     - psutil: 进程管理
+     - skyfield: 卫星轨道计算
+     - numpy: 数学计算
+
+数据流向:
+  NOMA拓扑 → 配置生成器 → Tor映射配置 → 主测试脚本 
+  → 启动PQ-NTOR → 运行测试 → 收集结果 → 分析报告
+
+================================================================================
+
+PART 5: 现有代码和配置状态
+================================================================================
+
+完成度评估:
+
+  框架设计:            ✅ 100%  架构完整，文档齐全
+  拓扑配置:            ✅ 100%  12个JSON配置已生成
+  主测试脚本:          ✅ 95%   功能完整，待性能优化
+  卫星轨道集成:        ✅ 85%   基础实现完成，待深度集成
+  结果分析:            ✅ 80%   基础分析完成，待可视化
+  快速测试脚本:        ✅ 100%  验证脚本完成
+  本地WSL测试:         ⚠️ 30%   已测3个拓扑(9次运行)
+  飞腾派集成:          ⏳ 0%    待开发
+
+已有实验数据:
+
+  测试运行数: 9次 (3个拓扑 × 3次)
+  成功率: 100%
+  平均耗时: ~62秒/次
+  
+  具体数据:
+    - topo01_results.json: 拓扑1, 3次运行, 100%成功
+    - topo02_results.json: 拓扑2, 3次运行, 100%成功
+    - topo03_results.json: 拓扑3, 3次运行, 100%成功
+  
+  日志数据: 70+个日志文件, 148 KB
+
+已发现的问题:
+
+  优先级低:
+    - psutil deprecation warning
+      当前: proc.connections() (已弃用)
+      改进: 使用 net_connections()
+
+  优先级中:
+    - 性能指标不够精确
+      问题: PQ握手时间使用固定值(50μs)
+      改进: 从日志精确解析
+
+    - 卫星参数未深度集成
+      问题: 卫星轨道数据未应用到测试流程
+      改进: 动态调整网络参数
+
+  优先级高:
+    - 缺少飞腾派支持
+      问题: 仅支持localhost
+      改进: 6+1分布式部署
+
+================================================================================
+
+PART 6: 实验框架的设计思路
+================================================================================
+
+设计理念: 三层递进测试架构
+
+  第1层: 本地仿真 (Linux tc/netem)
+    - 优点: 快速、可重复、易调试
+    - 工具: Linux tc命令行
+    - 耗时: ~2小时 (12拓扑×10次)
+    - 当前状态: 框架完成，待全量测试
+
+  第2层: 飞腾派分布式 (6+1架构)
+    - 优点: 接近真实场景
+    - 工具: Docker容器化
+    - 耗时: ~8小时
+    - 当前状态: 待开发
+
+  第3层: 真实卫星链路
+    - 优点: 完全真实
+    - 工具: 卫星地面站
+    - 耗时: 待定
+    - 当前状态: 未来扩展
+
+核心特性:
+
+  配置驱动设计
+    - 所有参数通过JSON配置文件
+    - 脚本通用无需修改
+    - 易于新增拓扑、修改参数
+    - 配置可版本控制
+
+  自动化设计
+    - 层次1: 单个拓扑自动化
+    - 层次2: 批量拓扑自动化
+    - 层次3: 参数扫描自动化
+
+  模块化设计
+    - 主编排器: 流程控制
+    - 网络配置: tc/netem
+    - 卫星轨道: 位置计算
+    - 节点管理: PQ-NTOR启停
+    - 结果收集: 日志解析
+    - 报告生成: 统计分析
+
+  进程管理
+    - 自动清理残留进程
+    - Ctrl+C优雅退出
+    - 端口冲突检测和清理
+    - 网络规则自动回收
+
+================================================================================
+
+PART 7: 需要推进的工作
+================================================================================
+
+短期任务 (本周) ⚡
+
+  [ ] Task 1: 完成12拓扑全量测试
+      - 运行: python3 run_pq_ntor_12topologies.py
+      - 耗时: ~2小时
+      - 验证: 所有拓扑成功率和性能
+
+  [ ] Task 2: 改进性能指标
+      - 修复psutil deprecation
+      - 精确解析PQ握手时间
+      - 实现端到端延迟测量
+
+  [ ] Task 3: 卫星轨道深度集成
+      - 应用动态参数
+      - 实现通信窗口检测
+      - 保存轨道状态到结果
+
+  [ ] Task 4: 生成完整分析报告
+      - 运行: python3 analyze_results.py
+      - 创建性能对比表格
+      - 分析上/下行差异
+
+中期任务 (下周) 📅
+
+  [ ] Task 5: 框架优化完善
+  [ ] Task 6: 飞腾派适配(第1阶段)
+  [ ] Task 7: 创建可视化仪表板
+
+长期任务 (2-4周) 🚀
+
+  [ ] Task 8: 飞腾派完整物理测试
+  [ ] Task 9: 性能优化迭代
+  [ ] Task 10: 论文和报告撰写
+
+时间表:
+
+  2025-11-24 (本周)
+    - 12拓扑全测试
+    - 性能指标改进
+    - 卫星轨道集成
+    - 分析报告生成
+
+  2025-11-25-11-30 (下周)
+    - 框架优化完善
+    - 飞腾派适配1期
+    - 可视化仪表板
+
+  2025-12-01-12-15 (第3-4周)
+    - 飞腾派物理测试
+    - 性能优化
+    - 论文报告
+
+================================================================================
+
+PART 8: 快速导航和命令
+================================================================================
+
+项目位置:
+  /home/ccc/pq-ntor-experiment/sagin-experiments/pq-ntor-12topo-experiment/
+
+关键目录:
+  configs/           - 12个拓扑配置
+  scripts/           - 5个测试脚本
+  results/           - 实验结果
+  logs/              - 详细日志
+
+文档文件:
+  README.md                    - 项目文档
+  DETAILED_ANALYSIS_REPORT.md  - 详细分析 (24KB)
+  ANALYSIS_SUMMARY.md          - 快速摘要 (6.4KB)
+
+快速命令:
+
+  # 进入项目目录
+  cd /home/ccc/pq-ntor-experiment/sagin-experiments/pq-ntor-12topo-experiment
+
+  # 快速验证 (1-2分钟)
+  bash scripts/quick_test.sh
+
+  # 完整测试 (1.5-2小时)
+  python3 scripts/run_pq_ntor_12topologies.py
+
+  # 快速模式 (每个拓扑3次)
+  python3 scripts/run_pq_ntor_12topologies.py --quick
+
+  # 单个拓扑测试
+  python3 scripts/run_pq_ntor_12topologies.py --topo 1 --runs 5
+
+  # 分析结果
+  python3 scripts/analyze_results.py
+
+  # 查看日志
+  tail -f logs/*.log
+
+  # 查看结果
+  cat results/local_wsl/topo01_results.json | jq .
+
+  # 清理进程
+  pkill -9 directory relay client
+  sudo tc qdisc del dev lo root
+
+================================================================================
+
+PART 9: 生成的分析报告
+================================================================================
+
+已生成的文件:
+
+  1. DETAILED_ANALYSIS_REPORT.md (24 KB)
+     - 完整的目录结构详解
+     - 配置文件格式说明
+     - 脚本功能分析
+     - 与主项目的关系
+     - 工作计划和推进方向
+     - 快速命令参考
+
+  2. ANALYSIS_SUMMARY.md (6.4 KB)
+     - 快速摘要版本
+     - 核心组件速览
+     - 工作优先级
+     - 命令速查表
+
+  3. EXPLORATION_RESULTS.txt (本文件)
+     - 整体统计数据
+     - 快速导航信息
+     - 分析结果汇总
+
+================================================================================
+
+PART 10: 结论总结
+================================================================================
+
+这是一个设计完整、文档齐全的**后量子加密协议性能评估框架**。
+
+框架特点:
+  ✓ 配置驱动，易于扩展
+  ✓ 自动化程度高，支持多层次自动化
+  ✓ 模块化结构，便于维护
+  ✓ 三层递进测试，覆盖仿真到实际的全过程
+  ✓ 详细的日志记录和结果追踪
+  ✓ 文档完善，注释清晰
+
+当前状态:
+  - 本地仿真框架: 已搭建 (80%)
+  - 已完成测试: 9次运行 (3个拓扑)
+  - 成功率: 100%
+  - 待完成: 12拓扑全量测试和飞腾派集成
+
+建议方向:
+  1. 完成12拓扑的全量测试，获取完整的性能基准
+  2. 改进性能指标计算，从日志精确解析
+  3. 深度集成卫星轨道数据到测试流程
+  4. 为飞腾派物理测试做准备
+  5. 生成详细的性能对比分析报告
+
+关键路径:
+  配置 → 自动化测试 → 日志收集 → 性能分析 → 对比报告
+
+预期时间表:
+  本周: 框架验证和改进
+  下周: 飞腾派适配和优化
+  第3-4周: 物理测试和论文撰写
+
+================================================================================
+
+分析完成时间: 2025-11-24 20:30 UTC
+分析工具: Claude Code File Search Specialist
+分析类型: 代码库探索和分析
+覆盖范围: 完整的目录结构、文件内容、设计思路和工作计划
+
+================================================================================

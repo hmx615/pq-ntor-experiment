@@ -46,6 +46,7 @@ typedef struct {
     char directory_host[256];
     uint16_t directory_port;
     int timeout_seconds;
+    int use_classic_ntor;  // 0 = PQ-NTOR, 1 = Classic NTOR
 } tor_client_config_t;
 
 /* Client state */

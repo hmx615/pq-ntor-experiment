@@ -1,0 +1,139 @@
+{
+  "topology_id": 6,
+  "topology_name": "Z6 Up - 无人机+终端双中继",
+  "noma_config_ref": "/home/ccc/pq-ntor-experiment/sagin-experiments/noma-topologies/configs/topology_06_*.json",
+  "description": "Z6 Up - 无人机+终端双中继 - uplink",
+  "physical_topology": {
+    "links": [
+      {
+        "source": "Ground1",
+        "target": "UAV1",
+        "rssi": "high"
+      },
+      {
+        "source": "UAV1",
+        "target": "SAT",
+        "rssi": "high"
+      },
+      {
+        "source": "Ground3",
+        "target": "Ground2",
+        "rssi": "low"
+      },
+      {
+        "source": "Ground2",
+        "target": "SAT",
+        "rssi": "low"
+      }
+    ],
+    "direction": "uplink"
+  },
+  "tor_circuit_mapping": {
+    "description": "3-hop Tor circuit mapped to SAGIN nodes",
+    "circuit_path": [
+      "Client",
+      "Guard",
+      "Middle",
+      "Exit",
+      "Target"
+    ],
+    "roles": {
+      "client": {
+        "sagin_node": "Ground1",
+        "node_type": "terminal",
+        "ip": "localhost",
+        "executable": "./client"
+      },
+      "guard": {
+        "sagin_node": "UAV1",
+        "node_type": "aircraft",
+        "ip": "localhost",
+        "port": 6001,
+        "executable": "./relay",
+        "args": [
+          "-r",
+          "guard",
+          "-p",
+          "6001"
+        ]
+      },
+      "middle": {
+        "sagin_node": "SAT",
+        "node_type": "satellite",
+        "ip": "localhost",
+        "port": 6002,
+        "executable": "./relay",
+        "args": [
+          "-r",
+          "middle",
+          "-p",
+          "6002"
+        ]
+      },
+      "exit": {
+        "sagin_node": "SAT",
+        "node_type": "satellite",
+        "ip": "localhost",
+        "port": 6003,
+        "executable": "./relay",
+        "args": [
+          "-r",
+          "exit",
+          "-p",
+          "6003"
+        ]
+      },
+      "directory": {
+        "sagin_node": "HUB",
+        "node_type": "server",
+        "ip": "localhost",
+        "port": 5000,
+        "executable": "./directory"
+      }
+    }
+  },
+  "network_simulation": {
+    "method": "linux_tc_netem",
+    "interface": "lo",
+    "tc_commands": [
+      "sudo tc qdisc del dev lo root 2>/dev/null || true",
+      "sudo tc qdisc add dev lo root netem delay 15ms 3ms distribution normal rate 50mbit loss 0.6%"
+    ],
+    "aggregate_params": {
+      "delay_ms": 15,
+      "bandwidth_mbps": 50,
+      "loss_percent": 0.6
+    }
+  },
+  "satellite_orbit_integration": {
+    "enabled": true,
+    "satellite_node": "SAT",
+    "orbit_data_source": "satellite_orbit.py",
+    "dynamic_parameters": {
+      "position_update": "per_test_run",
+      "delay_calculation": "distance_based",
+      "elevation_constraint": 10.0
+    }
+  },
+  "expected_performance": {
+    "pq_handshake_us": 147,
+    "circuit_build_ms": 103,
+    "total_rtt_ms": 90,
+    "throughput_mbps": 40,
+    "success_rate_percent": 95
+  },
+  "test_configuration": {
+    "num_runs": 10,
+    "timeout_seconds": 120,
+    "target_url": "http://127.0.0.1:8000/",
+    "metrics_to_collect": [
+      "pq_handshake_time",
+      "circuit_build_time",
+      "http_get_time",
+      "total_rtt",
+      "throughput",
+      "packet_loss",
+      "success_flag"
+    ]
+  }
+}

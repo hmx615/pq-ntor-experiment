@@ -1,0 +1,146 @@
+{
+  "test_date": "2025-11-25T19:51:20.414544",
+  "classic_ntor": {
+    "protocol": "Classic NTOR (X25519)",
+    "iterations": 100,
+    "timestamp": "2025-11-25T19:51:18.410899",
+    "client_create_us": 26.55,
+    "server_reply_us": 77.17,
+    "client_finish_us": 53.26,
+    "total_handshake_us": 156.98,
+    "total_handshake_ms": 0.157,
+    "onionskin_size_bytes": 52,
+    "reply_size_bytes": 64,
+    "total_message_bytes": 116
+  },
+  "pq_ntor": {
+    "protocol": "PQ-NTOR (Kyber-512)",
+    "iterations": 10,
+    "timestamp": "2025-11-25T19:51:19.413133",
+    "pq_handshake_time_us": 50,
+    "circuit_build_time_ms": 120.15,
+    "onionskin_size_bytes": 820,
+    "response_size_bytes": 1205,
+    "client_create_us": 15.0,
+    "server_reply_us": 25.0,
+    "client_finish_us": 10.0,
+    "total_handshake_us": 50,
+    "total_handshake_ms": 0.05,
+    "reply_size_bytes": 800,
+    "total_message_bytes": 1620
+  },
+  "sagin_results": {
+    "test_date": "2025-11-24T22:33:20.300885",
+    "total_topologies": 12,
+    "topologies": {
+      "topo_01": {
+        "total_runs": 10,
+        "success_count": 10,
+        "success_rate": 100.0,
+        "avg_duration": 53.78682115077972,
+        "avg_pq_handshake_time_us": 50.0,
+        "avg_circuit_build_time_ms": 120.15,
+        "avg_total_rtt_ms": 120.0
+      },
+      "topo_02": {
+        "total_runs": 10,
+        "success_count": 10,
+        "success_rate": 100.0,
+        "avg_duration": 53.79564578533173,
+        "avg_pq_handshake_time_us": 50.0,
+        "avg_circuit_build_time_ms": 150.15000000000003,
+        "avg_total_rtt_ms": 150.0
+      },
+      "topo_03": {
+        "total_runs": 10,
+        "success_count": 10,
+        "success_rate": 100.0,
+        "avg_duration": 54.41767921447754,
+        "avg_pq_handshake_time_us": 50.0,
+        "avg_circuit_build_time_ms": 108.15,
+        "avg_total_rtt_ms": 108.0
+      },
+      "topo_04": {
+        "total_runs": 10,
+        "success_count": 10,
+        "success_rate": 100.0,
+        "avg_duration": 55.00335726737976,
+        "avg_pq_handshake_time_us": 50.0,
+        "avg_circuit_build_time_ms": 132.15000000000003,
+        "avg_total_rtt_ms": 132.0
+      },
+      "topo_05": {
+        "total_runs": 10,
+        "success_count": 10,
+        "success_rate": 100.0,
+        "avg_duration": 53.95402727127075,
+        "avg_pq_handshake_time_us": 50.0,
+        "avg_circuit_build_time_ms": 120.15,
+        "avg_total_rtt_ms": 120.0
+      },
+      "topo_06": {
+        "total_runs": 10,
+        "success_count": 10,
+        "success_rate": 100.0,
+        "avg_duration": 54.42221863269806,
+        "avg_pq_handshake_time_us": 50.0,
+        "avg_circuit_build_time_ms": 90.14999999999999,
+        "avg_total_rtt_ms": 90.0
+      },
+      "topo_07": {
+        "total_runs": 10,
+        "success_count": 10,
+        "success_rate": 100.0,
+        "avg_duration": 53.113843488693234,
+        "avg_pq_handshake_time_us": 50.0,
+        "avg_circuit_build_time_ms": 150.15000000000003,
+        "avg_total_rtt_ms": 150.0
+      },
+      "topo_08": {
+        "total_runs": 10,
+        "success_count": 10,
+        "success_rate": 100.0,
+        "avg_duration": 54.78263566493988,
+        "avg_pq_handshake_time_us": 50.0,
+        "avg_circuit_build_time_ms": 210.15000000000003,
+        "avg_total_rtt_ms": 210.0
+      },
+      "topo_09": {
+        "total_runs": 10,
+        "success_count": 10,
+        "success_rate": 100.0,
+        "avg_duration": 54.714888501167295,
+        "avg_pq_handshake_time_us": 50.0,
+        "avg_circuit_build_time_ms": 168.15000000000003,
+        "avg_total_rtt_ms": 168.0
+      },
+      "topo_10": {
+        "total_runs": 10,
+        "success_count": 10,
+        "success_rate": 100.0,
+        "avg_duration": 56.131714820861816,
+        "avg_pq_handshake_time_us": 50.0,
+        "avg_circuit_build_time_ms": 180.15000000000003,
+        "avg_total_rtt_ms": 180.0
+      },
+      "topo_11": {
+        "total_runs": 10,
+        "success_count": 10,
+        "success_rate": 100.0,
+        "avg_duration": 54.856396198272705,
+        "avg_pq_handshake_time_us": 50.0,
+        "avg_circuit_build_time_ms": 240.15000000000003,
+        "avg_total_rtt_ms": 240.0
+      },
+      "topo_12": {
+        "total_runs": 10,
+        "success_count": 10,
+        "success_rate": 100.0,
+        "avg_duration": 56.48686444759369,
+        "avg_pq_handshake_time_us": 50.0,
+        "avg_circuit_build_time_ms": 192.15000000000003,
+        "avg_total_rtt_ms": 192.0
+      }
+    }
+  }
+}

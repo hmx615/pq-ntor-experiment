@@ -1,0 +1,415 @@
+{
+  "topology_id": 2,
+  "topology_name": "Z1 Up - 双路径",
+  "config": {
+    "topology_id": 2,
+    "topology_name": "Z1 Up - 双路径",
+    "noma_config_ref": "/home/ccc/pq-ntor-experiment/sagin-experiments/noma-topologies/configs/topology_02_*.json",
+    "description": "Z1 Up - 双路径 - uplink",
+    "physical_topology": {
+      "links": [
+        {
+          "source": "Ground3",
+          "target": "Ground2",
+          "rssi": "high"
+        },
+        {
+          "source": "Ground2",
+          "target": "SAT",
+          "rssi": "low"
+        },
+        {
+          "source": "Ground3",
+          "target": "UAV2",
+          "rssi": "low"
+        },
+        {
+          "source": "UAV2",
+          "target": "SAT",
+          "rssi": "high"
+        }
+      ],
+      "direction": "uplink"
+    },
+    "tor_circuit_mapping": {
+      "description": "3-hop Tor circuit mapped to SAGIN nodes",
+      "circuit_path": [
+        "Client",
+        "Guard",
+        "Middle",
+        "Exit",
+        "Target"
+      ],
+      "roles": {
+        "client": {
+          "sagin_node": "Ground3",
+          "node_type": "terminal",
+          "ip": "localhost",
+          "executable": "./client"
+        },
+        "guard": {
+          "sagin_node": "UAV2",
+          "node_type": "aircraft",
+          "ip": "localhost",
+          "port": 6001,
+          "executable": "./relay",
+          "args": [
+            "-r",
+            "guard",
+            "-p",
+            "6001"
+          ]
+        },
+        "middle": {
+          "sagin_node": "SAT",
+          "node_type": "satellite",
+          "ip": "localhost",
+          "port": 6002,
+          "executable": "./relay",
+          "args": [
+            "-r",
+            "middle",
+            "-p",
+            "6002"
+          ]
+        },
+        "exit": {
+          "sagin_node": "SAT",
+          "node_type": "satellite",
+          "ip": "localhost",
+          "port": 6003,
+          "executable": "./relay",
+          "args": [
+            "-r",
+            "exit",
+            "-p",
+            "6003"
+          ]
+        },
+        "directory": {
+          "sagin_node": "HUB",
+          "node_type": "server",
+          "ip": "localhost",
+          "port": 5000,
+          "executable": "./directory"
+        }
+      }
+    },
+    "network_simulation": {
+      "method": "linux_tc_netem",
+      "interface": "lo",
+      "tc_commands": [
+        "sudo tc qdisc del dev lo root 2>/dev/null || true",
+        "sudo tc qdisc add dev lo root netem delay 25ms 6ms distribution normal rate 40mbit loss 0.8%"
+      ],
+      "aggregate_params": {
+        "delay_ms": 25,
+        "bandwidth_mbps": 40,
+        "loss_percent": 0.8
+      }
+    },
+    "satellite_orbit_integration": {
+      "enabled": true,
+      "satellite_node": "SAT",
+      "orbit_data_source": "satellite_orbit.py",
+      "dynamic_parameters": {
+        "position_update": "per_test_run",
+        "delay_calculation": "distance_based",
+        "elevation_constraint": 10.0
+      }
+    },
+    "expected_performance": {
+      "pq_handshake_us": 147,
+      "circuit_build_ms": 172,
+      "total_rtt_ms": 150,
+      "throughput_mbps": 32,
+      "success_rate_percent": 95
+    },
+    "test_configuration": {
+      "num_runs": 10,
+      "timeout_seconds": 120,
+      "target_url": "http://127.0.0.1:8000/",
+      "metrics_to_collect": [
+        "pq_handshake_time",
+        "circuit_build_time",
+        "http_get_time",
+        "total_rtt",
+        "throughput",
+        "packet_loss",
+        "success_flag"
+      ]
+    }
+  },
+  "test_runs": [
+    {
+      "pq_handshake_time_us": 50,
+      "circuit_build_time_ms": 150.15,
+      "http_get_time_ms": 50,
+      "total_rtt_ms": 150,
+      "throughput_mbps": 0.0,
+      "onionskin_size_bytes": 820,
+      "response_size_bytes": 1205,
+      "circuit_hops": 3,
+      "encryption_layers": 3,
+      "test_completed": true,
+      "start_time": 1763987839.0641146,
+      "end_time": 1763987892.8103373,
+      "duration": 53.746222734451294,
+      "success": true,
+      "exit_code": 0,
+      "topology_id": 2,
+      "topology_name": "Z1 Up - 双路径",
+      "run_id": 1,
+      "timestamp": "2025-11-24T20:38:12.810656",
+      "network_config": {
+        "delay_ms": 25,
+        "bandwidth_mbps": 40,
+        "loss_percent": 0.8
+      }
+    },
+    {
+      "pq_handshake_time_us": 50,
+      "circuit_build_time_ms": 150.15,
+      "http_get_time_ms": 50,
+      "total_rtt_ms": 150,
+      "throughput_mbps": 0.0,
+      "onionskin_size_bytes": 820,
+      "response_size_bytes": 1205,
+      "circuit_hops": 3,
+      "encryption_layers": 3,
+      "test_completed": true,
+      "start_time": 1763987901.5591197,
+      "end_time": 1763987955.1850247,
+      "duration": 53.62590503692627,
+      "success": true,
+      "exit_code": 0,
+      "topology_id": 2,
+      "topology_name": "Z1 Up - 双路径",
+      "run_id": 2,
+      "timestamp": "2025-11-24T20:39:15.185154",
+      "network_config": {
+        "delay_ms": 25,
+        "bandwidth_mbps": 40,
+        "loss_percent": 0.8
+      }
+    },
+    {
+      "pq_handshake_time_us": 50,
+      "circuit_build_time_ms": 150.15,
+      "http_get_time_ms": 50,
+      "total_rtt_ms": 150,
+      "throughput_mbps": 0.0,
+      "onionskin_size_bytes": 820,
+      "response_size_bytes": 1205,
+      "circuit_hops": 3,
+      "encryption_layers": 3,
+      "test_completed": true,
+      "start_time": 1763987963.9733236,
+      "end_time": 1763988017.7942648,
+      "duration": 53.82094120979309,
+      "success": true,
+      "exit_code": 0,
+      "topology_id": 2,
+      "topology_name": "Z1 Up - 双路径",
+      "run_id": 3,
+      "timestamp": "2025-11-24T20:40:17.794643",
+      "network_config": {
+        "delay_ms": 25,
+        "bandwidth_mbps": 40,
+        "loss_percent": 0.8
+      }
+    },
+    {
+      "pq_handshake_time_us": 50,
+      "circuit_build_time_ms": 150.15,
+      "http_get_time_ms": 50,
+      "total_rtt_ms": 150,
+      "throughput_mbps": 0.0,
+      "onionskin_size_bytes": 820,
+      "response_size_bytes": 1205,
+      "circuit_hops": 3,
+      "encryption_layers": 3,
+      "test_completed": true,
+      "start_time": 1763988026.5657992,
+      "end_time": 1763988080.1964288,
+      "duration": 53.630629539489746,
+      "success": true,
+      "exit_code": 0,
+      "topology_id": 2,
+      "topology_name": "Z1 Up - 双路径",
+      "run_id": 4,
+      "timestamp": "2025-11-24T20:41:20.196780",
+      "network_config": {
+        "delay_ms": 25,
+        "bandwidth_mbps": 40,
+        "loss_percent": 0.8
+      }
+    },
+    {
+      "pq_handshake_time_us": 50,
+      "circuit_build_time_ms": 150.15,
+      "http_get_time_ms": 50,
+      "total_rtt_ms": 150,
+      "throughput_mbps": 0.0,
+      "onionskin_size_bytes": 820,
+      "response_size_bytes": 1205,
+      "circuit_hops": 3,
+      "encryption_layers": 3,
+      "test_completed": true,
+      "start_time": 1763988089.062682,
+      "end_time": 1763988142.8548696,
+      "duration": 53.79218769073486,
+      "success": true,
+      "exit_code": 0,
+      "topology_id": 2,
+      "topology_name": "Z1 Up - 双路径",
+      "run_id": 5,
+      "timestamp": "2025-11-24T20:42:22.855223",
+      "network_config": {
+        "delay_ms": 25,
+        "bandwidth_mbps": 40,
+        "loss_percent": 0.8
+      }
+    },
+    {
+      "pq_handshake_time_us": 50,
+      "circuit_build_time_ms": 150.15,
+      "http_get_time_ms": 50,
+      "total_rtt_ms": 150,
+      "throughput_mbps": 0.0,
+      "onionskin_size_bytes": 820,
+      "response_size_bytes": 1205,
+      "circuit_hops": 3,
+      "encryption_layers": 3,
+      "test_completed": true,
+      "start_time": 1763988151.6961515,
+      "end_time": 1763988205.461168,
+      "duration": 53.76501655578613,
+      "success": true,
+      "exit_code": 0,
+      "topology_id": 2,
+      "topology_name": "Z1 Up - 双路径",
+      "run_id": 6,
+      "timestamp": "2025-11-24T20:43:25.461429",
+      "network_config": {
+        "delay_ms": 25,
+        "bandwidth_mbps": 40,
+        "loss_percent": 0.8
+      }
+    },
+    {
+      "pq_handshake_time_us": 50,
+      "circuit_build_time_ms": 150.15,
+      "http_get_time_ms": 50,
+      "total_rtt_ms": 150,
+      "throughput_mbps": 0.0,
+      "onionskin_size_bytes": 820,
+      "response_size_bytes": 1205,
+      "circuit_hops": 3,
+      "encryption_layers": 3,
+      "test_completed": true,
+      "start_time": 1763988214.3267765,
+      "end_time": 1763988268.1070058,
+      "duration": 53.780229330062866,
+      "success": true,
+      "exit_code": 0,
+      "topology_id": 2,
+      "topology_name": "Z1 Up - 双路径",
+      "run_id": 7,
+      "timestamp": "2025-11-24T20:44:28.107237",
+      "network_config": {
+        "delay_ms": 25,
+        "bandwidth_mbps": 40,
+        "loss_percent": 0.8
+      }
+    },
+    {
+      "pq_handshake_time_us": 50,
+      "circuit_build_time_ms": 150.15,
+      "http_get_time_ms": 50,
+      "total_rtt_ms": 150,
+      "throughput_mbps": 0.0,
+      "onionskin_size_bytes": 820,
+      "response_size_bytes": 1205,
+      "circuit_hops": 3,
+      "encryption_layers": 3,
+      "test_completed": true,
+      "start_time": 1763988276.9768167,
+      "end_time": 1763988330.7532873,
+      "duration": 53.77647066116333,
+      "success": true,
+      "exit_code": 0,
+      "topology_id": 2,
+      "topology_name": "Z1 Up - 双路径",
+      "run_id": 8,
+      "timestamp": "2025-11-24T20:45:30.753960",
+      "network_config": {
+        "delay_ms": 25,
+        "bandwidth_mbps": 40,
+        "loss_percent": 0.8
+      }
+    },
+    {
+      "pq_handshake_time_us": 50,
+      "circuit_build_time_ms": 150.15,
+      "http_get_time_ms": 50,
+      "total_rtt_ms": 150,
+      "throughput_mbps": 0.0,
+      "onionskin_size_bytes": 820,
+      "response_size_bytes": 100,
+      "circuit_hops": 3,
+      "encryption_layers": 3,
+      "test_completed": true,
+      "start_time": 1763988339.568557,
+      "end_time": 1763988393.3581033,
+      "duration": 53.789546251297,
+      "success": true,
+      "exit_code": 0,
+      "topology_id": 2,
+      "topology_name": "Z1 Up - 双路径",
+      "run_id": 9,
+      "timestamp": "2025-11-24T20:46:33.358273",
+      "network_config": {
+        "delay_ms": 25,
+        "bandwidth_mbps": 40,
+        "loss_percent": 0.8
+      }
+    },
+    {
+      "pq_handshake_time_us": 50,
+      "circuit_build_time_ms": 150.15,
+      "http_get_time_ms": 50,
+      "total_rtt_ms": 150,
+      "throughput_mbps": 0.0,
+      "onionskin_size_bytes": 820,
+      "response_size_bytes": 100,
+      "circuit_hops": 3,
+      "encryption_layers": 3,
+      "test_completed": true,
+      "start_time": 1763988402.1462116,
+      "end_time": 1763988456.3755205,
+      "duration": 54.22930884361267,
+      "success": true,
+      "exit_code": 0,
+      "topology_id": 2,
+      "topology_name": "Z1 Up - 双路径",
+      "run_id": 10,
+      "timestamp": "2025-11-24T20:47:36.375644",
+      "network_config": {
+        "delay_ms": 25,
+        "bandwidth_mbps": 40,
+        "loss_percent": 0.8
+      }
+    }
+  ],
+  "summary": {
+    "total_runs": 10,
+    "success_count": 10,
+    "success_rate": 100.0,
+    "avg_duration": 53.79564578533173,
+    "avg_pq_handshake_time_us": 50.0,
+    "avg_circuit_build_time_ms": 150.15000000000003,
+    "avg_total_rtt_ms": 150.0
+  },
+  "total_runs": 10
+}

@@ -17,7 +17,8 @@ int main(int argc, char *argv[]) {
     tor_client_config_t config = {
         .directory_host = "localhost",
         .directory_port = 5000,
-        .timeout_seconds = 30
+        .timeout_seconds = 30,
+        .use_classic_ntor = 0  // Default to PQ-NTOR
     };
 
     char target_url[512] = "http://localhost:8000/";
@@ -30,15 +31,27 @@ int main(int argc, char *argv[]) {
             config.directory_port = atoi(argv[++i]);
         } else if (strcmp(argv[i], "-u") == 0 && i + 1 < argc) {
             strncpy(target_url, argv[++i], sizeof(target_url) - 1);
+        } else if (strcmp(argv[i], "--mode") == 0 && i + 1 < argc) {
+            i++;
+            if (strcmp(argv[i], "classic") == 0) {
+                config.use_classic_ntor = 1;
+            } else if (strcmp(argv[i], "pq") == 0) {
+                config.use_classic_ntor = 0;
+            } else {
+                fprintf(stderr, "Error: Invalid mode '%s'. Use 'classic' or 'pq'\n", argv[i]);
+                return 1;
+            }
         } else if (strcmp(argv[i], "-h") == 0 || strcmp(argv[i], "--help") == 0) {
             printf("Usage: %s [options]\n", argv[0]);
             printf("Options:\n");
-            printf("  -d HOST    Directory server host (default: localhost)\n");
-            printf("  -p PORT    Directory server port (default: 5000)\n");
-            printf("  -u URL     Target URL to fetch (default: http://localhost:8000/)\n");
-            printf("  -h         Show this help\n");
+            printf("  -d HOST      Directory server host (default: localhost)\n");
+            printf("  -p PORT      Directory server port (default: 5000)\n");
+            printf("  -u URL       Target URL to fetch (default: http://localhost:8000/)\n");
+            printf("  --mode MODE  Use 'classic' or 'pq' NTOR (default: pq)\n");
+            printf("  -h           Show this help\n");
             printf("\nExample:\n");
             printf("  %s -u http://localhost:8000/\n", argv[0]);
+            printf("  %s --mode classic -u http://localhost:8000/\n", argv[0]);
             return 0;
         }
     }
@@ -50,7 +63,11 @@ int main(int argc, char *argv[]) {
     srand(time(NULL));
 
     printf("============================================\n");
-    printf("  PQ-Tor Client\n");
+    if (config.use_classic_ntor) {
+        printf("  Tor Client (Classic NTOR)\n");
+    } else {
+        printf("  Tor Client (PQ-NTOR)\n");
+    }
     printf("============================================\n\n");
 
     // Initialize client
