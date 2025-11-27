@@ -1,0 +1,96 @@
+% PQ-NTOR in SAGIN: Post-Quantum Tor for Space-Air-Ground Networks
+% Main LaTeX Document
+% Date: 2025-11-27
+
+\documentclass[letterpaper,twocolumn,10pt]{article}
+\usepackage{usenix-2e}
+
+% Packages
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{xcolor}
+\usepackage{url}
+\usepackage{hyperref}
+\usepackage{listings}
+\usepackage{subfigure}
+\usepackage{enumitem}
+
+% Colors for links
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    filecolor=magenta,
+    urlcolor=cyan,
+    citecolor=blue,
+}
+
+% Listings configuration for code
+\lstset{
+    basicstyle=\ttfamily\footnotesize,
+    breaklines=true,
+    frame=single,
+    numbers=left,
+    numberstyle=\tiny,
+}
+
+% Custom commands
+\newcommand{\pqntor}{PQ-NTOR}
+\newcommand{\sagin}{SAGIN}
+\newcommand{\us}{$\mu$s}
+\newcommand{\ms}{ms}
+
+% Title and authors
+\title{\Large \bf PQ-NTOR in Space-Air-Ground Integrated Networks:\\
+Implementation and Performance Evaluation}
+
+\author{
+{\rm Your Name}\\
+Your Institution\\
+your.email@institution.edu
+\and
+{\rm Co-Author Name}\\
+Co-Author Institution\\
+coauthor@institution.edu
+% Add more authors as needed
+}
+
+\date{}
+
+\begin{document}
+
+\maketitle
+
+% Abstract
+\begin{abstract}
+The Tor network, serving over 2 million daily users, faces an existential threat from quantum computers capable of breaking its Curve25519-based Ntor handshake protocol. While post-quantum key encapsulation mechanisms (KEMs) like Kyber-512 have been standardized by NIST, their deployment in Tor—particularly in high-latency space-air-ground integrated networks (SAGIN)—remains unexplored.
+
+This paper presents the first complete implementation and comprehensive evaluation of PQ-NTOR for SAGIN environments. We achieve 31 \us\ average handshake latency (5.2$\times$ faster than theoretical predictions), demonstrate negligible overhead (<0.2\%) in satellite scenarios, and validate performance across 12 network topologies with 100\% success rate. Our ARM64 deployment on Phytium Pi platforms proves real-world feasibility. We provide open-source artifacts for reproducible research.
+
+\textbf{Keywords:} Post-Quantum Cryptography, Tor, Anonymous Communication, SAGIN, Kyber, Space Networks
+\end{abstract}
+
+% Table of Contents (comment out for final version)
+% \tableofcontents
+% \newpage
+
+% Main sections
+\input{sections/introduction}
+\input{sections/background}
+\input{sections/design}
+\input{sections/implementation}
+\input{sections/evaluation}
+\input{sections/related_work}
+\input{sections/conclusion}
+
+% Acknowledgments
+\section*{Acknowledgments}
+This work was supported by [Funding Source]. We thank [People] for their valuable feedback.
+
+% Bibliography
+\bibliographystyle{plain}
+\bibliography{references}
+
+\end{document}

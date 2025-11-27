@@ -1,0 +1,117 @@
+========================================
+LaTeX 手动安装指南（最简单版本）
+========================================
+
+如果自动脚本一直卡住，可以手动安装：
+
+========================================
+方案1: 直接用已有的工具编译（如果可以）
+========================================
+
+检查是否已经有 pdflatex：
+
+    which pdflatex
+
+如果有输出（显示路径），说明已经安装了！
+直接跳到编译步骤。
+
+========================================
+方案2: 最小化安装（推荐）
+========================================
+
+只安装最基本的 LaTeX 包（约200MB，而不是500MB）：
+
+sudo apt-get install -y texlive-latex-base texlive-latex-recommended
+
+安装完成后，进入目录编译：
+
+cd /home/ccc/pq-ntor-experiment/essay/latex
+pdflatex main.tex
+pdflatex main.tex
+
+（编译两次即可，跳过参考文献也没关系）
+
+========================================
+方案3: 使用在线 LaTeX 服务
+========================================
+
+如果本地安装一直有问题，可以：
+
+1. 将整个 latex 文件夹压缩：
+   cd /home/ccc/pq-ntor-experiment/essay
+   tar czf latex.tar.gz latex/
+
+2. 下载到 Windows：
+   cp latex.tar.gz /mnt/c/Users/你的用户名/Desktop/
+
+3. 上传到 Overleaf.com（免费）：
+   - 访问 https://www.overleaf.com
+   - 创建账号
+   - 上传 latex.tar.gz
+   - 在线编译，直接下载 PDF
+
+========================================
+方案4: 在 Windows 上安装 LaTeX
+========================================
+
+你之前说 Windows 上可能装了 LaTeX。
+
+1. 在 Windows PowerShell 中检查：
+   pdflatex --version
+
+2. 如果已安装，将文件夹复制到 Windows：
+   cd /home/ccc/pq-ntor-experiment/essay
+   cp -r latex /mnt/c/Users/你的用户名/Desktop/
+
+3. 在 Windows 的 latex 文件夹中打开 PowerShell：
+   cd C:\Users\你的用户名\Desktop\latex
+   pdflatex main.tex
+   bibtex main
+   pdflatex main.tex
+   pdflatex main.tex
+
+========================================
+方案5: 等待或中断重试
+========================================
+
+当前脚本：
+  - 正在连接 security.ubuntu.com
+  - 这个过程可能需要 2-5 分钟
+  - 建议再等等看
+
+如果实在太慢：
+  1. 按 Ctrl+C 中断
+  2. 再次运行同一个脚本（可能会更快）
+  3. 或尝试方案1-4
+
+========================================
+快速决策树
+========================================
+
+Q: pdflatex 已经安装了吗？
+   运行: which pdflatex
+
+   → 有输出：直接编译
+      cd ~/pq-ntor-experiment/essay/latex
+      pdflatex main.tex && pdflatex main.tex
+      explorer.exe main.pdf
+
+   → 没输出：继续
+
+Q: 能等 5-10 分钟吗？
+   → 能：继续等当前脚本完成
+   → 不能：按 Ctrl+C，选择其他方案
+
+Q: Windows 有 LaTeX 吗？
+   → 有：用方案4（复制到 Windows 编译）
+   → 没有：用方案3（Overleaf 在线编译）
+
+========================================
+推荐顺序
+========================================
+
+1. 先检查是否已安装: which pdflatex
+2. 如果没装，再等 5 分钟看脚本能否完成
+3. 如果还是卡住，用 Overleaf 在线编译（最快）
+
+========================================

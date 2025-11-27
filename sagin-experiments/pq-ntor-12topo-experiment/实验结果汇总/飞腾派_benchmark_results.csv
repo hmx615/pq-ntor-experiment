@@ -1,0 +1,5 @@
+Operation,Min(μs),Max(μs),Avg(μs),Median(μs),StdDev(μs),Min(ms),Avg(ms)
+Client Create Onionskin,45.00,119.00,52.35,46.00,13.60,0.045,0.052
+Server Create Reply,70.00,85.00,70.39,70.00,1.11,0.070,0.070
+Client Finish Handshake,62.00,70.00,63.00,63.00,0.95,0.062,0.063
+Full Handshake,178.00,204.00,179.58,179.00,2.02,0.178,0.180

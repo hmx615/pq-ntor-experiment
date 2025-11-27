@@ -12,10 +12,11 @@
         }
 
         body {
-            font-family: 'Segoe UI Emoji', 'Apple Color Emoji', 'Noto Color Emoji', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif, 'Segoe UI Emoji', 'Apple Color Emoji', 'Noto Color Emoji';
             background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
             color: #fff;
             overflow: hidden;
+            font-variant-numeric: tabular-nums;
         }
 
         /* 节点类型特色主题 */
@@ -317,26 +318,26 @@
                 position: absolute;
                 bottom: 80px;
                 left: 20px;
-                background: rgba(0, 0, 0, 0.7);
-                padding: 15px 20px;
-                border-radius: 10px;
+                background: rgba(0, 0, 0, 0.8);
+                padding: 20px 25px;
+                border-radius: 12px;
                 border: 2px solid #fbbf24;
-                box-shadow: 0 0 15px rgba(251, 191, 36, 0.5);
+                box-shadow: 0 0 20px rgba(251, 191, 36, 0.6);
                 z-index: 100;">
-                <div style="color: #fbbf24; font-size: 14px; font-weight: bold; margin-bottom: 10px;">
+                <div style="color: #fbbf24; font-size: 18px; font-weight: bold; margin-bottom: 12px;">
                     🔗 链路类型
                 </div>
-                <div style="display: flex; flex-direction: column; gap: 8px;">
-                    <div style="display: flex; align-items: center; gap: 10px;">
-                        <div style="width: 40px; height: 3px; background: #00ff00; border-radius: 2px;"></div>
-                        <span style="color: #fff; font-size: 13px;">高RSSI</span>
+                <div style="display: flex; flex-direction: column; gap: 12px;">
+                    <div style="display: flex; align-items: center; gap: 15px;">
+                        <div style="width: 50px; height: 4px; background: #00ff00; border-radius: 2px;"></div>
+                        <span style="color: #fff; font-size: 16px; font-weight: 500;">高RSSI</span>
                     </div>
-                    <div style="display: flex; align-items: center; gap: 10px;">
-                        <div style="width: 40px; height: 3px; background: #ff6600; border-radius: 2px;"></div>
-                        <span style="color: #fff; font-size: 13px;">低RSSI</span>
+                    <div style="display: flex; align-items: center; gap: 15px;">
+                        <div style="width: 50px; height: 4px; background: #ff6600; border-radius: 2px;"></div>
+                        <span style="color: #fff; font-size: 16px; font-weight: 500;">低RSSI</span>
                     </div>
-                    <div style="display: flex; align-items: center; gap: 10px;">
-                        <div style="width: 40px; height: 3px; background: #ff00ff; border-radius: 2px;
+                    <div style="display: flex; align-items: center; gap: 15px;">
+                        <div style="width: 50px; height: 4px; background: #ff00ff; border-radius: 2px;
                                    background-image: repeating-linear-gradient(
                                        90deg,
                                        #ff00ff,
@@ -344,7 +345,7 @@
                                        transparent 5px,
                                        transparent 10px
                                    );"></div>
-                        <span style="color: #fff; font-size: 13px;">协作NOMA</span>
+                        <span style="color: #fff; font-size: 16px; font-weight: 500;">协作NOMA</span>
                     </div>
                 </div>
             </div>
@@ -403,14 +404,6 @@
                 </div>
             </div>
 
-            <!-- 角色特征数据 -->
-            <div class="status-section" id="role-features">
-                <h2 id="role-features-title">🌟 节点特征</h2>
-                <div id="role-features-content">
-                    <!-- 动态生成内容 -->
-                </div>
-            </div>
-
             <!-- 通信链路 -->
             <div class="status-section">
                 <h2>🔗 通信链路</h2>
@@ -465,12 +458,17 @@
 
         // 节点配置
         const nodeConfigs = {
-            'SAT': { icon: '🛰', name: '卫星', role: 'Satellite', lat: 35, lon: 122, alt: 0.15, type: 'satellite' },
-            'SR': { icon: '✈', name: '无人机1', role: 'Aircraft', lat: 35, lon: 110, alt: 0.05, type: 'aircraft' },
-            'S1R2': { icon: '✈', name: '无人机2', role: 'Aircraft', lat: 31.2, lon: 121.5, alt: 0.05, type: 'aircraft' },
-            'S1': { icon: '📱', name: '终端1', role: 'Ground', lat: 39.9, lon: 116.4, alt: 0, type: 'ground' },
-            'S2': { icon: '📱', name: '终端2', role: 'Ground', lat: 30, lon: 105, alt: 0, type: 'ground' },
-            'T': { icon: '📱', name: '终端3', role: 'Ground', lat: 28, lon: 115, alt: 0, type: 'ground' }
+            // 卫星 - 位置不变（东北方向）
+            'SAT': { icon: '🛰', name: 'SAT', role: 'Satellite', lat: 40, lon: 125, alt: 0.15, type: 'satellite', altitude_km: 800 },
+
+            // 无人机 - 居中靠近终端（均衡分布）
+            'UAV1': { icon: '✈', name: 'UAV1', role: 'Aircraft', lat: 32, lon: 108, alt: 0.05, type: 'aircraft', altitude_m: 150 },    // 西部中间
+            'UAV2': { icon: '✈', name: 'UAV2', role: 'Aircraft', lat: 32.5, lon: 114, alt: 0.05, type: 'aircraft', altitude_m: 120 },  // Ground1-Ground3中点
+
+            // 地面终端 - 扩大分布范围（三角形布局）
+            'Ground1': { icon: '📱', name: 'Ground1', role: 'Ground', lat: 35, lon: 110, alt: 0, type: 'ground', altitude_m: 5 },    // 西北
+            'Ground2': { icon: '📱', name: 'Ground2', role: 'Ground', lat: 28, lon: 112, alt: 0, type: 'ground', altitude_m: 5 },    // 西南
+            'Ground3': { icon: '📱', name: 'Ground3', role: 'Ground', lat: 30, lon: 118, alt: 0, type: 'ground', altitude_m: 3 }     // 东部
         };
 
         const currentNodeConfig = nodeConfigs[NODE_ID];
@@ -490,67 +488,76 @@
 
         // 拓扑链路定义（12种拓扑的连接关系）
         const topologyLinks = {
-            1: [ // Z1 Up-1: S1→SAT, S2→SAT (直连NOMA)
-                { source: 'S1', target: 'SAT', rssi: 'high', label: '高RSSI天基上行' },
-                { source: 'S2', target: 'SAT', rssi: 'low', label: '低RSSI天基上行' }
+            1: [ // 拓扑1: Z1 Up - 直连NOMA (UAV2高RSSI, Ground2低RSSI)
+                { source: 'UAV2', target: 'SAT', rssi: 'high', label: '高RSSI天基上行' },
+                { source: 'Ground2', target: 'SAT', rssi: 'low', label: '低RSSI天基上行' }
             ],
-            2: [ // Z1 Up-2: S2→S1R2→SAT (协作)
-                { source: 'S2', target: 'S1R2', rssi: 'high', label: '空/地链路' },
-                { source: 'S1R2', target: 'SAT', rssi: 'high', label: '高RSSI天基上行' }
+            2: [ // 拓扑2: Z1 Up - 双路径 (Ground3→Ground2→SAT, Ground3→UAV2→SAT)
+                { source: 'Ground3', target: 'Ground2', rssi: 'high', label: '高RSSI地/地链路' },
+                { source: 'Ground2', target: 'SAT', rssi: 'low', label: '低RSSI天基上行' },
+                { source: 'Ground3', target: 'UAV2', rssi: 'low', label: '低RSSI空/地链路' },
+                { source: 'UAV2', target: 'SAT', rssi: 'high', label: '高RSSI天基上行' }
             ],
-            3: [ // Z2 Up-1: S1→SR→SAT, S2→SR→SAT (2跳协作)
-                { source: 'S1', target: 'SR', rssi: 'high', label: '高RSSI空/地' },
-                { source: 'S2', target: 'SR', rssi: 'low', label: '低RSSI空/地' },
-                { source: 'SR', target: 'SAT', rssi: 'high', label: '高RSSI天基上行' }
+            3: [ // 拓扑3: Z3 Up - 双终端中继 (Ground1,Ground2→UAV1→SAT)
+                { source: 'Ground1', target: 'UAV1', rssi: 'high', label: '高RSSI空/地上行' },
+                { source: 'Ground2', target: 'UAV1', rssi: 'low', label: '低RSSI空/地上行' },
+                { source: 'UAV1', target: 'SAT', rssi: 'high', label: '天基上行' }
             ],
-            4: [ // Z2 Up-2: S2→S1R2, S1R2→SR→SAT (混合协作)
-                { source: 'S2', target: 'S1R2', rssi: 'high', label: '空/地链路' },
-                { source: 'S1R2', target: 'SR', rssi: 'high', label: '空/空链路' },
-                { source: 'SR', target: 'SAT', rssi: 'high', label: '高RSSI天基上行' }
+            4: [ // 拓扑4: Z4 Up - 混合直连+协作 (Ground2直连, Ground3→UAV2→SAT)
+                { source: 'Ground2', target: 'SAT', rssi: 'low', label: '低RSSI天基上行' },
+                { source: 'Ground3', target: 'UAV2', rssi: 'high', label: '高RSSI空/地链路' },
+                { source: 'UAV2', target: 'SAT', rssi: 'high', label: '高RSSI天基上行' }
             ],
-            5: [ // Z3 Up: T→SR→SAT (中继)
-                { source: 'T', target: 'SR', rssi: 'high', label: '空/地链路' },
-                { source: 'SR', target: 'SAT', rssi: 'high', label: '高RSSI天基上行' }
+            5: [ // 拓扑5: Z5 Up - 多层树形 (Ground2→SAT, UAV2→SAT, Ground1+Ground3→UAV2)
+                { source: 'Ground2', target: 'SAT', rssi: 'low', label: '低RSSI天基上行' },
+                { source: 'UAV2', target: 'SAT', rssi: 'high', label: '高RSSI天基上行' },
+                { source: 'Ground1', target: 'UAV2', rssi: 'high', label: '高RSSI空/地链路' },
+                { source: 'Ground3', target: 'UAV2', rssi: 'low', label: '低RSSI空/地链路' }
             ],
-            6: [ // Z4 Up: T→S1R2→SR→SAT (多跳中继)
-                { source: 'T', target: 'S1R2', rssi: 'high', label: '空/地链路' },
-                { source: 'S1R2', target: 'SR', rssi: 'high', label: '空/空链路' },
-                { source: 'SR', target: 'SAT', rssi: 'high', label: '高RSSI天基上行' }
+            6: [ // 拓扑6: Z6 Up - 无人机+终端双中继 (Ground1→UAV1→SAT, Ground3→Ground2→SAT)
+                { source: 'Ground1', target: 'UAV1', rssi: 'high', label: '高RSSI空/地上行' },
+                { source: 'UAV1', target: 'SAT', rssi: 'high', label: '高RSSI天基上行' },
+                { source: 'Ground3', target: 'Ground2', rssi: 'low', label: '低RSSI地/地上行' },
+                { source: 'Ground2', target: 'SAT', rssi: 'low', label: '低RSSI天基上行' }
             ],
-            7: [ // Z1 Down: SAT→S1, SAT→S2, S1→S2 (直连+协作)
-                { source: 'SAT', target: 'S1', rssi: 'high', label: '高RSSI天基下行' },
-                { source: 'SAT', target: 'S2', rssi: 'low', label: '低RSSI天基下行' },
-                { source: 'S1', target: 'S2', rssi: 'coop', label: '协作链路' }
+            7: [ // 拓扑7: Z1 Down - 直连NOMA+协作 (SAT→UAV2高+Ground2低, UAV2协作Ground2)
+                { source: 'SAT', target: 'UAV2', rssi: 'high', label: '高RSSI天基下行' },
+                { source: 'SAT', target: 'Ground2', rssi: 'low', label: '低RSSI天基下行' },
+                { source: 'UAV2', target: 'Ground2', rssi: 'coop', label: 'NOMA协作链路' }
             ],
-            8: [ // Z2 Down: SAT→SR→S1, SAT→SR→S2 (中继下行+协作)
-                { source: 'SAT', target: 'SR', rssi: 'high', label: '高RSSI天基下行' },
-                { source: 'SR', target: 'S1', rssi: 'high', label: '高RSSI空/地' },
-                { source: 'SR', target: 'S2', rssi: 'low', label: '低RSSI空/地' },
-                { source: 'S1', target: 'S2', rssi: 'coop', label: 'NOMA协作链路' }
+            8: [ // 拓扑8: Z2 Down - 多跳协作下行 (SAT→UAV2+Ground2, UAV2协作Ground2, 再转发Ground3)
+                { source: 'SAT', target: 'UAV2', rssi: 'high', label: '高RSSI天基下行' },
+                { source: 'SAT', target: 'Ground2', rssi: 'low', label: '低RSSI天基下行' },
+                { source: 'UAV2', target: 'Ground2', rssi: 'coop', label: 'UAV2协作Ground2' },
+                { source: 'UAV2', target: 'Ground3', rssi: 'low', label: '低RSSI空/地下行' },
+                { source: 'Ground2', target: 'Ground3', rssi: 'high', label: '高RSSI地/地下行' }
             ],
-            9: [ // Z3 Down: SAT→SR→T (中继下行)
-                { source: 'SAT', target: 'SR', rssi: 'high', label: '高RSSI天基下行' },
-                { source: 'SR', target: 'T', rssi: 'high', label: '空/地链路' }
+            9: [ // 拓扑9: Z3 Down - T用户协作下行 (SAT→UAV1→Ground1+Ground2, Ground1协作Ground2)
+                { source: 'SAT', target: 'UAV1', rssi: 'high', label: '天基下行' },
+                { source: 'UAV1', target: 'Ground1', rssi: 'high', label: '高RSSI空/地下行' },
+                { source: 'UAV1', target: 'Ground2', rssi: 'low', label: '低RSSI空/地下行' },
+                { source: 'Ground1', target: 'Ground2', rssi: 'coop', label: 'NOMA协作链路' }
             ],
-            10: [ // Z4 Down: SAT→SR→S1R2→T (多跳下行)
-                { source: 'SAT', target: 'SR', rssi: 'high', label: '高RSSI天基下行' },
-                { source: 'SR', target: 'S1R2', rssi: 'high', label: '空/空链路' },
-                { source: 'S1R2', target: 'T', rssi: 'high', label: '空/地链路' }
+            10: [ // 拓扑10: Z4 Down - 混合直连+单跳协作 (SAT→UAV2+Ground2, UAV2协作Ground2, Ground2→Ground3)
+                { source: 'SAT', target: 'UAV2', rssi: 'high', label: '高RSSI天基下行' },
+                { source: 'SAT', target: 'Ground2', rssi: 'low', label: '低RSSI天基下行' },
+                { source: 'UAV2', target: 'Ground2', rssi: 'coop', label: 'NOMA协作链路' },
+                { source: 'Ground2', target: 'Ground3', rssi: 'high', label: '地/地转发' }
             ],
-            11: [ // Z5 Down: SAT→SR→S1R2, SR→S1, S1R2→S2 (广播下行+协作)
-                { source: 'SAT', target: 'SR', rssi: 'high', label: '高RSSI天基下行' },
-                { source: 'SR', target: 'S1R2', rssi: 'high', label: '空/空链路' },
-                { source: 'SR', target: 'S1', rssi: 'high', label: '高RSSI空/地' },
-                { source: 'S1R2', target: 'S2', rssi: 'low', label: '低RSSI空/地' },
-                { source: 'S1', target: 'S2', rssi: 'coop', label: 'NOMA协作链路' }
+            11: [ // 拓扑11: Z5 Down - 混合多跳协作 (SAT→UAV2+Ground2两层NOMA)
+                { source: 'SAT', target: 'UAV2', rssi: 'high', label: '高RSSI天基下行' },
+                { source: 'SAT', target: 'Ground2', rssi: 'low', label: '低RSSI天基下行' },
+                { source: 'UAV2', target: 'Ground2', rssi: 'coop', label: '第一层NOMA协作' },
+                { source: 'Ground2', target: 'Ground1', rssi: 'high', label: '高RSSI地/地下行' },
+                { source: 'Ground2', target: 'Ground3', rssi: 'low', label: '低RSSI地/地下行' },
+                { source: 'Ground1', target: 'Ground3', rssi: 'coop', label: '第二层NOMA协作' }
             ],
-            12: [ // Z6 Down: SAT→SR, SR→S1R2→T, SR→S1, SR→S2 (多点下行+协作)
-                { source: 'SAT', target: 'SR', rssi: 'high', label: '高RSSI天基下行' },
-                { source: 'SR', target: 'S1R2', rssi: 'high', label: '空/空链路' },
-                { source: 'S1R2', target: 'T', rssi: 'high', label: '空/地链路' },
-                { source: 'SR', target: 'S1', rssi: 'high', label: '高RSSI空/地' },
-                { source: 'SR', target: 'S2', rssi: 'low', label: '低RSSI空/地' },
-                { source: 'S1', target: 'S2', rssi: 'coop', label: 'NOMA协作链路' }
+            12: [ // 拓扑12: Z6 Down - 双中继协作下行 (SAT→UAV1+Ground2, UAV1协作Ground2, 分别转发)
+                { source: 'SAT', target: 'UAV1', rssi: 'high', label: '高RSSI天基下行' },
+                { source: 'SAT', target: 'Ground2', rssi: 'low', label: '低RSSI天基下行' },
+                { source: 'UAV1', target: 'Ground2', rssi: 'coop', label: 'NOMA协作链路' },
+                { source: 'UAV1', target: 'Ground1', rssi: 'high', label: '空/地转发' },
+                { source: 'Ground2', target: 'Ground3', rssi: 'high', label: '地/地转发' }
             ]
         };
 
@@ -594,7 +601,7 @@
 
         // 更新当前节点徽章
         document.getElementById('current-node-icon').textContent = currentNodeConfig.icon;
-        document.getElementById('current-node-name').textContent = `${currentNodeConfig.name} (${NODE_ID})`;
+        document.getElementById('current-node-name').textContent = NODE_ID;
 
         // 根据节点类型设置徽章颜色
         const badgeColors = {
@@ -675,33 +682,29 @@
                 .htmlElement(d => {
                     const el = document.createElement('div');
 
-                    // 🚀 飞腾派优化: 减少视觉效果以提升性能
-                    // 当前节点：稍大、不透明、无发光效果
-                    // 其他节点：半透明显示
+                    // 当前节点高亮显示
                     if (d.isCurrent) {
-                        el.style.fontSize = '36px';  // 当前节点稍大 (原48px)
+                        el.style.fontSize = '48px';  // 当前节点更大
                         el.style.opacity = '1.0';     // 完全不透明
-                        // 移除发光效果以节省GPU资源
                     } else {
-                        el.style.fontSize = '24px';   // 其他节点更小 (原32px)
-                        el.style.opacity = '0.5';     // 更透明以减少渲染
+                        el.style.fontSize = '32px';   // 其他节点正常大小（与control-panel一致）
+                        el.style.opacity = '0.6';     // 半透明
                     }
 
                     el.style.cursor = 'pointer';
                     el.style.textAlign = 'center';
                     el.style.pointerEvents = 'auto';
 
-                    // 🚀 飞腾派优化: 简化HTML结构和样式
                     el.innerHTML = `
                         <div style="text-align: center;">
-                            <div style="font-size: ${d.isCurrent ? '36px' : '24px'};">
+                            <div style="font-size: ${d.isCurrent ? '48px' : '32px'};">
                                 ${d.icon}
                             </div>
-                            <div style="font-size: ${d.isCurrent ? '12px' : '10px'};
+                            <div style="font-size: ${d.isCurrent ? '14px' : '12px'};
                                         color: ${colors[d.type]};
                                         margin-top: 2px;
                                         font-weight: ${d.isCurrent ? 'bold' : 'normal'};">
-                                ${d.name}${d.isCurrent ? ' ★' : ''}
+                                ${d.id}${d.isCurrent ? ' ★' : ''}
                             </div>
                         </div>
                     `;
@@ -724,6 +727,9 @@
                 const links = topologyLinks[topologyId] || [];
 
                 console.log(`🔗 更新拓扑${topologyId}的链路，共${links.length}条`);
+
+                // 🔧 修复: 先清空链路，避免残留
+                globe.arcsData([]);
 
                 globe.arcsData(links)
                     .arcStartLat(d => {
@@ -780,7 +786,7 @@
                             return `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, 0.3)`;
                         }
                     })
-                    .arcStroke(2.0)  // 统一线宽标准
+                    .arcStroke(1.0)  // 统一线宽标准（减少一半）
                     .arcDashLength(d => {
                         // 协作链路用虚线，其他链路用实线段来产生流动效果
                         if (d.rssi === 'coop') return 0.5;  // 虚线
@@ -804,116 +810,45 @@
                         </div>
                     `);
 
-                console.log(`✅ 链路显示已更新`);
+                // 🔧 修复: 延迟刷新确保链路正确显示
+                setTimeout(() => {
+                    globe.arcsData(links);
+                    console.log(`✅ 链路显示已更新并刷新: ${links.length} 条链路`);
+                }, 50);
             } catch (error) {
                 console.error('❌ 更新链路失败:', error);
             }
         }
 
-        // 初始化角色特征面板
-        function initRoleFeatures() {
-            const featuresContent = document.getElementById('role-features-content');
-            const featuresTitle = document.getElementById('role-features-title');
-
-            if (currentNodeConfig.type === 'satellite') {
-                // 🛰️ 卫星节点特征
-                featuresTitle.textContent = '🛰️ 卫星特性';
-                featuresContent.innerHTML = `
-                    <div class="info-row">
-                        <span class="info-label">轨道高度</span>
-                        <span class="info-value">${(currentNodeConfig.alt * 6371).toFixed(0)} km</span>
-                    </div>
-                    <div class="info-row">
-                        <span class="info-label">覆盖半径</span>
-                        <span class="info-value">~2000 km</span>
-                    </div>
-                    <div class="info-row">
-                        <span class="info-label">波束数量</span>
-                        <span class="info-value">多波束</span>
-                    </div>
-                    <div class="info-row">
-                        <span class="info-label">工作模式</span>
-                        <span class="info-value">透明转发</span>
-                    </div>
-                    <div class="info-row">
-                        <span class="info-label">中继能力</span>
-                        <span class="info-value">✅ 支持</span>
-                    </div>
-                `;
-            } else if (currentNodeConfig.type === 'aircraft') {
-                // ✈️ 无人机节点特征
-                featuresTitle.textContent = '✈️ 无人机特性';
-                featuresContent.innerHTML = `
-                    <div class="info-row">
-                        <span class="info-label">飞行高度</span>
-                        <span class="info-value">${(currentNodeConfig.alt * 6371).toFixed(1)} km</span>
-                    </div>
-                    <div class="info-row">
-                        <span class="info-label">飞行状态</span>
-                        <span class="info-value">🟢 巡航</span>
-                    </div>
-                    <div class="info-row">
-                        <span class="info-label">电池电量</span>
-                        <span class="info-value">85%</span>
-                    </div>
-                    <div class="info-row">
-                        <span class="info-label">飞行模式</span>
-                        <span class="info-value">中继模式</span>
-                    </div>
-                    <div class="info-row">
-                        <span class="info-label">覆盖范围</span>
-                        <span class="info-value">~50 km</span>
-                    </div>
-                `;
-            } else {
-                // 📱 地面终端特征
-                const groundHeight = Math.floor(Math.random() * 11); // 0-10m随机高度
-                featuresTitle.textContent = '📱 终端特性';
-                featuresContent.innerHTML = `
-                    <div class="info-row">
-                        <span class="info-label">设备类型</span>
-                        <span class="info-value">移动终端</span>
-                    </div>
-                    <div class="info-row">
-                        <span class="info-label">地面高度</span>
-                        <span class="info-value">${groundHeight} m</span>
-                    </div>
-                    <div class="info-row">
-                        <span class="info-label">接入方式</span>
-                        <span class="info-value">NOMA</span>
-                    </div>
-                    <div class="info-row">
-                        <span class="info-label">信号强度</span>
-                        <span class="info-value" id="signal-strength">良好</span>
-                    </div>
-                    <div class="info-row">
-                        <span class="info-label">协作能力</span>
-                        <span class="info-value">✅ 支持</span>
-                    </div>
-                    <div class="info-row">
-                        <span class="info-label">应用场景</span>
-                        <span class="info-value">数据传输</span>
-                    </div>
-                `;
-            }
-
-            console.log(`✅ 初始化${currentNodeConfig.type}节点特征面板`);
-        }
-
         // 更新节点信息显示
         function updateNodeInfo(data) {
-            if (!data || !data.status) {
-                console.warn('updateNodeInfo: 数据为空');
+            // 使用nodeConfigs中的配置信息
+            const config = currentNodeConfig;
+
+            if (!config) {
+                console.warn('updateNodeInfo: 节点配置不存在');
                 return;
             }
-            const status = data.status;
-            console.log('更新节点信息:', status);
 
-            document.getElementById('info-role').textContent = status.role || '-';
-            document.getElementById('info-altitude').textContent =
-                status.altitude ? `${(status.altitude * 6371).toFixed(0)} km` : '-';
-            document.getElementById('info-ip').textContent = status.ip || '-';
-            document.getElementById('info-container-ip').textContent = status.container_ip || '-';
+            console.log('更新节点信息:', NODE_ID, config);
+
+            // 角色显示
+            document.getElementById('info-role').textContent = config.role || '-';
+
+            // 高度显示（根据节点类型显示正确单位）
+            let altitudeText = '-';
+            if (config.type === 'satellite' && config.altitude_km) {
+                altitudeText = `${config.altitude_km} km`;
+            } else if (config.altitude_m !== undefined) {
+                altitudeText = `${config.altitude_m} m`;
+            }
+            document.getElementById('info-altitude').textContent = altitudeText;
+
+            // IP信息从WebSocket数据获取
+            if (data && data.status) {
+                document.getElementById('info-ip').textContent = data.status.ip || '-';
+                document.getElementById('info-container-ip').textContent = data.status.container_ip || '-';
+            }
 
             console.log('节点信息已更新到DOM');
         }
@@ -1178,8 +1113,8 @@
             document.body.classList.add(`theme-${currentNodeConfig.type}`);
             console.log(`✅ 应用${currentNodeConfig.type}节点主题`);
 
-            // 初始化角色特征面板
-            initRoleFeatures();
+            // 初始化节点信息显示
+            updateNodeInfo(null);
 
             // 启动流量模拟
             startTrafficSimulation();

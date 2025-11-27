@@ -1,0 +1,46 @@
+--- a/c/src/directory_server.c
++++ b/c/src/directory_server.c
+@@ -12,8 +12,27 @@
+ #include <arpa/inet.h>
+ #include <errno.h>
+
+-/* Hardcoded node list (for SAGIN network deployment) */
+-static node_info_t nodes[] = {
++/* Configuration: Use local mode or SAGIN mode */
++#ifndef USE_LOCAL_MODE
++#define USE_LOCAL_MODE 1  // Set to 1 for local testing, 0 for SAGIN deployment
++#endif
++
++#if USE_LOCAL_MODE
++/* Dynamic node list for local testing */
++#define MAX_NODES 10
++static node_info_t nodes[MAX_NODES];
++static int num_nodes = 0;
++
++/* Allow relay registration in local mode */
++int dir_server_register_node(const char* hostname, uint16_t port, node_type_t type) {
++    if (num_nodes >= MAX_NODES) return -1;
++
++    strncpy(nodes[num_nodes].hostname, hostname, sizeof(nodes[num_nodes].hostname) - 1);
++    nodes[num_nodes].port = port;
++    nodes[num_nodes].type = type;
++    // Generate simple identity based on type
++    memset(nodes[num_nodes].identity, (type + 1), 20);
++    nodes[num_nodes].active = true;
++    num_nodes++;
++    return 0;
++}
++#else
++/* Hardcoded node list (for SAGIN network deployment) */
++static node_info_t nodes[] = {
+     {
+         .hostname = "172.20.1.11",  // Sat-1 (Guard)
+         .port = 9001,
+@@ -40,6 +59,7 @@ static node_info_t nodes[] = {
+     }
+ };
+ static const int num_nodes = sizeof(nodes) / sizeof(nodes[0]);
++#endif
+
+ /* Server state */
+ static int server_fd = -1;

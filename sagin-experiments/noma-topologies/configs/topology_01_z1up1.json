@@ -6,8 +6,8 @@
   "cooperation": false,
   "description": "Direct satellite uplink with NOMA pairing",
   "nodes": {
-    "S1": {"type": "terminal", "role": "guard", "rssi": "high"},
-    "S2": {"type": "terminal", "role": "none", "rssi": "low"},
+    "S1": {"type": "uav", "role": "guard", "rssi": "high", "altitude_m": 100},
+    "S2": {"type": "terminal", "role": "none", "rssi": "low", "altitude_m": 5},
     "SAT": {"type": "satellite", "role": "middle_exit", "altitude_km": 800}
   },
   "links": [

@@ -1,0 +1,83 @@
+PQ-NTOR SAGIN LaTeX 工作区 - 完整文件清单
+创建日期: 2025-11-27
+========================================
+
+核心文件：
+├── main.tex                    # 主LaTeX文档（论文框架）
+├── usenix-2e.sty              # USENIX会议格式样式
+├── references.bib             # BibTeX参考文献（8条）
+├── compile.sh                 # 自动编译脚本（可执行）
+├── INSTALL_LATEX.sh           # LaTeX安装脚本（可执行）
+├── .gitignore                 # Git忽略规则
+
+文档说明：
+├── README.md                  # 完整使用文档
+├── QUICKSTART.md              # 5分钟快速开始
+├── PROJECT_SUMMARY.md         # 项目总结
+└── 文件清单.txt              # 本文件
+
+章节文件 (sections/)：
+├── introduction.tex           # 第1章：引言 [占位符]
+├── background.tex             # 第2章：背景 [占位符]
+├── design.tex                 # 第3章：PQ-NTOR设计 [占位符]
+├── implementation.tex         # 第4章：系统实现 [占位符]
+├── evaluation.tex             # 第5章：评估 [✅ 完整内容]
+├── related_work.tex           # 第6章：相关工作 [占位符]
+└── conclusion.tex             # 第7章：结论 [占位符]
+
+资源目录：
+├── figures/                   # 图片（待添加）
+├── tables/                    # 表格（可选）
+└── data/                      # 数据（可选）
+
+========================================
+
+Section 5 (evaluation.tex) 包含内容：
+✅ 5.1 Experimental Setup
+  - 5.1.1 Hardware Configuration (Table 1)
+  - 5.1.2 Software Stack (Table 2)
+  - 5.1.3 Network Topologies (Table 3, 4, 5)
+  - 5.1.4 Performance Metrics
+  - 5.1.5 Experimental Methodology
+
+✅ 5.2 Phase 1: PQ-NTOR Benchmarks
+  - 5.2.1 Methodology
+  - 5.2.2 Performance Results (Table 6)
+  - 5.2.3 Comparison (Table 7)
+  - 5.2.4 Analysis and Discussion
+
+⏳ 5.3 Phase 2: SAGIN Integration [占位符]
+⏳ 5.4 Phase 3: Phytium Pi Deployment [占位符]
+⏳ 5.5 Discussion [占位符]
+
+========================================
+
+参考文献 (references.bib)：
+[1] Berger et al. 2025 - Post Quantum Migration of Tor
+[2] NIST 2024 - FIPS 203 (ML-KEM)
+[3] Goldberg et al. 2013 - Tor Ntor Handshake
+[4] liboqs 2024 - Open Quantum Safe
+[5] Liu et al. 2018 - SAGIN Survey
+[6] Skyfield 2024 - Astronomy Library
+[7] Tor Metrics 2025 - Statistics
+[8] Dingledine et al. 2004 - Original Tor
+
+========================================
+
+核心数据：
+- Full Handshake: 31 μs (Table 6)
+- vs Berger论文: 5.2× 更快 (Table 7)
+- 12种拓扑完整规格 (Table 4)
+- 吞吐量: 32,258 hs/s
+- 卫星参数: LEO/MEO/GEO (Table 5)
+
+========================================
+
+下一步：
+1. 运行 ./INSTALL_LATEX.sh 安装LaTeX
+2. 运行 ./compile.sh full 编译论文
+3. 查看 main.pdf 验证输出
+4. 完成飞腾派实验补充数据
+5. 撰写其他章节
+
+========================================

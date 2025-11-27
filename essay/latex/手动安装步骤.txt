@@ -1,0 +1,160 @@
+========================================
+LaTeX 手动安装步骤
+（如果自动脚本失败，使用本指南）
+========================================
+
+如果 ./install_and_compile.sh 失败，请按照以下步骤手动操作：
+
+========================================
+步骤 1: 安装 LaTeX（约 5-10 分钟）
+========================================
+
+打开终端，执行以下命令：
+
+sudo apt-get update
+
+然后安装 LaTeX：
+
+sudo apt-get install -y texlive-latex-base texlive-latex-extra texlive-fonts-recommended texlive-fonts-extra texlive-bibtex-extra
+
+等待安装完成...
+
+========================================
+步骤 2: 验证安装
+========================================
+
+检查 pdflatex 是否安装成功：
+
+pdflatex --version
+
+应该显示类似：
+pdfTeX 3.141592653-2.6-1.40.22 (TeX Live 2022/dev/Debian)
+
+检查 bibtex：
+
+bibtex --version
+
+应该显示版本信息。
+
+========================================
+步骤 3: 进入工作目录
+========================================
+
+cd /home/ccc/pq-ntor-experiment/essay/latex
+
+========================================
+步骤 4: 清理旧文件（如果有）
+========================================
+
+rm -f *.aux *.log *.out *.toc *.bbl *.blg *.synctex.gz
+rm -f sections/*.aux
+
+========================================
+步骤 5: 第一次编译
+========================================
+
+pdflatex -interaction=nonstopmode main.tex
+
+可能会有一些警告，这是正常的。
+
+========================================
+步骤 6: 编译参考文献
+========================================
+
+bibtex main
+
+========================================
+步骤 7: 第二次编译
+========================================
+
+pdflatex -interaction=nonstopmode main.tex
+
+========================================
+步骤 8: 第三次编译（最终）
+========================================
+
+pdflatex -interaction=nonstopmode main.tex
+
+========================================
+步骤 9: 检查 PDF 是否生成
+========================================
+
+ls -lh main.pdf
+
+如果看到文件，说明成功！
+
+========================================
+步骤 10: 打开 PDF
+========================================
+
+在 WSL 中用 Windows 打开：
+
+explorer.exe main.pdf
+
+或复制到桌面：
+
+cp main.pdf /mnt/c/Users/你的用户名/Desktop/
+
+========================================
+常见错误处理
+========================================
+
+错误1: "! LaTeX Error: File `booktabs.sty' not found"
+解决:
+    sudo apt-get install texlive-latex-extra
+
+错误2: "! Undefined control sequence"
+解决: 检查 main.log 文件，找到具体错误行
+    less main.log
+
+错误3: 编译卡住不动
+解决: 按 Ctrl+C 终止，使用 -interaction=nonstopmode 参数
+
+错误4: 参考文献不显示
+解决: 确保执行了 bibtex main，然后重新执行步骤7和8
+
+========================================
+完整的一键命令（适合复制粘贴）
+========================================
+
+如果你想一次性执行所有编译步骤，可以复制这段：
+
+cd /home/ccc/pq-ntor-experiment/essay/latex && \
+rm -f *.aux *.log *.out *.bbl *.blg sections/*.aux && \
+pdflatex -interaction=nonstopmode main.tex && \
+bibtex main && \
+pdflatex -interaction=nonstopmode main.tex && \
+pdflatex -interaction=nonstopmode main.tex && \
+echo "编译完成！" && \
+ls -lh main.pdf && \
+explorer.exe main.pdf
+
+========================================
+检查 PDF 内容
+========================================
+
+打开 main.pdf 后，应该看到：
+
+✓ 封面（标题、作者）
+✓ Abstract（摘要）
+✓ Section 1-7（Section 5 有完整内容）
+✓ 7 个表格（在 Section 5 中）
+✓ 参考文献（8条）
+
+总页数：约 12-14 页
+
+========================================
+需要更多帮助？
+========================================
+
+1. 查看详细日志：
+   less main.log
+
+2. 搜索错误：
+   grep -i error main.log
+
+3. 重新开始：
+   ./compile.sh clean
+   然后重新执行步骤 5-8
+
+========================================

@@ -114,14 +114,14 @@ class NodeAgent:
 
     def get_node_config(self) -> dict:
         """获取节点配置信息"""
-        # 节点IP配置（基于node_id）
+        # 节点IP配置（基于node_id）- 使用统一命名规则
         node_ips = {
             'SAT': {'ip': '192.168.100.11', 'container_ip': '172.20.0.11', 'altitude': 0.15},
-            'SR': {'ip': '192.168.100.12', 'container_ip': '172.20.0.12', 'altitude': 0.05},
-            'S1R2': {'ip': '192.168.100.13', 'container_ip': '172.20.0.13', 'altitude': 0.05},
-            'S1': {'ip': '192.168.100.14', 'container_ip': '172.20.0.14', 'altitude': 0.0},
-            'S2': {'ip': '192.168.100.15', 'container_ip': '172.20.0.15', 'altitude': 0.0},
-            'T': {'ip': '192.168.100.16', 'container_ip': '172.20.0.16', 'altitude': 0.0},
+            'UAV1': {'ip': '192.168.100.12', 'container_ip': '172.20.0.12', 'altitude': 0.05},
+            'UAV2': {'ip': '192.168.100.13', 'container_ip': '172.20.0.13', 'altitude': 0.05},
+            'Ground1': {'ip': '192.168.100.14', 'container_ip': '172.20.0.14', 'altitude': 0.0},
+            'Ground2': {'ip': '192.168.100.15', 'container_ip': '172.20.0.15', 'altitude': 0.0},
+            'Ground3': {'ip': '192.168.100.16', 'container_ip': '172.20.0.16', 'altitude': 0.0},
         }
 
         return node_ips.get(self.node_id, {
@@ -137,11 +137,11 @@ class NodeAgent:
 
         links = []
 
-        # 示例：卫星节点在拓扑1的链路
+        # 示例：卫星节点在拓扑1的链路（使用统一命名规则）
         if self.node_id == 'SAT' and self.current_topology == 1:
             links = [
                 {
-                    'target': 'S1',
+                    'target': 'UAV2',
                     'rssi': 'high',
                     'delay_ms': 10,
                     'bandwidth_mbps': 50,
@@ -149,7 +149,7 @@ class NodeAgent:
                     'active': True
                 },
                 {
-                    'target': 'S2',
+                    'target': 'Ground2',
                     'rssi': 'low',
                     'delay_ms': 30,
                     'bandwidth_mbps': 20,

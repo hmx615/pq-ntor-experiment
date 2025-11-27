@@ -1,0 +1,15 @@
+{
+  "experiment": "pq-ntor-benchmark",
+  "platform": "Phytium Pi (ARM64)",
+  "cpu_arch": "aarch64",
+  "algorithm": "Kyber-512",
+  "library": "liboqs",
+  "iterations": 1000,
+  "timestamp": "2025-11-27T15:32:11.356666",
+  "results_us": {
+    "client_create_avg_us": 52.35,
+    "server_create_avg_us": 70.39,
+    "client_finish_avg_us": 63.0,
+    "full_handshake_avg_us": 179.58
+  }
+}

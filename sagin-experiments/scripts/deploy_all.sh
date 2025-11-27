@@ -15,11 +15,11 @@ NC='\033[0m' # No Color
 # 节点配置 (格式: IP:节点ID:节点角色)
 NODES=(
     "192.168.100.11:SAT:satellite"
-    "192.168.100.12:SR:aircraft"
-    "192.168.100.13:S1R2:aircraft"
-    "192.168.100.14:S1:ground"
-    "192.168.100.15:S2:ground"
-    "192.168.100.16:T:ground"
+    "192.168.100.12:UAV1:aircraft"
+    "192.168.100.13:UAV2:aircraft"
+    "192.168.100.14:Ground1:ground"
+    "192.168.100.15:Ground2:ground"
+    "192.168.100.16:Ground3:ground"
 )
 
 # 控制台配置

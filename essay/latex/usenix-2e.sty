@@ -1,0 +1,37 @@
+% usenix-2e.sty - USENIX two-column format style file
+% Simplified version for quick compilation
+
+\ProvidesPackage{usenix-2e}
+
+% Page layout
+\setlength{\textheight}{9.0in}
+\setlength{\textwidth}{6.5in}
+\setlength{\columnsep}{0.25in}
+\setlength{\topmargin}{-0.5in}
+\setlength{\headheight}{0in}
+\setlength{\headsep}{0in}
+\setlength{\oddsidemargin}{0in}
+\setlength{\evensidemargin}{0in}
+
+% Section formatting
+\renewcommand{\section}{\@startsection{section}{1}{\z@}%
+  {-3.5ex plus -1ex minus -.2ex}%
+  {2.3ex plus .2ex}%
+  {\normalfont\Large\bfseries}}
+
+\renewcommand{\subsection}{\@startsection{subsection}{2}{\z@}%
+  {-3.25ex plus -1ex minus -.2ex}%
+  {1.5ex plus .2ex}%
+  {\normalfont\large\bfseries}}
+
+\renewcommand{\subsubsection}{\@startsection{subsubsection}{3}{\z@}%
+  {-3.25ex plus -1ex minus -.2ex}%
+  {1.5ex plus .2ex}%
+  {\normalfont\normalsize\bfseries}}
+
+% Abstract
+\renewenvironment{abstract}%
+{\small\quotation\bfseries{Abstract}\newline}%
+{\endquotation}
+
+\endinput

@@ -1,0 +1,29 @@
+% Section 1: Introduction
+% Placeholder - To be completed
+
+\section{Introduction}
+\label{sec:introduction}
+
+The Tor network is the most widely deployed anonymous communication system, serving over 2 million daily users worldwide~\cite{tormetrics2025}. Its onion routing protocol provides strong privacy guarantees through multi-hop encryption, protecting users from surveillance, censorship, and traffic analysis. However, the imminent advent of large-scale quantum computers poses an existential threat to Tor's cryptographic foundation.
+
+% [REST OF INTRODUCTION TO BE WRITTEN BASED ON YOUR DOCX FILE]
+
+\textbf{[PLACEHOLDER - Section to be completed]}
+
+\subsection{Contributions}
+
+This paper makes the following contributions:
+
+\begin{enumerate}
+    \item \textbf{Complete PQ-NTOR Implementation:} We implement the full PQ-NTOR handshake protocol in C, achieving 31 \us\ average latency—5.2$\times$ faster than theoretical predictions.
+
+    \item \textbf{SAGIN Network Integration:} We integrate PQ-Tor into simulated space-air-ground networks with real orbital data, demonstrating negligible overhead (<0.2\%) in high-latency scenarios.
+
+    \item \textbf{Multi-Topology Evaluation:} We conduct 240 controlled experiments across 12 network topologies, achieving 100\% success rate.
+
+    \item \textbf{Open-Source Deployment:} We provide automated deployment scripts and ARM64 platform support for reproducible research.
+\end{enumerate}
+
+\subsection{Paper Organization}
+
+The rest of this paper is organized as follows. Section~\ref{sec:background} provides background on Tor's Ntor handshake and post-quantum KEMs. Section~\ref{sec:design} presents our PQ-NTOR protocol design. Section~\ref{sec:implementation} describes our system implementation. Section~\ref{sec:evaluation} evaluates performance across three experimental phases. Section~\ref{sec:related} discusses related work, and Section~\ref{sec:conclusion} concludes.

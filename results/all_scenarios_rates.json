@@ -1,0 +1,116 @@
+{
+  "Z1-UP1-OMA-center": {
+    "rate_mbps": 35.06446262836885,
+    "sinr_db": 3.7495145728456385,
+    "gain_db": -140.25048542715436,
+    "link_type": "satellite",
+    "access_method": "OMA"
+  },
+  "Z1-UP1-OMA-edge": {
+    "rate_mbps": 18.70236815606847,
+    "sinr_db": -0.39982515040019007,
+    "gain_db": -144.39982515040018,
+    "link_type": "satellite",
+    "access_method": "OMA"
+  },
+  "Z1-UP1-NOMA-weak": {
+    "rate_mbps": 11.723800103126129,
+    "sinr_db": -2.999223905616637,
+    "gain_db": -144.39982515040018,
+    "link_type": "satellite",
+    "access_method": "NOMA",
+    "user_type": "weak"
+  },
+  "Z1-UP1-NOMA-strong": {
+    "rate_mbps": 15.502403521868509,
+    "sinr_db": -1.4792728799577357,
+    "gain_db": -140.25048542715436,
+    "link_type": "satellite",
+    "access_method": "NOMA",
+    "user_type": "strong"
+  },
+  "Z1-UP2-OMA-near": {
+    "rate_mbps": 29.857963473716726,
+    "sinr_db": 44.940573849263366,
+    "gain_db": -101.04599702028084,
+    "link_type": "uav",
+    "access_method": "OMA"
+  },
+  "Z1-UP2-OMA-far": {
+    "rate_mbps": 23.992077148568505,
+    "sinr_db": 36.110611065193915,
+    "gain_db": -109.8759598043503,
+    "link_type": "uav",
+    "access_method": "OMA"
+  },
+  "Z1-UP2-NOMA-weak": {
+    "rate_mbps": 3.472283443839255,
+    "sinr_db": 3.6762244155343082,
+    "gain_db": -109.8759598043503,
+    "link_type": "uav",
+    "access_method": "NOMA",
+    "user_type": "weak"
+  },
+  "Z1-UP2-NOMA-strong": {
+    "rate_mbps": 26.384248106418926,
+    "sinr_db": 39.71178639645999,
+    "gain_db": -101.04599702028084,
+    "link_type": "uav",
+    "access_method": "NOMA",
+    "user_type": "strong"
+  },
+  "Z2-D2D-OMA-strong": {
+    "rate_mbps": 32.98037619625091,
+    "sinr_db": 49.640365338129286,
+    "gain_db": -84.3596346618707,
+    "link_type": "d2d",
+    "access_method": "OMA"
+  },
+  "Z2-D2D-OMA-weak": {
+    "rate_mbps": 22.559711978154645,
+    "sinr_db": 33.954002979719164,
+    "gain_db": -100.04599702028082,
+    "link_type": "d2d",
+    "access_method": "OMA"
+  },
+  "Z2-D2D-NOMA-weak": {
+    "rate_mbps": 3.4712247220395605,
+    "sinr_db": 3.6739472001603035,
+    "gain_db": -100.04599702028082,
+    "link_type": "d2d",
+    "access_method": "NOMA",
+    "user_type": "weak"
+  },
+  "Z2-D2D-NOMA-strong": {
+    "rate_mbps": 29.506518144484364,
+    "sinr_db": 44.41157788532591,
+    "gain_db": -84.3596346618707,
+    "link_type": "d2d",
+    "access_method": "NOMA",
+    "user_type": "strong"
+  },
+  "Z3-2Hop-Sat": {
+    "rate_mbps": 161.227811976577,
+    "sinr_db": 24.250915382366976,
+    "gain_db": -119.749084617633,
+    "link_type": "satellite",
+    "access_method": "OMA",
+    "hop": "first"
+  },
+  "Z3-2Hop-UAV": {
+    "rate_mbps": 23.992077148568505,
+    "sinr_db": 36.110611065193915,
+    "gain_db": -109.8759598043503,
+    "link_type": "uav",
+    "access_method": "OMA",
+    "hop": "second"
+  },
+  "Z3-2Hop-Full": {
+    "rate_mbps": 23.992077148568505,
+    "sinr_db": 24.250915382366976,
+    "gain_db": -229.62504442198332,
+    "link_type": "two_hop",
+    "access_method": "OMA",
+    "bottleneck": "hop2"
+  }
+}
