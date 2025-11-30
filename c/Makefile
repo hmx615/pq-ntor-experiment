@@ -12,7 +12,7 @@ LIBOQS_LIB = $(LIBOQS_DIR)/lib
 
 # 包含路径和库路径
 INCLUDES = -I$(LIBOQS_INCLUDE) -Isrc
-LIBS = -L$(LIBOQS_LIB) -loqs -lssl -lcrypto -Wl,-rpath,$(LIBOQS_LIB)
+LIBS = -L$(LIBOQS_LIB) -loqs -lssl -lcrypto -lpthread -lm -Wl,-rpath,$(LIBOQS_LIB)
 
 # 可选：编译 Kyber768 版本（默认 Kyber512）
 # 取消注释下面这行来使用 Kyber768

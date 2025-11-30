@@ -1,0 +1,546 @@
+{
+  "topo01": {
+    "topo_id": "topo01",
+    "name": "Z1 Up - 直连NOMA",
+    "description": "SAT ← S2(地面,低RSSI) + S1(UAV,高RSSI)",
+    "end_to_end": {
+      "rate_mbps": 31.81,
+      "delay_ms": 5.42,
+      "sinr_db": 3.04,
+      "packet_loss_percent": 2.0
+    },
+    "links": [
+      {
+        "link": "s2_ground->sat",
+        "description": "天基上行-低RSSI",
+        "rate_mbps": 31.814260870492387,
+        "delay_ms": 2.7101311981361915,
+        "sinr_db": 3.036240438110644,
+        "link_type": "satellite"
+      },
+      {
+        "link": "s1_uav->sat",
+        "description": "天基上行-高RSSI",
+        "rate_mbps": 161.32872018214906,
+        "delay_ms": 2.7066748768348385,
+        "sinr_db": 24.266160551557974,
+        "link_type": "satellite"
+      }
+    ],
+    "num_hops": 2
+  },
+  "topo02": {
+    "topo_id": "topo02",
+    "name": "Z1 Up - T协作接入(混合双路径)",
+    "description": "T通过S2/R1(地面)或S1/R2(UAV)双路径上行",
+    "end_to_end": {
+      "rate_mbps": 8.77,
+      "delay_ms": 5.44,
+      "sinr_db": 3.04,
+      "packet_loss_percent": 2.0
+    },
+    "links": [
+      {
+        "link": "s2_r1_ground->sat",
+        "description": "天基上行-低RSSI",
+        "rate_mbps": 31.814260870492387,
+        "delay_ms": 2.7101311981361915,
+        "sinr_db": 3.036240438110644,
+        "link_type": "satellite"
+      },
+      {
+        "link": "s1_r2_uav->sat",
+        "description": "天基上行-高RSSI",
+        "rate_mbps": 161.32872018214906,
+        "delay_ms": 2.7066748768348385,
+        "sinr_db": 24.266160551557974,
+        "link_type": "satellite"
+      },
+      {
+        "link": "t_ground->s2_r1_ground",
+        "description": "空/地-高RSSI(近距离)",
+        "rate_mbps": 8.768567113065295,
+        "delay_ms": 0.0016666666666666666,
+        "sinr_db": 12.984902849638598,
+        "link_type": "d2d"
+      },
+      {
+        "link": "t_ground->s1_r2_uav",
+        "description": "空/地-低RSSI(远距离)",
+        "rate_mbps": 15.668861492777989,
+        "delay_ms": 0.018633899812498248,
+        "sinr_db": 23.5649170591342,
+        "link_type": "uav"
+      }
+    ],
+    "num_hops": 4
+  },
+  "topo03": {
+    "topo_id": "topo03",
+    "name": "Z3 Up - T用户协作NOMA",
+    "description": "两个地面T用户通过UAV中继上行",
+    "end_to_end": {
+      "rate_mbps": 20.53,
+      "delay_ms": 2.73,
+      "sinr_db": 23.84,
+      "packet_loss_percent": 0.1
+    },
+    "links": [
+      {
+        "link": "s_r_uav->sat",
+        "description": "卫星链路(无标注)",
+        "rate_mbps": 158.52184253402532,
+        "delay_ms": 2.706717979809168,
+        "sinr_db": 23.842021619626223,
+        "link_type": "satellite"
+      },
+      {
+        "link": "t2_ground->s_r_uav",
+        "description": "空/地上行-低RSSI",
+        "rate_mbps": 20.5305380362096,
+        "delay_ms": 0.013743685418725535,
+        "sinr_db": 30.89800861820677,
+        "link_type": "uav"
+      },
+      {
+        "link": "t1_ground->s_r_uav",
+        "description": "空/地上行-高RSSI",
+        "rate_mbps": 26.457021983404996,
+        "delay_ms": 0.006009252125773316,
+        "sinr_db": 39.821333554576015,
+        "link_type": "uav"
+      }
+    ],
+    "num_hops": 3
+  },
+  "topo04": {
+    "topo_id": "topo04",
+    "name": "Z4 Up - 混合直连+协作",
+    "description": "S2(地面)直连，T通过S1/R(UAV)上行",
+    "end_to_end": {
+      "rate_mbps": 29.21,
+      "delay_ms": 5.42,
+      "sinr_db": 3.04,
+      "packet_loss_percent": 2.0
+    },
+    "links": [
+      {
+        "link": "s2_ground->sat",
+        "description": "天基上行-低RSSI",
+        "rate_mbps": 31.814260870492387,
+        "delay_ms": 2.7101311981361915,
+        "sinr_db": 3.036240438110644,
+        "link_type": "satellite"
+      },
+      {
+        "link": "s1_r_uav->sat",
+        "description": "天基上行-高RSSI",
+        "rate_mbps": 161.32872018214906,
+        "delay_ms": 2.7066748768348385,
+        "sinr_db": 24.266160551557974,
+        "link_type": "satellite"
+      },
+      {
+        "link": "t_ground->s1_r_uav",
+        "description": "空/地链路",
+        "rate_mbps": 29.214130407643253,
+        "delay_ms": 0.0037267799624996494,
+        "sinr_db": 43.9714737180491,
+        "link_type": "uav"
+      }
+    ],
+    "num_hops": 3
+  },
+  "topo05": {
+    "topo_id": "topo05",
+    "name": "Z5 Up - 多层树形结构",
+    "description": "S2(地面)直连，T1/T2通过S1/R(UAV)上行",
+    "end_to_end": {
+      "rate_mbps": 23.03,
+      "delay_ms": 5.43,
+      "sinr_db": 3.04,
+      "packet_loss_percent": 2.0
+    },
+    "links": [
+      {
+        "link": "s2_ground->sat",
+        "description": "天基上行-低RSSI",
+        "rate_mbps": 31.814260870492387,
+        "delay_ms": 2.7101311981361915,
+        "sinr_db": 3.036240438110644,
+        "link_type": "satellite"
+      },
+      {
+        "link": "s1_r_uav->sat",
+        "description": "天基上行-高RSSI",
+        "rate_mbps": 161.32872018214906,
+        "delay_ms": 2.7066748768348385,
+        "sinr_db": 24.266160551557974,
+        "link_type": "satellite"
+      },
+      {
+        "link": "t1_ground->s1_r_uav",
+        "description": "空/地-高RSSI",
+        "rate_mbps": 29.214130407643253,
+        "delay_ms": 0.0037267799624996494,
+        "sinr_db": 43.9714737180491,
+        "link_type": "uav"
+      },
+      {
+        "link": "t2_ground->s1_r_uav",
+        "description": "空/地-低RSSI",
+        "rate_mbps": 23.026923920240574,
+        "delay_ms": 0.010540925533894598,
+        "sinr_db": 34.6574882364457,
+        "link_type": "uav"
+      }
+    ],
+    "num_hops": 4
+  },
+  "topo06": {
+    "topo_id": "topo06",
+    "name": "Z6 Up - 双UAV中继+T用户",
+    "description": "两个UAV分别中继一个地面T用户",
+    "end_to_end": {
+      "rate_mbps": 29.21,
+      "delay_ms": 5.42,
+      "sinr_db": 23.35,
+      "packet_loss_percent": 0.1
+    },
+    "links": [
+      {
+        "link": "s1_r1_uav->sat",
+        "description": "天基上行-高RSSI",
+        "rate_mbps": 161.32872018214906,
+        "delay_ms": 2.7066748768348385,
+        "sinr_db": 24.266160551557974,
+        "link_type": "satellite"
+      },
+      {
+        "link": "s2_r2_uav->sat",
+        "description": "天基上行-低RSSI",
+        "rate_mbps": 155.28308721918046,
+        "delay_ms": 2.706767239510795,
+        "sinr_db": 23.352409954995288,
+        "link_type": "satellite"
+      },
+      {
+        "link": "t1_ground->s1_r1_uav",
+        "description": "空/地-高RSSI",
+        "rate_mbps": 29.214130407643253,
+        "delay_ms": 0.0037267799624996494,
+        "sinr_db": 43.9714737180491,
+        "link_type": "uav"
+      },
+      {
+        "link": "t2_ground->s2_r2_uav",
+        "description": "空/地-低RSSI",
+        "rate_mbps": 29.214130407643253,
+        "delay_ms": 0.0037267799624996494,
+        "sinr_db": 43.9714737180491,
+        "link_type": "uav"
+      }
+    ],
+    "num_hops": 4
+  },
+  "topo07": {
+    "topo_id": "topo07",
+    "name": "Z1 Down - 直连NOMA+协作",
+    "description": "SAT → S1/R(UAV) + S2(地面), S1→S2协作",
+    "end_to_end": {
+      "rate_mbps": 14.08,
+      "delay_ms": 5.44,
+      "sinr_db": 3.04,
+      "packet_loss_percent": 2.0
+    },
+    "links": [
+      {
+        "link": "sat->s1_r_uav",
+        "description": "天基下行-高RSSI",
+        "rate_mbps": 161.32872018214906,
+        "delay_ms": 2.7066748768348385,
+        "sinr_db": 24.266160551557974,
+        "link_type": "satellite"
+      },
+      {
+        "link": "sat->s2_ground",
+        "description": "天基下行-低RSSI",
+        "rate_mbps": 31.814260870492387,
+        "delay_ms": 2.7101311981361915,
+        "sinr_db": 3.036240438110644,
+        "link_type": "satellite"
+      },
+      {
+        "link": "s1_r_uav->s2_ground",
+        "description": "空/地协作(单向)",
+        "rate_mbps": 14.081294078357956,
+        "delay_ms": 0.020275875100994066,
+        "sinr_db": 21.161346902870047,
+        "link_type": "uav"
+      }
+    ],
+    "num_hops": 3
+  },
+  "topo08": {
+    "topo_id": "topo08",
+    "name": "Z2 Down - 多跳协作下行",
+    "description": "SAT → S1/R1(UAV) + S2/R2(地面) → T(地面)",
+    "end_to_end": {
+      "rate_mbps": 8.77,
+      "delay_ms": 5.46,
+      "sinr_db": 3.04,
+      "packet_loss_percent": 2.0
+    },
+    "links": [
+      {
+        "link": "sat->s1_r1_uav",
+        "description": "天基下行-高RSSI",
+        "rate_mbps": 161.32872018214906,
+        "delay_ms": 2.7066748768348385,
+        "sinr_db": 24.266160551557974,
+        "link_type": "satellite"
+      },
+      {
+        "link": "sat->s2_r2_ground",
+        "description": "天基下行-低RSSI",
+        "rate_mbps": 31.814260870492387,
+        "delay_ms": 2.7101311981361915,
+        "sinr_db": 3.036240438110644,
+        "link_type": "satellite"
+      },
+      {
+        "link": "s1_r1_uav->s2_r2_ground",
+        "description": "协作链路",
+        "rate_mbps": 14.081294078357956,
+        "delay_ms": 0.020275875100994066,
+        "sinr_db": 21.161346902870047,
+        "link_type": "uav"
+      },
+      {
+        "link": "s1_r1_uav->t_ground",
+        "description": "空/地-低RSSI(远距离)",
+        "rate_mbps": 15.668861492777989,
+        "delay_ms": 0.018633899812498248,
+        "sinr_db": 23.5649170591342,
+        "link_type": "uav"
+      },
+      {
+        "link": "s2_r2_ground->t_ground",
+        "description": "空/地-高RSSI(近距离)",
+        "rate_mbps": 8.768567113065295,
+        "delay_ms": 0.0016666666666666666,
+        "sinr_db": 12.984902849638598,
+        "link_type": "d2d"
+      }
+    ],
+    "num_hops": 5
+  },
+  "topo09": {
+    "topo_id": "topo09",
+    "name": "Z3 Down - T用户协作下行",
+    "description": "SAT → S/R(UAV) → T1(地面) + T2(地面), T1→T2协作",
+    "end_to_end": {
+      "rate_mbps": 8.77,
+      "delay_ms": 2.72,
+      "sinr_db": 12.98,
+      "packet_loss_percent": 0.5
+    },
+    "links": [
+      {
+        "link": "sat->s_r_uav",
+        "description": "卫星链路(无标注)",
+        "rate_mbps": 158.52184253402532,
+        "delay_ms": 2.706717979809168,
+        "sinr_db": 23.842021619626223,
+        "link_type": "satellite"
+      },
+      {
+        "link": "s_r_uav->t1_ground",
+        "description": "空/地-高RSSI",
+        "rate_mbps": 26.457021983404996,
+        "delay_ms": 0.006009252125773316,
+        "sinr_db": 39.821333554576015,
+        "link_type": "uav"
+      },
+      {
+        "link": "s_r_uav->t2_ground",
+        "description": "空/地-低RSSI",
+        "rate_mbps": 27.85805388320632,
+        "delay_ms": 0.004714045207910317,
+        "sinr_db": 41.93027075084869,
+        "link_type": "uav"
+      },
+      {
+        "link": "t1_ground->t2_ground",
+        "description": "协作链路(D2D)",
+        "rate_mbps": 8.768567113065295,
+        "delay_ms": 0.0016666666666666666,
+        "sinr_db": 12.984902849638598,
+        "link_type": "d2d"
+      }
+    ],
+    "num_hops": 4
+  },
+  "topo10": {
+    "topo_id": "topo10",
+    "name": "Z4 Down - 混合直连+单跳协作",
+    "description": "SAT → S1(UAV) + S2/R(地面) → T(地面)",
+    "end_to_end": {
+      "rate_mbps": 8.77,
+      "delay_ms": 5.44,
+      "sinr_db": 3.04,
+      "packet_loss_percent": 2.0
+    },
+    "links": [
+      {
+        "link": "sat->s1_uav",
+        "description": "天基下行-高RSSI",
+        "rate_mbps": 161.32872018214906,
+        "delay_ms": 2.7066748768348385,
+        "sinr_db": 24.266160551557974,
+        "link_type": "satellite"
+      },
+      {
+        "link": "sat->s2_r_ground",
+        "description": "天基下行-低RSSI",
+        "rate_mbps": 31.814260870492387,
+        "delay_ms": 2.7101311981361915,
+        "sinr_db": 3.036240438110644,
+        "link_type": "satellite"
+      },
+      {
+        "link": "s1_uav->s2_r_ground",
+        "description": "协作链路",
+        "rate_mbps": 14.081294078357956,
+        "delay_ms": 0.020275875100994066,
+        "sinr_db": 21.161346902870047,
+        "link_type": "uav"
+      },
+      {
+        "link": "s2_r_ground->t_ground",
+        "description": "空/地链路",
+        "rate_mbps": 8.768567113065295,
+        "delay_ms": 0.0016666666666666666,
+        "sinr_db": 12.984902849638598,
+        "link_type": "d2d"
+      }
+    ],
+    "num_hops": 4
+  },
+  "topo11": {
+    "topo_id": "topo11",
+    "name": "Z5 Down - 混合直连+多跳协作",
+    "description": "SAT → S1(UAV) + S2/R(地面) → T1/T2(地面)",
+    "end_to_end": {
+      "rate_mbps": 3.6,
+      "delay_ms": 5.44,
+      "sinr_db": 3.04,
+      "packet_loss_percent": 2.0
+    },
+    "links": [
+      {
+        "link": "sat->s1_uav",
+        "description": "天基下行-高RSSI",
+        "rate_mbps": 161.32872018214906,
+        "delay_ms": 2.7066748768348385,
+        "sinr_db": 24.266160551557974,
+        "link_type": "satellite"
+      },
+      {
+        "link": "sat->s2_r_ground",
+        "description": "天基下行-低RSSI",
+        "rate_mbps": 31.814260870492387,
+        "delay_ms": 2.7101311981361915,
+        "sinr_db": 3.036240438110644,
+        "link_type": "satellite"
+      },
+      {
+        "link": "s1_uav->s2_r_ground",
+        "description": "协作链路",
+        "rate_mbps": 14.081294078357956,
+        "delay_ms": 0.020275875100994066,
+        "sinr_db": 21.161346902870047,
+        "link_type": "uav"
+      },
+      {
+        "link": "s2_r_ground->t1_ground",
+        "description": "空/地-高RSSI",
+        "rate_mbps": 8.768567113065295,
+        "delay_ms": 0.0016666666666666666,
+        "sinr_db": 12.984902849638598,
+        "link_type": "d2d"
+      },
+      {
+        "link": "s2_r_ground->t2_ground",
+        "description": "空/地-低RSSI",
+        "rate_mbps": 8.768567113065295,
+        "delay_ms": 0.0016666666666666666,
+        "sinr_db": 12.984902849638598,
+        "link_type": "d2d"
+      },
+      {
+        "link": "t1_ground->t2_ground",
+        "description": "协作链路(D2D)",
+        "rate_mbps": 3.6026674408667074,
+        "delay_ms": 0.003333333333333333,
+        "sinr_db": 3.95400297971916,
+        "link_type": "d2d"
+      }
+    ],
+    "num_hops": 6
+  },
+  "topo12": {
+    "topo_id": "topo12",
+    "name": "Z6 Down - 双中继协作下行",
+    "description": "SAT → S1/R1(UAV) + S2/R2(地面) → T1/T2(地面)",
+    "end_to_end": {
+      "rate_mbps": 8.77,
+      "delay_ms": 5.44,
+      "sinr_db": 3.04,
+      "packet_loss_percent": 2.0
+    },
+    "links": [
+      {
+        "link": "sat->s1_r1_uav",
+        "description": "天基下行-高RSSI",
+        "rate_mbps": 161.32872018214906,
+        "delay_ms": 2.7066748768348385,
+        "sinr_db": 24.266160551557974,
+        "link_type": "satellite"
+      },
+      {
+        "link": "sat->s2_r2_ground",
+        "description": "天基下行-低RSSI",
+        "rate_mbps": 31.814260870492387,
+        "delay_ms": 2.7101311981361915,
+        "sinr_db": 3.036240438110644,
+        "link_type": "satellite"
+      },
+      {
+        "link": "s1_r1_uav->s2_r2_ground",
+        "description": "协作链路",
+        "rate_mbps": 14.081294078357956,
+        "delay_ms": 0.020275875100994066,
+        "sinr_db": 21.161346902870047,
+        "link_type": "uav"
+      },
+      {
+        "link": "s1_r1_uav->t1_ground",
+        "description": "空/地链路",
+        "rate_mbps": 29.214130407643253,
+        "delay_ms": 0.0037267799624996494,
+        "sinr_db": 43.9714737180491,
+        "link_type": "uav"
+      },
+      {
+        "link": "s2_r2_ground->t2_ground",
+        "description": "空/地链路",
+        "rate_mbps": 8.768567113065295,
+        "delay_ms": 0.0016666666666666666,
+        "sinr_db": 12.984902849638598,
+        "link_type": "d2d"
+      }
+    ],
+    "num_hops": 5
+  }
+}
