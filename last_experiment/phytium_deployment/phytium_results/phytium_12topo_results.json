@@ -1,0 +1,74 @@
+{
+  "topo01": {
+    "avg_us": 180.13,
+    "rate_mbps": 31.81,
+    "delay_ms": 5.42,
+    "loss_percent": 2.0
+  },
+  "topo02": {
+    "avg_us": 180.32,
+    "rate_mbps": 8.77,
+    "delay_ms": 5.44,
+    "loss_percent": 2.0
+  },
+  "topo03": {
+    "avg_us": 180.97,
+    "rate_mbps": 20.53,
+    "delay_ms": 2.73,
+    "loss_percent": 0.1
+  },
+  "topo04": {
+    "avg_us": 181.68,
+    "rate_mbps": 29.21,
+    "delay_ms": 5.42,
+    "loss_percent": 2.0
+  },
+  "topo05": {
+    "avg_us": 181.42,
+    "rate_mbps": 23.03,
+    "delay_ms": 5.43,
+    "loss_percent": 2.0
+  },
+  "topo06": {
+    "avg_us": 179.67,
+    "rate_mbps": 29.21,
+    "delay_ms": 5.42,
+    "loss_percent": 0.1
+  },
+  "topo07": {
+    "avg_us": 179.91,
+    "rate_mbps": 14.08,
+    "delay_ms": 5.44,
+    "loss_percent": 2.0
+  },
+  "topo08": {
+    "avg_us": 182.41,
+    "rate_mbps": 8.77,
+    "delay_ms": 5.46,
+    "loss_percent": 2.0
+  },
+  "topo09": {
+    "avg_us": 181.34,
+    "rate_mbps": 8.77,
+    "delay_ms": 2.72,
+    "loss_percent": 0.5
+  },
+  "topo10": {
+    "avg_us": 180.14,
+    "rate_mbps": 8.77,
+    "delay_ms": 5.44,
+    "loss_percent": 2.0
+  },
+  "topo11": {
+    "avg_us": 179.28,
+    "rate_mbps": 3.6,
+    "delay_ms": 5.44,
+    "loss_percent": 2.0
+  },
+  "topo12": {
+    "avg_us": 181.99,
+    "rate_mbps": 8.77,
+    "delay_ms": 5.44,
+    "loss_percent": 2.0
+  }
+}
