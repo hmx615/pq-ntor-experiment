@@ -220,15 +220,14 @@ Iterations:    10 (成功率 100%)
 
 ### 3.3 场景创新: SAGIN网络
 
-#### 12拓扑覆盖范围
+#### 12拓扑覆盖范围（基于真实NOMA协作网络）
 
 | 拓扑类型 | 延迟范围 | 带宽范围 | 丢包率 | 文献覆盖 |
 |---------|---------|---------|--------|---------|
-| **LEO卫星** | 20ms | 100Mbps | 0.1% | ❌ 未见 |
-| **GEO卫星** | 250ms | 50Mbps | 0.5% | ❌ 未见 |
-| **UAV** | 5-10ms | 50-100Mbps | 0.2-0.5% | ❌ 未见 |
-| **D2D** | 1-5ms | 10-100Mbps | 0.1-1.0% | ❌ 未见 |
-| **极端条件** | 500ms | 1Mbps | 2.0% | ⚠️ 少见 |
+| **LEO卫星链路** | 2.7-5.5ms | 8-32 Mbps | 0.1-2.0% | ❌ 未见 |
+| **UAV中继** | 0.004-0.02ms | 14-29 Mbps | 0.1-2.0% | ❌ 未见 |
+| **D2D协作** | 0.002-0.003ms | 3.6-8.8 Mbps | 0.1-2.0% | ❌ 未见 |
+| **NOMA混合拓扑** | 2.7-5.5ms | 3.6-32 Mbps | 0.1-2.0% | ❌ 未见 |
 
 **意义**:
 - SAGIN网络是未来通信基础设施
@@ -259,22 +258,25 @@ Iterations:    10 (成功率 100%)
 = 1640 µs ≈ 1.6-2.0 ms (预测)
 ```
 
-#### SAGIN拓扑性能预测
+#### SAGIN拓扑性能预测（基于真实12拓扑参数）
 
-| 拓扑 | 单跳延迟 | 三跳网络延迟 | 握手总时间 | 预测总时间 |
-|------|---------|------------|-----------|-----------|
-| **LAN基准** | 0.1 ms | 0.3 ms | 0.54 ms | **~1.6 ms** |
-| **LEO卫星** | 20 ms | 60 ms | 0.54 ms | **~61 ms** |
-| **GEO卫星** | 250 ms | 750 ms | 0.54 ms | **~751 ms** |
-| **UAV** | 5-10 ms | 15-30 ms | 0.54 ms | **~16-31 ms** |
-| **D2D** | 1-5 ms | 3-15 ms | 0.54 ms | **~4-16 ms** |
+| 拓扑类型 | 端到端延迟 | 端到端带宽 | 握手总时间 | 预测总时间 | 密码学占比 |
+|---------|-----------|-----------|-----------|-----------|-----------|
+| **LAN基准** | 0.3 ms | - | 0.54 ms | **~1.6 ms** | 33.8% |
+| **Topo01-02** | 5.42-5.44 ms | 8.77-31.81 Mbps | 0.54 ms | **~6.7 ms** | **8.1%** |
+| **Topo03** | 2.73 ms | 20.53 Mbps | 0.54 ms | **~4.1 ms** | **13.2%** |
+| **Topo04-06** | 5.42-5.43 ms | 23-29 Mbps | 0.54 ms | **~6.7 ms** | **8.1%** |
+| **Topo07-08** | 5.44-5.46 ms | 8.77-14.08 Mbps | 0.54 ms | **~6.7 ms** | **8.1%** |
+| **Topo09** | 2.72 ms | 8.77 Mbps | 0.54 ms | **~4.1 ms** | **13.2%** |
+| **Topo10-12** | 5.44 ms | 3.6-8.77 Mbps | 0.54 ms | **~6.7 ms** | **8.1%** |
 
 **关键观察**:
-- 高延迟环境下，**网络延迟主导**，PQ-NTOR密码学开销可忽略
-- LEO卫星: 0.54 ms / 61 ms = **0.9%** (密码学开销占比)
-- GEO卫星: 0.54 ms / 751 ms = **0.07%** (几乎可忽略)
+- 真实SAGIN网络中，**网络延迟虽然不高（2.7-5.5ms），但仍主导性能**
+- 最高密码学占比: 13.2% (低延迟拓扑topo03/09)
+- 典型密码学占比: **8.1%** (大多数拓扑)
+- 相比LAN的33.8%，SAGIN环境降低了密码学开销的相对影响
 
-**结论**: PQ-NTOR在SAGIN网络中的密码学开销不是瓶颈 ✅
+**结论**: PQ-NTOR在真实SAGIN NOMA网络中密码学开销占比合理 ✅
 
 ### 4.2 与Tor真实部署对比
 
@@ -439,13 +441,13 @@ in literature [cite: arXiv2025/479].
 #### Contribution 2: SAGIN网络适用性研究
 
 **论点**:
-> We design and implement a comprehensive testbed to evaluate PQ-NTOR under **12 SAGIN network topologies**, covering LEO/GEO satellite, UAV, and D2D communication scenarios.
+> We design and implement a comprehensive testbed to evaluate PQ-NTOR under **12 SAGIN network topologies**, covering LEO satellite, UAV relay, and D2D cooperation scenarios based on realistic NOMA (Non-Orthogonal Multiple Access) collaborative networks.
 
 **支撑数据**:
-- Delay range: 1 ms (D2D) to 500 ms (extreme)
-- Bandwidth range: 1 Mbps to 100 Mbps
+- Delay range: 2.72-5.46 ms (LEO satellite + UAV + D2D)
+- Bandwidth range: 3.6-31.81 Mbps (computed from NOMA协作)
 - Packet loss: 0.1% to 2.0%
-- **Key finding**: Cryptographic overhead negligible in high-latency scenarios
+- **Key finding**: Cryptographic overhead ~8.1% in typical SAGIN scenarios
 
 #### Contribution 3: 真实分布式部署验证
 
@@ -476,13 +478,14 @@ in literature [cite: arXiv2025/479].
 | RPi 4 | A72 | 1.5 GHz | 262.6 µs | ~60 µs | 4.4× |
 | **Phytium Pi** | **A72** | **2.0 GHz** | **181.64 µs** | **40-60 µs** | **3.0-4.5×** |
 
-#### Table 3: SAGIN Topology Performance Prediction
+#### Table 3: SAGIN Topology Performance Prediction (Real NOMA Parameters)
 
 | Topology | Network Delay | Crypto Overhead | Total | Crypto % |
 |----------|---------------|-----------------|-------|----------|
 | LAN | 0.3 ms | 0.54 ms | 1.6 ms | 33.8% |
-| LEO Sat | 60 ms | 0.54 ms | 61 ms | **0.9%** |
-| GEO Sat | 750 ms | 0.54 ms | 751 ms | **0.07%** |
+| Topo01-02 (LEO+NOMA) | 5.42-5.44 ms | 0.54 ms | 6.7 ms | **8.1%** |
+| Topo03/09 (UAV-dominated) | 2.72-2.73 ms | 0.54 ms | 4.1 ms | **13.2%** |
+| Topo10-12 (Complex coop) | 5.44 ms | 0.54 ms | 6.7 ms | **8.1%** |
 
 ### 6.3 图表建议
 
@@ -539,10 +542,11 @@ to Classic NTOR—within the expected range from x86 literature. Our
 practical performance for real-world deployment.
 
 To evaluate SAGIN applicability, we design a 12-topology testbed
-covering LEO/GEO satellites, UAVs, and D2D scenarios. Our analysis
-reveals that cryptographic overhead becomes negligible (<1%) in
-high-latency environments, making PQ-NTOR highly suitable for
-satellite networks.
+based on realistic LEO satellite + UAV relay + D2D cooperation
+scenarios using NOMA (Non-Orthogonal Multiple Access) parameters.
+Our analysis reveals that cryptographic overhead accounts for ~8.1%
+in typical SAGIN scenarios, making PQ-NTOR highly suitable for
+complex collaborative satellite networks.
 
 We validate our findings through distributed deployment on a 7-node
 Phytium Pi cluster, representing the first real-world PQ-NTOR
@@ -572,9 +576,11 @@ performance ARM64 platforms.**
 ## SAGIN Networks
 
 SAGIN architectures integrate satellites, UAVs, and terrestrial
-networks [Survey2023]. Security protocols for SAGIN must tolerate
-high latency (250+ ms for GEO) and variable bandwidth. **No prior
-work evaluates post-quantum handshake protocols under SAGIN conditions.**
+networks [Survey2023]. Security protocols for SAGIN must handle
+complex cooperative scenarios including NOMA (Non-Orthogonal Multiple
+Access) and multi-hop relaying. **No prior work evaluates post-quantum
+handshake protocols under realistic SAGIN NOMA collaborative network
+conditions.**
 ```
 
 ---
@@ -682,10 +688,10 @@ work evaluates post-quantum handshake protocols under SAGIN conditions.**
 PQ-NTOR握手:        181.64 µs (飞腾派ARM64)
 Classic NTOR估算:   40-60 µs (飞腾派ARM64)
 开销倍数:           3.0-4.5×
-三跳电路:           1252.57 µs (单机)
+三跳电路:           1252.57 µs (单机LAN)
 7π预测:            1.6-2.0 ms (LAN)
-SAGIN LEO:         ~61 ms (20ms延迟)
-SAGIN GEO:         ~751 ms (250ms延迟)
+SAGIN Topo01-02:   ~6.7 ms (LEO+NOMA, 密码学占8.1%)
+SAGIN Topo03/09:   ~4.1 ms (UAV主导, 密码学占13.2%)
 ```
 
 ### B. 文献对比速查
@@ -701,9 +707,9 @@ SAGIN GEO:         ~751 ms (250ms延迟)
 ### C. 创新点速查
 
 ✅ **首次** ARM64平台PQ-NTOR完整评测
-✅ **首次** SAGIN网络环境测试设计
+✅ **首次** SAGIN NOMA协作网络测试设计
 ✅ **首次** 真实分布式7π部署验证
 ✅ **首次** 完整端到端性能分析
 ✅ **优于** Raspberry Pi 4性能 (181 vs 263 µs)
 ✅ **合理** 开销倍数 (3.0-4.5× in 2-6× range)
-✅ **可行** SAGIN部署 (<1%开销 in高延迟场景)
+✅ **可行** SAGIN部署 (~8.1%开销 in典型场景)
