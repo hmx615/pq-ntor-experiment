@@ -1,0 +1,28 @@
+架构：                              aarch64
+CPU 运行模式：                      32-bit, 64-bit
+字节序：                            Little Endian
+CPU:                                4
+在线 CPU 列表：                     0-3
+每个核的线程数：                    1
+每个座的核数：                      1
+座：                                3
+厂商 ID：                           0x70
+型号：                              4
+步进：                              0x0
+CPU 最大 MHz：                      1800.0000
+CPU 最小 MHz：                      187.5000
+BogoMIPS：                          100.00
+Vulnerability Gather data sampling: Not affected
+Vulnerability Itlb multihit:        Not affected
+Vulnerability L1tf:                 Not affected
+Vulnerability Mds:                  Not affected
+Vulnerability Meltdown:             Mitigation; PTI
+Vulnerability Mmio stale data:      Not affected
+Vulnerability Retbleed:             Not affected
+Vulnerability Spec rstack overflow: Not affected
+Vulnerability Spec store bypass:    Not affected
+Vulnerability Spectre v1:           Mitigation; __user pointer sanitization
+Vulnerability Spectre v2:           Not affected
+Vulnerability Srbds:                Not affected
+Vulnerability Tsx async abort:      Not affected
+标记：                              fp asimd evtstrm aes pmull sha1 sha2 crc32 cpuid sha3 sha512

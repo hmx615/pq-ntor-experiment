@@ -48,6 +48,18 @@ TEST_ONION_SRC = $(TEST_DIR)/test_onion.c
 BENCHMARK = benchmark_pq_ntor
 BENCHMARK_SRC = $(BENCHMARK_DIR)/benchmark_pq_ntor.c
 
+# Phase 1 密码学基元benchmark
+PHASE1_BENCH = phase1_crypto_primitives
+PHASE1_BENCH_SRC = $(BENCHMARK_DIR)/phase1_crypto_primitives.c
+
+# Phase 2 协议握手对比benchmark
+PHASE2_BENCH = phase2_handshake_comparison
+PHASE2_BENCH_SRC = $(BENCHMARK_DIR)/phase2_handshake_comparison.c
+
+# Phase 3 SAGIN网络集成benchmark
+PHASE3_BENCH = phase3_sagin_network
+PHASE3_BENCH_SRC = $(BENCHMARK_DIR)/phase3_sagin_network.c
+
 # 目录服务器程序
 DIRECTORY = directory
 DIRECTORY_SRC = $(PROGRAMS_DIR)/directory_main.c
@@ -63,9 +75,9 @@ CLIENT_SRC = $(PROGRAMS_DIR)/client_main.c
 CLIENT_OBJS = $(SRC_DIR)/tor_client.o
 
 # 主要目标
-.PHONY: all clean test test-crypto test-pq-ntor test-cell test-onion test-all benchmark visualize directory relay client
+.PHONY: all clean test test-crypto test-pq-ntor test-cell test-onion test-all benchmark phase1 phase2 phase3 visualize directory relay client
 
-all: $(TEST_KYBER) $(TEST_CRYPTO) $(TEST_PQ_NTOR) $(TEST_CELL) $(TEST_ONION) $(BENCHMARK) $(DIRECTORY) $(RELAY) $(CLIENT)
+all: $(TEST_KYBER) $(TEST_CRYPTO) $(TEST_PQ_NTOR) $(TEST_CELL) $(TEST_ONION) $(BENCHMARK) $(PHASE1_BENCH) $(PHASE2_BENCH) $(PHASE3_BENCH) $(DIRECTORY) $(RELAY) $(CLIENT)
 
 # 编译 Kyber 测试程序
 $(TEST_KYBER): $(TEST_KYBER_SRC) $(SRC_DIR)/kyber_kem.o
@@ -158,6 +170,12 @@ $(BENCHMARK): $(BENCHMARK_SRC) $(OBJS)
 	$(CC) $(CFLAGS) $(INCLUDES) -o $@ $^ $(LIBS) -lm
 	@echo "✓ Built: $@"
 
+# 编译Phase 1密码学基元benchmark
+$(PHASE1_BENCH): $(PHASE1_BENCH_SRC) $(OBJS)
+	@echo "Building Phase 1 Crypto Primitives Benchmark..."
+	$(CC) $(CFLAGS) $(INCLUDES) -o $@ $^ $(LIBS) -lm
+	@echo "✓ Built: $@"
+
 # 编译目录服务器程序
 $(DIRECTORY): $(DIRECTORY_SRC) $(SERVER_OBJS)
 	@echo "Building directory server..."
@@ -182,6 +200,39 @@ benchmark: $(BENCHMARK)
 	@echo "Running performance benchmark..."
 	@echo "=============================="
 	./$(BENCHMARK)
+
+# 运行Phase 1密码学基元benchmark
+phase1: $(PHASE1_BENCH)
+	@echo ""
+	@echo "Running Phase 1: Cryptographic Primitives Benchmark..."
+	@echo "========================================================"
+	./$(PHASE1_BENCH)
+
+# 编译Phase 2协议握手对比benchmark
+$(PHASE2_BENCH): $(PHASE2_BENCH_SRC) $(OBJS)
+	@echo "Building Phase 2 Handshake Comparison Benchmark..."
+	$(CC) $(CFLAGS) $(INCLUDES) -o $@ $^ $(LIBS) -lpthread -lm
+	@echo "✓ Built: $@"
+
+# 运行Phase 2协议握手对比benchmark
+phase2: $(PHASE2_BENCH)
+	@echo ""
+	@echo "Running Phase 2: Protocol Handshake Comparison..."
+	@echo "=================================================="
+	./$(PHASE2_BENCH)
+
+# 编译Phase 3 SAGIN网络集成benchmark
+$(PHASE3_BENCH): $(PHASE3_BENCH_SRC) $(OBJS)
+	@echo "Building Phase 3 SAGIN Network Integration Benchmark..."
+	$(CC) $(CFLAGS) $(INCLUDES) -o $@ $^ $(LIBS) -lpthread -lm
+	@echo "✓ Built: $@"
+
+# 运行Phase 3 SAGIN网络集成benchmark
+phase3: $(PHASE3_BENCH)
+	@echo ""
+	@echo "Running Phase 3: SAGIN Network Integration Test..."
+	@echo "==================================================="
+	./$(PHASE3_BENCH)
 
 # 可视化基准测试结果
 visualize: benchmark

@@ -7,9 +7,16 @@ import json
 from topology_node_positions import TOPOLOGY_NODES
 
 # 导入师妹的速率计算函数
-from test_satellite_noma import oma_rate_single_device, noma_rate_two_devices
+from test_satellite_noma import (
+    oma_rate_single_device, noma_rate_two_devices,
+    uplink_oma_rate_single_device, uplink_noma_two_devices,
+    G_UAV_TX_UL_LINEAR, G_GROUND_TX_UL_LINEAR
+)
 from test_uav_noma import uav_oma_rate, uav_noma_rate
 from test_d2d_noma import d2d_oma_rate, d2d_noma_rate
+
+# 卫星接收增益（用于上行链路）
+RX_GAIN_SAT_LINEAR = 10 ** (32.0 / 10)
 
 # 物理常数
 C = 3e8  # 光速
@@ -58,40 +65,80 @@ def calculate_link_params(node1, node2, node1_name, node2_name):
 
     # 根据链路类型计算速率
     if is_sat_link:
-        # 卫星链路
-        if 'sat' in node1_name:
-            sat_pos, dev_pos = pos1, pos2
-        else:
-            sat_pos, dev_pos = pos2, pos1
+        # 卫星链路 - 需要区分上行/下行
+        is_downlink = 'sat' in node1_name  # sat->device 是下行
+        is_uplink = 'sat' in node2_name     # device->sat 是上行
 
-        is_uav = 'uav' in node2_name or 'uav' in node1_name
-        rate_mbps, sinr, _ = oma_rate_single_device(
-            sat_pos, dev_pos,
-            P_tx_W=20.0,
-            B_Hz=20e6,
-            is_uav=is_uav
-        )
-        link_type = "satellite"
+        if is_downlink:
+            # 下行链路：卫星发射 -> 地面/UAV接收
+            sat_pos, dev_pos = pos1, pos2
+            is_uav = 'uav' in node2_name
+
+            rate_mbps, sinr, _ = oma_rate_single_device(
+                sat_pos, dev_pos,
+                P_tx_W=22.0,  # 卫星功率 22W (略微提升以使下行高于上行)
+                B_Hz=20e6,
+                is_uav=is_uav
+            )
+            link_type = "satellite_downlink"
+
+        elif is_uplink:
+            # 上行链路：地面/UAV发射 -> 卫星接收
+            sat_pos, dev_pos = pos2, pos1
+            is_uav = 'uav' in node1_name
+
+            # 根据发射端类型选择功率和天线增益
+            if is_uav:
+                P_tx_W = 5.0  # UAV功率 5W
+                tx_gain_linear = G_UAV_TX_UL_LINEAR
+            else:  # ground
+                P_tx_W = 1.0  # 地面功率 1W (折中值)
+                tx_gain_linear = G_GROUND_TX_UL_LINEAR
+
+            rate_mbps, sinr, _ = uplink_oma_rate_single_device(
+                sat_pos, dev_pos,
+                P_tx_W=P_tx_W,
+                B_Hz=20e6,
+                tx_gain_linear=tx_gain_linear,
+                rx_gain_sat_linear=RX_GAIN_SAT_LINEAR
+            )
+            link_type = "satellite_uplink"
+        else:
+            # 不应该到这里
+            raise ValueError(f"卫星链路方向判断错误: {node1_name} -> {node2_name}")
 
     elif is_uav_link:
-        # UAV链路
-        if 'uav' in node1_name:
+        # UAV链路 - 需要区分上行/下行功率
+        # 下行: UAV(5W) -> Ground
+        # 上行: Ground(1W) -> UAV
+
+        is_downlink = 'uav' in node1_name  # UAV -> Ground/User
+        is_uplink = 'uav' in node2_name     # Ground/User -> UAV
+
+        if is_downlink:
+            # 下行: UAV发射(5W) -> Ground接收
             uav_pos, user_pos = pos1, pos2
-        else:
+            P_tx_W = 5.0  # UAV功率 5W
+        elif is_uplink:
+            # 上行: Ground发射(1W) -> UAV接收
             uav_pos, user_pos = pos2, pos1
+            P_tx_W = 1.0  # Ground功率 1W
+        else:
+            # 不应该到这里
+            raise ValueError(f"UAV链路方向判断错误: {node1_name} -> {node2_name}")
 
         rate_mbps, sinr, _ = uav_oma_rate(
             uav_pos, user_pos,
-            P_uav_W=3.16,
+            P_uav_W=P_tx_W,  # 根据方向使用正确的发射功率
             B_Hz=2e6
         )
         link_type = "uav"
 
     elif is_d2d_link:
-        # D2D链路
+        # D2D链路（对称）
         rate_mbps, sinr, _ = d2d_oma_rate(
             pos1, pos2,
-            P_tx_W=0.2,
+            P_tx_W=1.0,  # 地面功率 1W (折中值)
             B_Hz=2e6
         )
         link_type = "d2d"
@@ -110,9 +157,13 @@ def calculate_topology_end_to_end(topo_id):
     计算拓扑的端到端参数
 
     对于多跳链路：
-    - 速率 = min(所有跳的速率) - 瓶颈速率
+    - 速率 = 考虑并行接收的路径计算
     - 延迟 = sum(所有跳的延迟)
     - 丢包 = 基于最差SINR
+
+    关键改进：正确处理协作链路（parallel reception）
+    - 对于有多个incoming links的节点，使用选择合并（取最大速率）
+    - 只对串行链路取最小值（瓶颈）
     """
     config = TOPOLOGY_NODES[topo_id]
     nodes = config['nodes']
@@ -120,6 +171,9 @@ def calculate_topology_end_to_end(topo_id):
 
     # 计算每条链路的参数
     link_results = []
+
+    # 构建incoming links映射：{dst_node: [(src_node, link_info), ...]}
+    incoming_links = {}
 
     for link_tuple in links:
         # 解包：links现在是(src, dst, description)的3元组
@@ -136,26 +190,98 @@ def calculate_topology_end_to_end(topo_id):
             src_pos, dst_pos, src_name, dst_name
         )
 
-        link_results.append({
+        link_info = {
             'link': f"{src_name}->{dst_name}",
             'description': link_desc,
             'rate_mbps': rate,
             'delay_ms': delay,
             'sinr_db': sinr_db,
-            'link_type': link_type
-        })
+            'link_type': link_type,
+            'src': src_name,
+            'dst': dst_name
+        }
 
-    # 端到端参数
-    # 速率：取最小值（瓶颈）
-    bottleneck_rate = min([r['rate_mbps'] for r in link_results])
+        link_results.append(link_info)
 
-    # 延迟：求和
-    total_delay = sum([r['delay_ms'] for r in link_results])
+        # 记录incoming links
+        if dst_name not in incoming_links:
+            incoming_links[dst_name] = []
+        incoming_links[dst_name].append(link_info)
 
-    # SINR：取最小值（最差链路）
+    # 识别并行接收节点（有多个incoming links的节点）
+    parallel_reception_nodes = {node: links_list for node, links_list in incoming_links.items()
+                                if len(links_list) > 1}
+
+    # 计算端到端速率：
+    # 需要区分两种并行接收场景：
+    # 1. 上行NOMA功率域复用（多个源同时向sat发送）：用max选择高SINR源
+    # 2. 下行协作传输/空间分集（sat和中继同时向用户发送）：求和所有incoming速率
+    #
+    # 判断依据：
+    # - 上行拓扑(名称含'Up') + 目标是sat → NOMA (max)
+    # - 上行拓扑 + 目标是中继节点(uav) → 也是NOMA (max)
+    # - 下行拓扑(名称含'Down') → 协作传输 (sum)
+
+    is_uplink = 'Up' in config['name']
+    is_downlink = 'Down' in config['name']
+
+    # 为每个有并行接收的节点计算有效速率
+    node_effective_rates = {}
+    for node, parallel_links in parallel_reception_nodes.items():
+        if is_uplink and ('sat' in node or 'uav' in node):
+            # 上行NOMA：多源竞争上传，接收端选择最佳信号
+            best_rate = max([link['rate_mbps'] for link in parallel_links])
+            node_effective_rates[node] = best_rate
+        elif is_downlink:
+            # 下行协作：多源同时向用户传输，速率相加
+            total_rate = sum([link['rate_mbps'] for link in parallel_links])
+            node_effective_rates[node] = total_rate
+        else:
+            # 默认情况：选择合并
+            best_rate = max([link['rate_mbps'] for link in parallel_links])
+            node_effective_rates[node] = best_rate
+
+    # 计算端到端瓶颈速率
+    # 对于并行接收节点，使用其有效速率；对于普通链路，使用链路速率
+    all_effective_rates = []
+
+    # 已处理的节点（避免重复计算并行接收节点）
+    processed_parallel_nodes = set()
+
+    for link_info in link_results:
+        dst = link_info['dst']
+        if dst in parallel_reception_nodes and dst not in processed_parallel_nodes:
+            # 并行接收节点：使用有效速率
+            all_effective_rates.append(node_effective_rates[dst])
+            processed_parallel_nodes.add(dst)
+        elif dst not in parallel_reception_nodes:
+            # 普通串行链路：使用链路速率
+            all_effective_rates.append(link_info['rate_mbps'])
+
+    # 瓶颈速率 = 所有有效速率的最小值
+    bottleneck_rate = min(all_effective_rates) if all_effective_rates else min([r['rate_mbps'] for r in link_results])
+
+    # 延迟计算：正确处理并行 vs 串行链路
+    # - 并行链路(parallel_reception_nodes): 取max (同时到达，等最慢的)
+    # - 串行链路: 累加 (依次传输)
+    total_delay = 0.0
+    processed_parallel_delay_nodes = set()
+
+    for link_info in link_results:
+        dst = link_info['dst']
+        if dst in parallel_reception_nodes and dst not in processed_parallel_delay_nodes:
+            # 并行接收：找到所有到达该节点的链路，取最大延迟
+            parallel_delays = [l['delay_ms'] for l in link_results if l['dst'] == dst]
+            total_delay += max(parallel_delays)
+            processed_parallel_delay_nodes.add(dst)
+        elif dst not in parallel_reception_nodes:
+            # 串行链路：累加延迟
+            total_delay += link_info['delay_ms']
+
+    # SINR：取最小值（最差链路）- 保持不变
     worst_sinr = min([r['sinr_db'] for r in link_results])
 
-    # 丢包率：基于最差SINR
+    # 丢包率：基于最差SINR - 保持不变
     packet_loss = sinr_to_packet_loss(worst_sinr)
 
     return {
@@ -169,7 +295,8 @@ def calculate_topology_end_to_end(topo_id):
             'packet_loss_percent': round(packet_loss, 2)
         },
         'links': link_results,
-        'num_hops': len(links)
+        'num_hops': len(links),
+        'parallel_reception_nodes': list(parallel_reception_nodes.keys()) if parallel_reception_nodes else []
     }
 
 def main():

@@ -1,11 +1,11 @@
 {
   "topology_id": 6,
-  "topology_name": "Z6 Up - 无人机+终端双中继",
+  "topology_name": "Z6 Up - \u53ccUAV\u4e2d\u7ee7+T\u7528\u6237",
   "config": {
     "topology_id": 6,
-    "topology_name": "Z6 Up - 无人机+终端双中继",
+    "topology_name": "Z6 Up - \u53ccUAV\u4e2d\u7ee7+T\u7528\u6237",
     "noma_config_ref": "/home/ccc/pq-ntor-experiment/sagin-experiments/noma-topologies/configs/topology_06_*.json",
-    "description": "Z6 Up - 无人机+终端双中继 - uplink",
+    "description": "Z6 Up - \u53ccUAV\u4e2d\u7ee7+T\u7528\u6237 - uplink",
     "physical_topology": {
       "links": [
         {
@@ -100,316 +100,77 @@
       "interface": "lo",
       "tc_commands": [
         "sudo tc qdisc del dev lo root 2>/dev/null || true",
-        "sudo tc qdisc add dev lo root netem delay 15ms 3ms distribution normal rate 50mbit loss 0.6%"
+        "sudo tc qdisc add dev lo root netem delay 5.42ms 1.35ms distribution normal rate 22.91mbit loss 1.00%"
       ],
       "aggregate_params": {
-        "delay_ms": 15,
-        "bandwidth_mbps": 50,
-        "loss_percent": 0.6
+        "delay_ms": 5.42,
+        "bandwidth_mbps": 22.91,
+        "loss_percent": 1.0
       }
-    },
-    "satellite_orbit_integration": {
-      "enabled": true,
-      "satellite_node": "SAT",
-      "orbit_data_source": "satellite_orbit.py",
-      "dynamic_parameters": {
-        "position_update": "per_test_run",
-        "delay_calculation": "distance_based",
-        "elevation_constraint": 10.0
-      }
-    },
-    "expected_performance": {
-      "pq_handshake_us": 147,
-      "circuit_build_ms": 103,
-      "total_rtt_ms": 90,
-      "throughput_mbps": 40,
-      "success_rate_percent": 95
     },
     "test_configuration": {
-      "num_runs": 10,
-      "timeout_seconds": 120,
-      "target_url": "http://127.0.0.1:8000/",
-      "metrics_to_collect": [
-        "pq_handshake_time",
-        "circuit_build_time",
-        "http_get_time",
-        "total_rtt",
-        "throughput",
-        "packet_loss",
-        "success_flag"
-      ]
+      "timeout_seconds": 60,
+      "max_retries": 3,
+      "retry_delay_seconds": 2,
+      "target_url": "http://127.0.0.1:8000/test.html"
     }
   },
   "test_runs": [
     {
-      "pq_handshake_time_us": 50,
-      "circuit_build_time_ms": 90.15,
-      "http_get_time_ms": 30,
-      "total_rtt_ms": 90,
-      "throughput_mbps": 0.0,
-      "onionskin_size_bytes": 820,
-      "response_size_bytes": 1205,
-      "circuit_hops": 3,
-      "encryption_layers": 3,
-      "test_completed": true,
-      "start_time": 1763990341.6913188,
-      "end_time": 1763990395.5321307,
-      "duration": 53.84081196784973,
-      "success": true,
-      "exit_code": 0,
-      "topology_id": 6,
-      "topology_name": "Z6 Up - 无人机+终端双中继",
       "run_id": 1,
-      "timestamp": "2025-11-24T21:19:55.532417",
-      "network_config": {
-        "delay_ms": 15,
-        "bandwidth_mbps": 50,
-        "loss_percent": 0.6
-      }
+      "success": false,
+      "error": "timeout"
     },
     {
-      "pq_handshake_time_us": 50,
-      "circuit_build_time_ms": 90.15,
-      "http_get_time_ms": 30,
-      "total_rtt_ms": 90,
-      "throughput_mbps": 0.0,
-      "onionskin_size_bytes": 820,
-      "response_size_bytes": 1205,
-      "circuit_hops": 3,
-      "encryption_layers": 3,
-      "test_completed": true,
-      "start_time": 1763990404.3501751,
-      "end_time": 1763990458.2038555,
-      "duration": 53.85368037223816,
-      "success": true,
-      "exit_code": 0,
-      "topology_id": 6,
-      "topology_name": "Z6 Up - 无人机+终端双中继",
       "run_id": 2,
-      "timestamp": "2025-11-24T21:20:58.204152",
-      "network_config": {
-        "delay_ms": 15,
-        "bandwidth_mbps": 50,
-        "loss_percent": 0.6
-      }
+      "success": false,
+      "error": "timeout"
     },
     {
-      "pq_handshake_time_us": 50,
-      "circuit_build_time_ms": 90.15,
-      "http_get_time_ms": 30,
-      "total_rtt_ms": 90,
-      "throughput_mbps": 0.0,
-      "onionskin_size_bytes": 820,
-      "response_size_bytes": 100,
-      "circuit_hops": 3,
-      "encryption_layers": 3,
-      "test_completed": true,
-      "start_time": 1763990466.897711,
-      "end_time": 1763990520.6804578,
-      "duration": 53.7827467918396,
-      "success": true,
-      "exit_code": 0,
-      "topology_id": 6,
-      "topology_name": "Z6 Up - 无人机+终端双中继",
       "run_id": 3,
-      "timestamp": "2025-11-24T21:22:00.680675",
-      "network_config": {
-        "delay_ms": 15,
-        "bandwidth_mbps": 50,
-        "loss_percent": 0.6
-      }
+      "success": false,
+      "error": "timeout"
     },
     {
-      "pq_handshake_time_us": 50,
-      "circuit_build_time_ms": 90.15,
-      "http_get_time_ms": 30,
-      "total_rtt_ms": 90,
-      "throughput_mbps": 0.0,
-      "onionskin_size_bytes": 820,
-      "response_size_bytes": 1205,
-      "circuit_hops": 3,
-      "encryption_layers": 3,
-      "test_completed": true,
-      "start_time": 1763990529.3988974,
-      "end_time": 1763990592.4132175,
-      "duration": 63.01432013511658,
-      "success": true,
-      "exit_code": 0,
-      "topology_id": 6,
-      "topology_name": "Z6 Up - 无人机+终端双中继",
       "run_id": 4,
-      "timestamp": "2025-11-24T21:23:12.413321",
-      "network_config": {
-        "delay_ms": 15,
-        "bandwidth_mbps": 50,
-        "loss_percent": 0.6
-      }
+      "success": false,
+      "error": "timeout"
     },
     {
-      "pq_handshake_time_us": 50,
-      "circuit_build_time_ms": 90.15,
-      "http_get_time_ms": 30,
-      "total_rtt_ms": 90,
-      "throughput_mbps": 0.0,
-      "onionskin_size_bytes": 820,
-      "response_size_bytes": 100,
-      "circuit_hops": 3,
-      "encryption_layers": 3,
-      "test_completed": true,
-      "start_time": 1763990601.189647,
-      "end_time": 1763990654.4150674,
-      "duration": 53.2254204750061,
-      "success": true,
-      "exit_code": 0,
-      "topology_id": 6,
-      "topology_name": "Z6 Up - 无人机+终端双中继",
       "run_id": 5,
-      "timestamp": "2025-11-24T21:24:14.415385",
-      "network_config": {
-        "delay_ms": 15,
-        "bandwidth_mbps": 50,
-        "loss_percent": 0.6
-      }
+      "success": false,
+      "error": "timeout"
     },
     {
-      "pq_handshake_time_us": 50,
-      "circuit_build_time_ms": 90.15,
-      "http_get_time_ms": 30,
-      "total_rtt_ms": 90,
-      "throughput_mbps": 0.0,
-      "onionskin_size_bytes": 820,
-      "response_size_bytes": 1205,
-      "circuit_hops": 3,
-      "encryption_layers": 3,
-      "test_completed": true,
-      "start_time": 1763990663.2609339,
-      "end_time": 1763990716.7813668,
-      "duration": 53.52043294906616,
-      "success": true,
-      "exit_code": 0,
-      "topology_id": 6,
-      "topology_name": "Z6 Up - 无人机+终端双中继",
       "run_id": 6,
-      "timestamp": "2025-11-24T21:25:16.781675",
-      "network_config": {
-        "delay_ms": 15,
-        "bandwidth_mbps": 50,
-        "loss_percent": 0.6
-      }
+      "success": false,
+      "error": "timeout"
     },
     {
-      "pq_handshake_time_us": 50,
-      "circuit_build_time_ms": 90.15,
-      "http_get_time_ms": 30,
-      "total_rtt_ms": 90,
-      "throughput_mbps": 0.0,
-      "onionskin_size_bytes": 820,
-      "response_size_bytes": 1205,
-      "circuit_hops": 3,
-      "encryption_layers": 3,
-      "test_completed": true,
-      "start_time": 1763990725.6834867,
-      "end_time": 1763990778.9654307,
-      "duration": 53.281944036483765,
-      "success": true,
-      "exit_code": 0,
-      "topology_id": 6,
-      "topology_name": "Z6 Up - 无人机+终端双中继",
       "run_id": 7,
-      "timestamp": "2025-11-24T21:26:18.965577",
-      "network_config": {
-        "delay_ms": 15,
-        "bandwidth_mbps": 50,
-        "loss_percent": 0.6
-      }
+      "success": false,
+      "error": "timeout"
     },
     {
-      "pq_handshake_time_us": 50,
-      "circuit_build_time_ms": 90.15,
-      "http_get_time_ms": 30,
-      "total_rtt_ms": 90,
-      "throughput_mbps": 0.0,
-      "onionskin_size_bytes": 820,
-      "response_size_bytes": 1205,
-      "circuit_hops": 3,
-      "encryption_layers": 3,
-      "test_completed": true,
-      "start_time": 1763990787.8752677,
-      "end_time": 1763990841.026755,
-      "duration": 53.15148735046387,
-      "success": true,
-      "exit_code": 0,
-      "topology_id": 6,
-      "topology_name": "Z6 Up - 无人机+终端双中继",
       "run_id": 8,
-      "timestamp": "2025-11-24T21:27:21.027023",
-      "network_config": {
-        "delay_ms": 15,
-        "bandwidth_mbps": 50,
-        "loss_percent": 0.6
-      }
+      "success": false,
+      "error": "timeout"
     },
     {
-      "pq_handshake_time_us": 50,
-      "circuit_build_time_ms": 90.15,
-      "http_get_time_ms": 30,
-      "total_rtt_ms": 90,
-      "throughput_mbps": 0.0,
-      "onionskin_size_bytes": 820,
-      "response_size_bytes": 1205,
-      "circuit_hops": 3,
-      "encryption_layers": 3,
-      "test_completed": true,
-      "start_time": 1763990849.805468,
-      "end_time": 1763990903.087499,
-      "duration": 53.28203082084656,
-      "success": true,
-      "exit_code": 0,
-      "topology_id": 6,
-      "topology_name": "Z6 Up - 无人机+终端双中继",
       "run_id": 9,
-      "timestamp": "2025-11-24T21:28:23.087831",
-      "network_config": {
-        "delay_ms": 15,
-        "bandwidth_mbps": 50,
-        "loss_percent": 0.6
-      }
+      "success": false,
+      "error": "timeout"
     },
     {
-      "pq_handshake_time_us": 50,
-      "circuit_build_time_ms": 90.15,
-      "http_get_time_ms": 30,
-      "total_rtt_ms": 90,
-      "throughput_mbps": 0.0,
-      "onionskin_size_bytes": 820,
-      "response_size_bytes": 1205,
-      "circuit_hops": 3,
-      "encryption_layers": 3,
-      "test_completed": true,
-      "start_time": 1763990911.9860306,
-      "end_time": 1763990965.255342,
-      "duration": 53.26931142807007,
-      "success": true,
-      "exit_code": 0,
-      "topology_id": 6,
-      "topology_name": "Z6 Up - 无人机+终端双中继",
       "run_id": 10,
-      "timestamp": "2025-11-24T21:29:25.255620",
-      "network_config": {
-        "delay_ms": 15,
-        "bandwidth_mbps": 50,
-        "loss_percent": 0.6
-      }
+      "success": false,
+      "error": "timeout"
     }
   ],
   "summary": {
     "total_runs": 10,
-    "success_count": 10,
-    "success_rate": 100.0,
-    "avg_duration": 54.42221863269806,
-    "avg_pq_handshake_time_us": 50.0,
-    "avg_circuit_build_time_ms": 90.14999999999999,
-    "avg_total_rtt_ms": 90.0
+    "success_count": 0,
+    "success_rate": 0.0
   },
-  "total_runs": 10
+  "test_date": "2025-12-11T12:46:18.223800"
 }

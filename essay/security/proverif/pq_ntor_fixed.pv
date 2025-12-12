@@ -1,0 +1,74 @@
+(* ============================================================================
+   PQ-NTOR Protocol - ProVerif Formal Verification Model (Fixed)
+   ============================================================================ *)
+
+(* Types *)
+type pkey.
+type skey.
+type ciphertext.
+type key.
+type nonce.
+type hashvalue.
+
+(* Public/Private channels *)
+free net: channel.
+
+(* Cryptographic functions *)
+fun pk(skey): pkey.
+fun kem_encap(pkey, nonce): ciphertext.
+fun shared_key(nonce): key [private].
+reduc forall sk: skey, r: nonce; kem_decap(sk, kem_encap(pk(sk), r)) = shared_key(r).
+fun kdf(key, nonce, nonce, pkey): key.
+fun h(key): hashvalue.
+
+(* Secrets to test *)
+free session_key_secret: key [private].
+
+(* Events *)
+event ClientSends(nonce, ciphertext).
+event RelayReceives(nonce, ciphertext).
+event RelayResponds(nonce, hashvalue).
+event ClientAccepts(key).
+event RelayAccepts(key).
+
+(* Security Queries *)
+query attacker(session_key_secret).
+
+query nc: nonce, ct: ciphertext;
+    event(RelayReceives(nc, ct)) ==> event(ClientSends(nc, ct)).
+
+query nr: nonce, hv: hashvalue;
+    event(ClientAccepts(session_key_secret)) ==> event(RelayResponds(nr, hv)).
+
+(* Client Process *)
+let client(pkR: pkey) =
+    new Nc: nonce;
+    let ct = kem_encap(pkR, Nc) in
+    let ss = shared_key(Nc) in
+    event ClientSends(Nc, ct);
+    out(net, (ct, Nc));
+    in(net, (Nr: nonce, h_recv: hashvalue));
+    let Ksession = kdf(ss, Nc, Nr, pkR) in
+    if h_recv = h(Ksession) then
+    event ClientAccepts(Ksession);
+    if Ksession = session_key_secret then
+        out(net, Ksession).
+
+(* Relay Process *)
+let relay(skR: skey) =
+    let pkR = pk(skR) in
+    out(net, pkR);
+    in(net, (ct: ciphertext, Nc: nonce));
+    event RelayReceives(Nc, ct);
+    let ss = kem_decap(skR, ct) in
+    new Nr: nonce;
+    let Ksession = kdf(ss, Nc, Nr, pkR) in
+    let hv = h(Ksession) in
+    event RelayResponds(Nr, hv);
+    out(net, (Nr, hv));
+    event RelayAccepts(Ksession).
+
+(* Main Process *)
+process
+    new skR: skey;
+    ( (!relay(skR)) | (!client(pk(skR))) )

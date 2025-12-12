@@ -9,6 +9,7 @@
 \usepackage{graphicx}
 \usepackage{amsmath}
 \usepackage{amssymb}
+\usepackage{mathtools}  % For \xleftrightarrow
 \usepackage{booktabs}
 \usepackage{multirow}
 \usepackage{xcolor}
@@ -17,6 +18,9 @@
 \usepackage{listings}
 \usepackage{subfigure}
 \usepackage{enumitem}
+\usepackage{pifont}     % For checkmark and xmark symbols
+\usepackage{tikz}       % For protocol diagrams
+\usetikzlibrary{positioning,arrows.meta,calc}
 
 % Colors for links
 \hypersetup{
@@ -41,6 +45,16 @@
 \newcommand{\sagin}{SAGIN}
 \newcommand{\us}{$\mu$s}
 \newcommand{\ms}{ms}
+
+% Table symbols
+\newcommand{\cmark}{\ding{51}}  % Checkmark
+\newcommand{\xmark}{\ding{55}}  % X mark
+
+% BAN Logic notation
+\newcommand{\believes}{\mid\!\equiv}
+\newcommand{\sees}{\triangleleft}
+\newcommand{\said}{\mid\!\sim}
+\newcommand{\controls}{\Rightarrow}
 
 % Title and authors
 \title{\Large \bf PQ-NTOR in Space-Air-Ground Integrated Networks:\\
@@ -78,11 +92,11 @@ This paper presents the first complete implementation and comprehensive evaluati
 
 % Main sections
 \input{sections/introduction}
+\input{sections/related_work}
 \input{sections/background}
 \input{sections/design}
 \input{sections/implementation}
 \input{sections/evaluation}
-\input{sections/related_work}
 \input{sections/conclusion}
 
 % Acknowledgments

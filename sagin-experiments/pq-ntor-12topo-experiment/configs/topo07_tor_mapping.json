@@ -92,43 +92,18 @@
     "interface": "lo",
     "tc_commands": [
       "sudo tc qdisc del dev lo root 2>/dev/null || true",
-      "sudo tc qdisc add dev lo root netem delay 25ms 6ms distribution normal rate 30mbit loss 1.5%"
+      "sudo tc qdisc add dev lo root netem delay 5.42ms 1.35ms distribution normal rate 69.43mbit loss 2.00%"
     ],
     "aggregate_params": {
-      "delay_ms": 25,
-      "bandwidth_mbps": 30,
-      "loss_percent": 1.5
+      "delay_ms": 5.42,
+      "bandwidth_mbps": 69.43,
+      "loss_percent": 2.0
     }
-  },
-  "satellite_orbit_integration": {
-    "enabled": true,
-    "satellite_node": "SAT",
-    "orbit_data_source": "satellite_orbit.py",
-    "dynamic_parameters": {
-      "position_update": "per_test_run",
-      "delay_calculation": "distance_based",
-      "elevation_constraint": 10.0
-    }
-  },
-  "expected_performance": {
-    "pq_handshake_us": 147,
-    "circuit_build_ms": 172,
-    "total_rtt_ms": 150,
-    "throughput_mbps": 24,
-    "success_rate_percent": 90
   },
   "test_configuration": {
-    "num_runs": 10,
-    "timeout_seconds": 120,
-    "target_url": "http://127.0.0.1:8000/",
-    "metrics_to_collect": [
-      "pq_handshake_time",
-      "circuit_build_time",
-      "http_get_time",
-      "total_rtt",
-      "throughput",
-      "packet_loss",
-      "success_flag"
-    ]
+    "timeout_seconds": 60,
+    "max_retries": 3,
+    "retry_delay_seconds": 2,
+    "target_url": "http://127.0.0.1:8000/test.html"
   }
 }

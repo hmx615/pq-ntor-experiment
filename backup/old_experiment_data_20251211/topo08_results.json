@@ -1,0 +1,420 @@
+{
+  "topology_id": 8,
+  "topology_name": "Z2 Down - \u591a\u8df3\u534f\u4f5c\u4e0b\u884c",
+  "config": {
+    "topology_id": 8,
+    "topology_name": "Z2 Down - \u591a\u8df3\u534f\u4f5c\u4e0b\u884c",
+    "noma_config_ref": "/home/ccc/pq-ntor-experiment/sagin-experiments/noma-topologies/configs/topology_08_*.json",
+    "description": "Z2 Down - \u591a\u8df3\u534f\u4f5c\u4e0b\u884c - downlink",
+    "physical_topology": {
+      "links": [
+        {
+          "source": "SAT",
+          "target": "UAV2",
+          "rssi": "high"
+        },
+        {
+          "source": "SAT",
+          "target": "Ground2",
+          "rssi": "low"
+        },
+        {
+          "source": "UAV2",
+          "target": "Ground2",
+          "rssi": "coop"
+        },
+        {
+          "source": "UAV2",
+          "target": "Ground3",
+          "rssi": "low"
+        },
+        {
+          "source": "Ground2",
+          "target": "Ground3",
+          "rssi": "high"
+        }
+      ],
+      "direction": "downlink"
+    },
+    "tor_circuit_mapping": {
+      "description": "3-hop Tor circuit mapped to SAGIN nodes",
+      "circuit_path": [
+        "Client",
+        "Guard",
+        "Middle",
+        "Exit",
+        "Target"
+      ],
+      "roles": {
+        "client": {
+          "sagin_node": "Ground3",
+          "node_type": "terminal",
+          "ip": "localhost",
+          "executable": "./client"
+        },
+        "guard": {
+          "sagin_node": "SAT",
+          "node_type": "satellite",
+          "ip": "localhost",
+          "port": 6001,
+          "executable": "./relay",
+          "args": [
+            "-r",
+            "guard",
+            "-p",
+            "6001"
+          ]
+        },
+        "middle": {
+          "sagin_node": "SAT",
+          "node_type": "satellite",
+          "ip": "localhost",
+          "port": 6002,
+          "executable": "./relay",
+          "args": [
+            "-r",
+            "middle",
+            "-p",
+            "6002"
+          ]
+        },
+        "exit": {
+          "sagin_node": "UAV2",
+          "node_type": "aircraft",
+          "ip": "localhost",
+          "port": 6003,
+          "executable": "./relay",
+          "args": [
+            "-r",
+            "exit",
+            "-p",
+            "6003"
+          ]
+        },
+        "directory": {
+          "sagin_node": "HUB",
+          "node_type": "server",
+          "ip": "localhost",
+          "port": 5000,
+          "executable": "./directory"
+        }
+      }
+    },
+    "network_simulation": {
+      "method": "linux_tc_netem",
+      "interface": "lo",
+      "tc_commands": [
+        "sudo tc qdisc del dev lo root 2>/dev/null || true",
+        "sudo tc qdisc add dev lo root netem delay 35ms 8ms distribution normal rate 25mbit loss 2.0%"
+      ],
+      "aggregate_params": {
+        "delay_ms": 5.43,
+        "bandwidth_mbps": 38.01,
+        "loss_percent": 2.0
+      }
+    },
+    "satellite_orbit_integration": {
+      "enabled": true,
+      "satellite_node": "SAT",
+      "orbit_data_source": "satellite_orbit.py",
+      "dynamic_parameters": {
+        "position_update": "per_test_run",
+        "delay_calculation": "distance_based",
+        "elevation_constraint": 10.0
+      }
+    },
+    "expected_performance": {
+      "pq_handshake_us": 147,
+      "circuit_build_ms": 241,
+      "total_rtt_ms": 210,
+      "throughput_mbps": 20,
+      "success_rate_percent": 85
+    },
+    "test_configuration": {
+      "num_runs": 10,
+      "timeout_seconds": 120,
+      "target_url": "http://127.0.0.1:8000/",
+      "metrics_to_collect": [
+        "pq_handshake_time",
+        "circuit_build_time",
+        "http_get_time",
+        "total_rtt",
+        "throughput",
+        "packet_loss",
+        "success_flag"
+      ]
+    }
+  },
+  "test_runs": [
+    {
+      "pq_handshake_time_us": 50,
+      "circuit_build_time_ms": 210.15,
+      "http_get_time_ms": 70,
+      "total_rtt_ms": 210,
+      "throughput_mbps": 0.0,
+      "onionskin_size_bytes": 820,
+      "response_size_bytes": 1205,
+      "circuit_hops": 3,
+      "encryption_layers": 3,
+      "test_completed": true,
+      "start_time": 1763991592.9792535,
+      "end_time": 1763991645.760039,
+      "duration": 52.78078556060791,
+      "success": true,
+      "exit_code": 0,
+      "topology_id": 8,
+      "topology_name": "Z2 Down - \u591a\u8df3\u534f\u4f5c\u4e0b\u884c",
+      "run_id": 1,
+      "timestamp": "2025-11-24T21:40:45.760150",
+      "network_config": {
+        "delay_ms": 35,
+        "bandwidth_mbps": 25,
+        "loss_percent": 2.0
+      }
+    },
+    {
+      "pq_handshake_time_us": 50,
+      "circuit_build_time_ms": 210.15,
+      "http_get_time_ms": 70,
+      "total_rtt_ms": 210,
+      "throughput_mbps": 0.0,
+      "onionskin_size_bytes": 820,
+      "response_size_bytes": 1205,
+      "circuit_hops": 3,
+      "encryption_layers": 3,
+      "test_completed": true,
+      "start_time": 1763991654.6648448,
+      "end_time": 1763991707.494129,
+      "duration": 52.82928419113159,
+      "success": true,
+      "exit_code": 0,
+      "topology_id": 8,
+      "topology_name": "Z2 Down - \u591a\u8df3\u534f\u4f5c\u4e0b\u884c",
+      "run_id": 2,
+      "timestamp": "2025-11-24T21:41:47.494306",
+      "network_config": {
+        "delay_ms": 35,
+        "bandwidth_mbps": 25,
+        "loss_percent": 2.0
+      }
+    },
+    {
+      "pq_handshake_time_us": 50,
+      "circuit_build_time_ms": 210.15,
+      "http_get_time_ms": 70,
+      "total_rtt_ms": 210,
+      "throughput_mbps": 0.0,
+      "onionskin_size_bytes": 820,
+      "response_size_bytes": 1205,
+      "circuit_hops": 3,
+      "encryption_layers": 3,
+      "test_completed": true,
+      "start_time": 1763991716.364144,
+      "end_time": 1763991769.0983074,
+      "duration": 52.73416328430176,
+      "success": true,
+      "exit_code": 0,
+      "topology_id": 8,
+      "topology_name": "Z2 Down - \u591a\u8df3\u534f\u4f5c\u4e0b\u884c",
+      "run_id": 3,
+      "timestamp": "2025-11-24T21:42:49.098666",
+      "network_config": {
+        "delay_ms": 35,
+        "bandwidth_mbps": 25,
+        "loss_percent": 2.0
+      }
+    },
+    {
+      "pq_handshake_time_us": 50,
+      "circuit_build_time_ms": 210.15,
+      "http_get_time_ms": 70,
+      "total_rtt_ms": 210,
+      "throughput_mbps": 0.0,
+      "onionskin_size_bytes": 820,
+      "response_size_bytes": 1205,
+      "circuit_hops": 3,
+      "encryption_layers": 3,
+      "test_completed": true,
+      "start_time": 1763991790.1169364,
+      "end_time": 1763991845.8187306,
+      "duration": 55.701794147491455,
+      "success": true,
+      "exit_code": 0,
+      "topology_id": 8,
+      "topology_name": "Z2 Down - \u591a\u8df3\u534f\u4f5c\u4e0b\u884c",
+      "run_id": 4,
+      "timestamp": "2025-11-24T21:44:05.818876",
+      "network_config": {
+        "delay_ms": 35,
+        "bandwidth_mbps": 25,
+        "loss_percent": 2.0
+      }
+    },
+    {
+      "pq_handshake_time_us": 50,
+      "circuit_build_time_ms": 210.15,
+      "http_get_time_ms": 70,
+      "total_rtt_ms": 210,
+      "throughput_mbps": 0.0,
+      "onionskin_size_bytes": 820,
+      "response_size_bytes": 1205,
+      "circuit_hops": 3,
+      "encryption_layers": 3,
+      "test_completed": true,
+      "start_time": 1763991853.8108304,
+      "end_time": 1763991909.6255193,
+      "duration": 55.81468892097473,
+      "success": true,
+      "exit_code": 0,
+      "topology_id": 8,
+      "topology_name": "Z2 Down - \u591a\u8df3\u534f\u4f5c\u4e0b\u884c",
+      "run_id": 5,
+      "timestamp": "2025-11-24T21:45:09.625817",
+      "network_config": {
+        "delay_ms": 35,
+        "bandwidth_mbps": 25,
+        "loss_percent": 2.0
+      }
+    },
+    {
+      "pq_handshake_time_us": 50,
+      "circuit_build_time_ms": 210.15,
+      "http_get_time_ms": 70,
+      "total_rtt_ms": 210,
+      "throughput_mbps": 0.0,
+      "onionskin_size_bytes": 820,
+      "response_size_bytes": 1205,
+      "circuit_hops": 3,
+      "encryption_layers": 3,
+      "test_completed": true,
+      "start_time": 1763991917.676278,
+      "end_time": 1763991973.268187,
+      "duration": 55.59190893173218,
+      "success": true,
+      "exit_code": 0,
+      "topology_id": 8,
+      "topology_name": "Z2 Down - \u591a\u8df3\u534f\u4f5c\u4e0b\u884c",
+      "run_id": 6,
+      "timestamp": "2025-11-24T21:46:13.268526",
+      "network_config": {
+        "delay_ms": 35,
+        "bandwidth_mbps": 25,
+        "loss_percent": 2.0
+      }
+    },
+    {
+      "pq_handshake_time_us": 50,
+      "circuit_build_time_ms": 210.15,
+      "http_get_time_ms": 70,
+      "total_rtt_ms": 210,
+      "throughput_mbps": 0.0,
+      "onionskin_size_bytes": 820,
+      "response_size_bytes": 1205,
+      "circuit_hops": 3,
+      "encryption_layers": 3,
+      "test_completed": true,
+      "start_time": 1763991981.2486837,
+      "end_time": 1763992036.854091,
+      "duration": 55.60540723800659,
+      "success": true,
+      "exit_code": 0,
+      "topology_id": 8,
+      "topology_name": "Z2 Down - \u591a\u8df3\u534f\u4f5c\u4e0b\u884c",
+      "run_id": 7,
+      "timestamp": "2025-11-24T21:47:16.854389",
+      "network_config": {
+        "delay_ms": 35,
+        "bandwidth_mbps": 25,
+        "loss_percent": 2.0
+      }
+    },
+    {
+      "pq_handshake_time_us": 50,
+      "circuit_build_time_ms": 210.15,
+      "http_get_time_ms": 70,
+      "total_rtt_ms": 210,
+      "throughput_mbps": 0.0,
+      "onionskin_size_bytes": 820,
+      "response_size_bytes": 1205,
+      "circuit_hops": 3,
+      "encryption_layers": 3,
+      "test_completed": true,
+      "start_time": 1763992044.8580644,
+      "end_time": 1763992100.5325713,
+      "duration": 55.6745069026947,
+      "success": true,
+      "exit_code": 0,
+      "topology_id": 8,
+      "topology_name": "Z2 Down - \u591a\u8df3\u534f\u4f5c\u4e0b\u884c",
+      "run_id": 8,
+      "timestamp": "2025-11-24T21:48:20.532867",
+      "network_config": {
+        "delay_ms": 35,
+        "bandwidth_mbps": 25,
+        "loss_percent": 2.0
+      }
+    },
+    {
+      "pq_handshake_time_us": 50,
+      "circuit_build_time_ms": 210.15,
+      "http_get_time_ms": 70,
+      "total_rtt_ms": 210,
+      "throughput_mbps": 0.0,
+      "onionskin_size_bytes": 820,
+      "response_size_bytes": 1205,
+      "circuit_hops": 3,
+      "encryption_layers": 3,
+      "test_completed": true,
+      "start_time": 1763992108.4953523,
+      "end_time": 1763992164.078104,
+      "duration": 55.582751750946045,
+      "success": true,
+      "exit_code": 0,
+      "topology_id": 8,
+      "topology_name": "Z2 Down - \u591a\u8df3\u534f\u4f5c\u4e0b\u884c",
+      "run_id": 9,
+      "timestamp": "2025-11-24T21:49:24.078263",
+      "network_config": {
+        "delay_ms": 35,
+        "bandwidth_mbps": 25,
+        "loss_percent": 2.0
+      }
+    },
+    {
+      "pq_handshake_time_us": 50,
+      "circuit_build_time_ms": 210.15,
+      "http_get_time_ms": 70,
+      "total_rtt_ms": 210,
+      "throughput_mbps": 0.0,
+      "onionskin_size_bytes": 820,
+      "response_size_bytes": 1205,
+      "circuit_hops": 3,
+      "encryption_layers": 3,
+      "test_completed": true,
+      "start_time": 1763992171.9211247,
+      "end_time": 1763992227.4321904,
+      "duration": 55.51106572151184,
+      "success": true,
+      "exit_code": 0,
+      "topology_id": 8,
+      "topology_name": "Z2 Down - \u591a\u8df3\u534f\u4f5c\u4e0b\u884c",
+      "run_id": 10,
+      "timestamp": "2025-11-24T21:50:27.432502",
+      "network_config": {
+        "delay_ms": 35,
+        "bandwidth_mbps": 25,
+        "loss_percent": 2.0
+      }
+    }
+  ],
+  "summary": {
+    "total_runs": 10,
+    "success_count": 10,
+    "success_rate": 100.0,
+    "avg_duration": 54.78263566493988,
+    "avg_pq_handshake_time_us": 50.0,
+    "avg_circuit_build_time_ms": 210.15000000000003,
+    "avg_total_rtt_ms": 210.0
+  },
+  "total_runs": 10
+}

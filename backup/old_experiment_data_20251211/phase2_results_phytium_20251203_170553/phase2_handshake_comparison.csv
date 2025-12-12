@@ -1,0 +1,3 @@
+Protocol,Mean_us,Median_us,Min_us,Max_us,StdDev_us,P95_us,P99_us,CI_Lower,CI_Upper
+Classic NTOR,458.11,457.00,455.00,472.00,2.72,463.00,467.00,457.94,458.27
+PQ-NTOR,180.81,180.00,179.00,194.00,1.96,187.00,189.00,180.69,180.94

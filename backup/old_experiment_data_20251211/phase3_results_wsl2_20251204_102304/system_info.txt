@@ -1,0 +1,15 @@
+=== 系统信息 ===
+日期: Thu Dec  4 10:23:34 CST 2025
+内核: 6.6.87.2-microsoft-standard-WSL2
+CPU: Intel(R) Core(TM) i9-14900
+内存: 15Gi
+
+=== tc工具版本 ===
+tc utility, iproute2-5.15.0, libbpf 0.5.0
+
+=== 内核网络模块支持 ===
+CONFIG_NET_SCH_TBF=m
+CONFIG_NET_SCH_NETEM=m
+
+=== 模块加载状态 ===
+sch_netem              20480  0

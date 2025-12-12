@@ -1,0 +1,412 @@
+% ============================================================================
+% 第二章 相关工作 - BibTeX文献数据库
+% 创建日期: 2025-12-03
+% 更新日期: 2025-12-04
+% 文献总数: 31篇
+% 使用方法: \cite{文献ID}
+% ============================================================================
+
+% ============================================================================
+% 2.1节: 后量子密码学基础
+% ============================================================================
+
+% ----------------------------------------------------------------------------
+% 2.1.1 量子计算威胁与NIST标准
+% ----------------------------------------------------------------------------
+
+@techreport{NIST-FIPS203,
+  author       = {{National Institute of Standards and Technology}},
+  title        = {{FIPS 203: Module-Lattice-Based Key-Encapsulation Mechanism Standard}},
+  institution  = {National Institute of Standards and Technology (NIST)},
+  year         = {2024},
+  month        = aug,
+  type         = {Federal Information Processing Standards Publication},
+  address      = {Gaithersburg, MD, USA},
+  url          = {https://csrc.nist.gov/pubs/fips/203/final},
+  note         = {Standardizes ML-KEM (Kyber) algorithm}
+}
+
+@techreport{NIST-FIPS204,
+  author       = {{National Institute of Standards and Technology}},
+  title        = {{FIPS 204: Module-Lattice-Based Digital Signature Standard}},
+  institution  = {National Institute of Standards and Technology (NIST)},
+  year         = {2024},
+  month        = aug,
+  type         = {Federal Information Processing Standards Publication},
+  address      = {Gaithersburg, MD, USA},
+  url          = {https://csrc.nist.gov/pubs/fips/204/final},
+  note         = {Standardizes ML-DSA (Dilithium) algorithm}
+}
+
+% ----------------------------------------------------------------------------
+% 2.1.2 PQC在SAGIN/卫星网络部署
+% ----------------------------------------------------------------------------
+
+@article{APQA2024,
+  author       = {Authors},
+  title        = {{APQA: An Anonymous Post Quantum Access Authentication Scheme Based on Lattice for Space Ground Integrated Network}},
+  journal      = {Computer Networks},
+  year         = {2024},
+  volume       = {257},
+  pages        = {110979},
+  publisher    = {Elsevier},
+  doi          = {10.1016/j.comnet.2024.110979},
+  url          = {https://www.sciencedirect.com/science/article/abs/pii/S1389128624008119},
+  note         = {RLWE-based authentication for SGIN, 36\% computation time reduction}
+}
+
+@article{LPQAA2024,
+  author       = {Authors},
+  title        = {{LPQAA: A Lightweight Post-Quantum Access Authentication Scheme for Satellite Network}},
+  journal      = {The Journal of Supercomputing},
+  year         = {2024},
+  volume       = {81},
+  number       = {1},
+  pages        = {159},
+  publisher    = {Springer},
+  doi          = {10.1007/s11227-024-06687-5},
+  url          = {https://link.springer.com/article/10.1007/s11227-024-06687-5},
+  note         = {Lightweight PQC for resource-constrained satellites, 150\% time reduction}
+}
+
+@article{UAV-Kyber2024,
+  author       = {Authors},
+  title        = {{A Quantum-Resistant Identity Authentication and Key Agreement Scheme for UAV Networks Based on Kyber Algorithm}},
+  journal      = {Drones},
+  year         = {2024},
+  volume       = {8},
+  number       = {8},
+  pages        = {359},
+  publisher    = {MDPI},
+  doi          = {10.3390/drones8080359},
+  url          = {https://www.mdpi.com/2504-446X/8/8/359},
+  note         = {LIGKYX scheme: Kyber + HMAC for IoT drone networks}
+}
+
+@article{IoD-PQC2024,
+  author       = {Authors},
+  title        = {{Anonymous Quantum-Safe Secure and Authorized Communication Protocol Under Dynamic Identities for Internet of Drones}},
+  journal      = {Journal Name},
+  year         = {2024},
+  url          = {https://www.sciencedirect.com/science/article/abs/pii/S0045790624007018},
+  note         = {RLWE-based anonymous authentication with dynamic identity management}
+}
+
+@misc{PQ-TLS-Sat2024,
+  author       = {lin-1214},
+  title        = {{pq-tls-satcom-benchmark: Post-Quantum TLS 1.3 Benchmarking for Satellite Communication}},
+  year         = {2024},
+  howpublished = {GitHub repository},
+  url          = {https://github.com/lin-1214/pq-tls-satcom-benchmark},
+  note         = {PQC performance evaluation in satellite TLS handshake}
+}
+
+@inproceedings{NDSS-PQTLS2020,
+  author       = {Authors},
+  title        = {{Post-Quantum Authentication in TLS 1.3: A Performance Study}},
+  booktitle    = {Proc. Network and Distributed System Security Symp. (NDSS)},
+  year         = {2020},
+  address      = {San Diego, CA, USA},
+  url          = {https://www.ndss-symposium.org/ndss-paper/post-quantum-authentication-in-tls-1-3-a-performance-study/},
+  note         = {NIST signature algorithms evaluation, 5G performance benchmarks}
+}
+
+@inproceedings{Earth-Sat-QKD2025,
+  author       = {Anju Rani and Xiaoyu Ai and Aman Gupta and Ravi Singh Adhikari and Robert Malaney},
+  title        = {{Combined Quantum and Post-Quantum Security for Earth-Satellite Channels}},
+  booktitle    = {Proc. IEEE Int. Conf. Quantum Communications, Networking, and Computing (QCNC)},
+  year         = {2025},
+  organization = {IEEE},
+  note         = {Accepted},
+  url          = {https://arxiv.org/html/2502.14240v1}
+}
+
+@techreport{3GPP-NTN,
+  author       = {{3GPP SA3}},
+  title        = {{Security Aspects for Satellite Access and Non-Terrestrial Networks}},
+  institution  = {3rd Generation Partnership Project (3GPP)},
+  year         = {2024},
+  type         = {Technical Report},
+  note         = {Release 18-20, PQC adaptation for existing protocols},
+  url          = {https://www.3gpp.org/technologies/ntn-overview}
+}
+
+@misc{QuSecure-Starlink,
+  author       = {{QuSecure Inc.}},
+  title        = {{QuSecure Pioneers First-Ever US Live End-to-End Satellite Quantum-Resilient Cryptographic Link}},
+  year         = {2023},
+  month        = mar,
+  howpublished = {Press Release},
+  url          = {https://techwireasia.com/2023/03/qusecure-and-starlink-bring-post-quantum-cryptography-to-space/},
+  note         = {First US PQC satellite deployment on Starlink}
+}
+
+% ============================================================================
+% 2.2节: Tor与匿名通信
+% ============================================================================
+
+% ----------------------------------------------------------------------------
+% 2.2.2 Tor在SAGIN/卫星网络部署
+% ----------------------------------------------------------------------------
+
+@misc{SaTor2024,
+  author       = {Li and Elahi},
+  title        = {{SaTor: Satellite Routing in Tor to Reduce Latency}},
+  year         = {2024},
+  month        = aug,
+  howpublished = {arXiv preprint arXiv:2406.15055},
+  url          = {https://arxiv.org/abs/2406.15055},
+  note         = {First LEO satellite routing for Tor, 40ms latency reduction for 70\% connections}
+}
+
+@inproceedings{Singh2024,
+  author       = {Prabhjot Singh and Diogo Barradas and Tariq Elahi and Noura Limam},
+  title        = {{Connecting the Dots in the Sky: Website Fingerprinting in Low Earth Orbit Satellite Internet}},
+  booktitle    = {Proc. Network and Distributed System Security Symp. (NDSS)},
+  year         = {2024},
+  address      = {San Diego, CA, USA},
+  organization = {NDSS},
+  url          = {https://www.ndss-symposium.org/ndss-paper/auto-draft-442/},
+  note         = {Website fingerprinting attack on Tor over Starlink}
+}
+
+@inproceedings{RECORD2024,
+  author       = {Jedermann et al.},
+  title        = {{RECORD: A RECeption-Only Region Determination Attack on LEO Satellite Users}},
+  booktitle    = {Proc. USENIX Security Symp.},
+  year         = {2024},
+  address      = {Philadelphia, PA, USA},
+  url          = {https://www.usenix.org/conference/usenixsecurity24/presentation/jedermann},
+  note         = {Location privacy attack: 11km precision in 2.3 hours}
+}
+
+@article{Sat-Security2024,
+  author       = {Authors},
+  title        = {{A Survey on Satellite Communication System Security}},
+  journal      = {Sensors},
+  year         = {2024},
+  volume       = {24},
+  number       = {9},
+  pages        = {2897},
+  publisher    = {MDPI},
+  doi          = {10.3390/s24092897},
+  url          = {https://www.mdpi.com/1424-8220/24/9/2897},
+  note         = {Comprehensive survey on satellite security threats}
+}
+
+@article{6G-SGIN2023,
+  author       = {Authors},
+  title        = {{On-Demand Anonymous Access and Roaming Authentication Protocols for 6G Satellite–Ground Integrated Networks}},
+  journal      = {Journal Name},
+  year         = {2023},
+  publisher    = {PMC},
+  url          = {https://www.ncbi.nlm.nih.gov/pmc/articles/PMC10255450/},
+  note         = {Bilinear pairing short group signature for SGIN unlinkability}
+}
+
+@article{SAGIN-Privacy2024,
+  author       = {Authors},
+  title        = {{Preface: Security and Privacy for Space-Air-Ground Integrated Networks}},
+  journal      = {Security and Safety},
+  year         = {2024},
+  url          = {https://sands.edpsciences.org/articles/sands/full_html/2024/01/sands20240006/sands20240006.html},
+  note         = {SAGIN security challenges: spoofing, eavesdropping, dynamic topology}
+}
+
+@article{UAV-FANET2022,
+  author       = {Authors},
+  title        = {{Anonymous Mutual and Batch Authentication with Location Privacy of UAV in FANET}},
+  journal      = {Sensors},
+  year         = {2022},
+  volume       = {6},
+  number       = {1},
+  pages        = {14},
+  publisher    = {MDPI},
+  url          = {https://www.mdpi.com/2504-446X/6/1/14},
+  note         = {Short randomizable signature and zero-knowledge proof for UAV}
+}
+
+@misc{Q-SAGIN2022,
+  author       = {Multiple Authors},
+  title        = {{Quantum-Secured Space-Air-Ground Integrated Networks: Concept, Framework, and Case Study}},
+  year         = {2022},
+  howpublished = {arXiv preprint arXiv:2204.08673},
+  url          = {https://arxiv.org/abs/2204.08673},
+  note         = {Also published in IEEE. First quantum-secured SAGIN concept, QKD + PQC hybrid}
+}
+
+@article{6G-QSafe2025,
+  author       = {Authors},
+  title        = {{Quantum-Safe Networks for 6G: An Integrated Survey on PQC, QKD, and Satellite QKD with Future Perspectives}},
+  journal      = {Scifiniti},
+  year         = {2025},
+  volume       = {2},
+  number       = {2},
+  pages        = {0016},
+  url          = {https://scifiniti.com/3104-4719/2/2025.0016},
+  note         = {Comprehensive 6G quantum threat survey, PQC urgency}
+}
+
+% ============================================================================
+% 2.3节: PQ-Tor结合研究
+% ============================================================================
+
+% ----------------------------------------------------------------------------
+% 2.3.1 PQ-Tor理论与提案
+% ----------------------------------------------------------------------------
+
+@article{Berger2025,
+  author       = {Denis Berger and Mouad Lemoudden and William J. Buchanan},
+  title        = {{Post Quantum Migration of Tor}},
+  journal      = {Journal of Cybersecurity and Privacy},
+  year         = {2025},
+  month        = apr,
+  volume       = {5},
+  number       = {2},
+  pages        = {13},
+  publisher    = {MDPI},
+  doi          = {10.3390/jcp5020013},
+  url          = {https://www.mdpi.com/2624-800X/5/2/13},
+  note         = {Also: arXiv:2503.10238, ePrint:2025/479. PQ-Tor migration roadmap, theoretical performance}
+}
+
+@misc{TorProp269,
+  author       = {John Schanck and William Whyte and Zhenfei Zhang and Nick Mathewson and Isis Lovecruft and Peter Schwabe},
+  title        = {{Tor Proposal 269: Transitionally Secure Hybrid Handshakes}},
+  year         = {2016},
+  month        = jun,
+  howpublished = {Tor Project Proposal},
+  url          = {https://spec.torproject.org/proposals/269-hybrid-handshake.html},
+  note         = {Status: Needs-Revision. NTRU/NewHope hybrid handshake, not implemented}
+}
+
+@misc{TorProp355,
+  author       = {Nick Mathewson},
+  title        = {{Tor Proposal 355: Options for Postquantum Circuit Extension}},
+  year         = {2025},
+  month        = mar,
+  howpublished = {Tor Project Proposal},
+  url          = {https://spec.torproject.org/proposals/355-revisiting-pq.html},
+  note         = {Status: Informational. PQ-TR vs PQ-KEM-2 analysis, no implementation}
+}
+
+@misc{TorProp263,
+  author       = {John Schanck and William Whyte and Zhenfei Zhang},
+  title        = {{Tor Proposal 263: NTRU for PQ Handshake}},
+  year         = {2016},
+  month        = feb,
+  howpublished = {Tor Project Proposal},
+  url          = {https://spec.torproject.org/proposals/263-ntru-for-pq-handshake.html},
+  note         = {Status: Obsolete. Superseded by Proposal 269}
+}
+
+% ----------------------------------------------------------------------------
+% 2.3.2 PQ-Tor实现研究
+% ----------------------------------------------------------------------------
+
+@inproceedings{QSOR2020,
+  author       = {Zsolt Tujner and Thomas Rooijakkers and Maran van Heesch and Melek Önen},
+  title        = {{QSOR: Quantum-Safe Onion Routing}},
+  booktitle    = {Proc. 17th Int. Joint Conf. e-Business and Telecommunications (ICETE)},
+  year         = {2020},
+  url          = {https://arxiv.org/abs/2001.03418},
+  note         = {6 PQ algorithms evaluation on SweetOnions simulator}
+}
+
+@misc{HybridOR2015,
+  author       = {Satrajit Ghosh and Aniket Kate},
+  title        = {{Post-Quantum Forward-Secure Onion Routing}},
+  year         = {2015},
+  howpublished = {IACR Cryptology ePrint Archive, Report 2015/008},
+  url          = {https://eprint.iacr.org/2015/008},
+  note         = {HybridOR protocol: ring-LWE + DH, theoretical design, no implementation}
+}
+
+% ----------------------------------------------------------------------------
+% 2.3.3 相关PQ网络协议对比
+% ----------------------------------------------------------------------------
+
+@misc{PQ-TLS-Bench2019,
+  author       = {Christian Paquin and Douglas Stebila and Goutam Tamvada},
+  title        = {{Benchmarking Post-Quantum Cryptography in TLS}},
+  year         = {2019},
+  howpublished = {IACR Cryptology ePrint Archive, Report 2019/1447},
+  url          = {https://eprint.iacr.org/2019/1447},
+  note         = {Kyber/ML-KEM performance comparable to classical, 1-2\% overhead}
+}
+
+@misc{PQ-WireGuard2020,
+  author       = {Andreas Hülsing and others},
+  title        = {{Post-quantum WireGuard}},
+  year         = {2020},
+  howpublished = {IACR Cryptology ePrint Archive, Report 2020/379},
+  url          = {https://eprint.iacr.org/2020/379},
+  note         = {KEM-only design, production-grade implementation, ExpressVPN: +15-20ms}
+}
+
+@misc{Katzenpost,
+  author       = {{Katzenpost Project}},
+  title        = {{Katzenpost: Post-Quantum Mix Network}},
+  year         = {2024},
+  howpublished = {Online},
+  url          = {https://katzenpost.network/},
+  note         = {World's first PQ mix network, Xwing (ML-KEM-768 + X25519), Ed25519 + Sphincs+}
+}
+
+% ============================================================================
+% 性能基准文献（用于Phase 2对比）
+% ============================================================================
+
+@inproceedings{X25519-Hardware2017,
+  author       = {Yao Liu and Zhe Liu and Jiankuo Zhao and Ming Ma and Qian Yu},
+  title        = {{Low-Latency X25519 Hardware Implementation: Breaking the 100 Microseconds Barrier}},
+  booktitle    = {Proc. Int. Conf. Information Security Practice and Experience (ISPEC)},
+  year         = {2017},
+  pages        = {215--226},
+  publisher    = {Springer},
+  doi          = {10.1007/978-3-319-72359-4_12},
+  url          = {https://www.researchgate.net/publication/318230235},
+  note         = {Hardware-optimized X25519: 20-30 µs on Intel Haswell @ 3.0 GHz, breaking 100µs barrier}
+}
+
+@article{PQC-ARM-Benchmark2023,
+  author       = {Dongdong Li and Jiahua Xing and Xianmang He and Gao Tian and Yong Wang},
+  title        = {{A Practical Performance Benchmark of Post-Quantum Cryptography on Embedded Devices}},
+  journal      = {Cryptography},
+  year         = {2023},
+  volume       = {9},
+  number       = {2},
+  pages        = {32},
+  publisher    = {MDPI},
+  doi          = {10.3390/cryptography9020032},
+  url          = {https://www.mdpi.com/2410-387X/9/2/32},
+  note         = {PQC performance on Raspberry Pi 4: ML-KEM-512 keygen 263 µs, ARM Cortex-M4 benchmarks}
+}
+
+% ============================================================================
+% 使用说明
+% ============================================================================
+% 1. 在LaTeX文档中使用 \cite{文献ID} 引用
+%    示例: \cite{Berger2025} 或 \cite{NIST-FIPS203,SaTor2024}
+%
+% 2. 文献ID命名规则:
+%    - 核心文献: 作者姓氏+年份 (如 Berger2025, Singh2024)
+%    - 标准文档: 机构-标准号 (如 NIST-FIPS203)
+%    - Tor提案: TorProp+编号 (如 TorProp269)
+%    - 项目/报告: 项目名-关键词+年份 (如 PQ-TLS-Sat2024)
+%
+% 3. 优先级标注 (在CHAPTER2_REFERENCES_DATABASE.md中)
+%    ⭐⭐⭐⭐⭐: Berger2025, SaTor2024, Singh2024, NIST-FIPS203, Q-SAGIN2022
+%    ⭐⭐⭐⭐: APQA2024, LPQAA2024, UAV-Kyber2024, NDSS-PQTLS2020
+%    ⭐⭐⭐: TorProp269, QSOR2020, PQ-TLS-Bench2019
+%
+% 4. BibTeX编译命令:
+%    pdflatex main.tex
+%    bibtex main
+%    pdflatex main.tex
+%    pdflatex main.tex
+%
+% 5. 维护记录:
+%    2025-12-03: 创建,包含29篇文献
+%    2025-12-04: 新增2篇性能基准文献(X25519-Hardware2017, PQC-ARM-Benchmark2023)
+% ============================================================================

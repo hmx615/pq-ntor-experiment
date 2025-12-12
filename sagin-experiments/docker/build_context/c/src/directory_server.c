@@ -12,27 +12,27 @@
 #include <arpa/inet.h>
 #include <errno.h>
 
-/* Hardcoded node list (for SAGIN network deployment) */
+/* Hardcoded node list (for localhost testing) */
 static node_info_t nodes[] = {
     {
-        .hostname = "172.20.1.11",  // Sat-1 (Guard)
-        .port = 9001,
+        .hostname = "127.0.0.1",  // Guard (localhost)
+        .port = 6001,
         .type = NODE_TYPE_GUARD,
         .identity = {0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01,
                      0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01},
         .active = true
     },
     {
-        .hostname = "172.20.2.21",  // Aircraft-1 (Middle)
-        .port = 9003,
+        .hostname = "127.0.0.1",  // Middle (localhost)
+        .port = 6002,
         .type = NODE_TYPE_MIDDLE,
         .identity = {0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02,
                      0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02},
         .active = true
     },
     {
-        .hostname = "172.20.3.32",  // GS-London (Exit)
-        .port = 9005,
+        .hostname = "127.0.0.1",  // Exit (localhost)
+        .port = 6003,
         .type = NODE_TYPE_EXIT,
         .identity = {0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03,
                      0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03},

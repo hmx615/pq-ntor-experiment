@@ -1,8 +1,8 @@
 {
   "topology_id": 5,
-  "topology_name": "Z5 Up - 多层树形",
+  "topology_name": "Z5 Up - 多层树形结构",
   "noma_config_ref": "/home/ccc/pq-ntor-experiment/sagin-experiments/noma-topologies/configs/topology_05_*.json",
-  "description": "Z5 Up - 多层树形 - uplink",
+  "description": "Z5 Up - 多层树形结构 - uplink",
   "physical_topology": {
     "links": [
       {
@@ -97,43 +97,18 @@
     "interface": "lo",
     "tc_commands": [
       "sudo tc qdisc del dev lo root 2>/dev/null || true",
-      "sudo tc qdisc add dev lo root netem delay 20ms 5ms distribution normal rate 55mbit loss 0.6%"
+      "sudo tc qdisc add dev lo root netem delay 5.43ms 1.36ms distribution normal rate 25.19mbit loss 3.00%"
     ],
     "aggregate_params": {
-      "delay_ms": 20,
-      "bandwidth_mbps": 55,
-      "loss_percent": 0.6
+      "delay_ms": 5.43,
+      "bandwidth_mbps": 25.19,
+      "loss_percent": 3.0
     }
-  },
-  "satellite_orbit_integration": {
-    "enabled": true,
-    "satellite_node": "SAT",
-    "orbit_data_source": "satellite_orbit.py",
-    "dynamic_parameters": {
-      "position_update": "per_test_run",
-      "delay_calculation": "distance_based",
-      "elevation_constraint": 10.0
-    }
-  },
-  "expected_performance": {
-    "pq_handshake_us": 147,
-    "circuit_build_ms": 138,
-    "total_rtt_ms": 120,
-    "throughput_mbps": 44,
-    "success_rate_percent": 95
   },
   "test_configuration": {
-    "num_runs": 10,
-    "timeout_seconds": 120,
-    "target_url": "http://127.0.0.1:8000/",
-    "metrics_to_collect": [
-      "pq_handshake_time",
-      "circuit_build_time",
-      "http_get_time",
-      "total_rtt",
-      "throughput",
-      "packet_loss",
-      "success_flag"
-    ]
+    "timeout_seconds": 60,
+    "max_retries": 3,
+    "retry_delay_seconds": 2,
+    "target_url": "http://127.0.0.1:8000/test.html"
   }
 }

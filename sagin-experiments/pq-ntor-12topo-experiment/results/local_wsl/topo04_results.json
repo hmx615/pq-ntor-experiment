@@ -1,11 +1,11 @@
 {
   "topology_id": 4,
-  "topology_name": "Z4 Up - 混合直连+协作",
+  "topology_name": "Z4 Up - \u6df7\u5408\u76f4\u8fde+\u534f\u4f5c",
   "config": {
     "topology_id": 4,
-    "topology_name": "Z4 Up - 混合直连+协作",
+    "topology_name": "Z4 Up - \u6df7\u5408\u76f4\u8fde+\u534f\u4f5c",
     "noma_config_ref": "/home/ccc/pq-ntor-experiment/sagin-experiments/noma-topologies/configs/topology_04_*.json",
-    "description": "Z4 Up - 混合直连+协作 - uplink",
+    "description": "Z4 Up - \u6df7\u5408\u76f4\u8fde+\u534f\u4f5c - uplink",
     "physical_topology": {
       "links": [
         {
@@ -95,316 +95,77 @@
       "interface": "lo",
       "tc_commands": [
         "sudo tc qdisc del dev lo root 2>/dev/null || true",
-        "sudo tc qdisc add dev lo root netem delay 22ms 5ms distribution normal rate 50mbit loss 0.7%"
+        "sudo tc qdisc add dev lo root netem delay 5.42ms 1.35ms distribution normal rate 23.64mbit loss 3.00%"
       ],
       "aggregate_params": {
-        "delay_ms": 22,
-        "bandwidth_mbps": 50,
-        "loss_percent": 0.7
+        "delay_ms": 5.42,
+        "bandwidth_mbps": 23.64,
+        "loss_percent": 3.0
       }
-    },
-    "satellite_orbit_integration": {
-      "enabled": true,
-      "satellite_node": "SAT",
-      "orbit_data_source": "satellite_orbit.py",
-      "dynamic_parameters": {
-        "position_update": "per_test_run",
-        "delay_calculation": "distance_based",
-        "elevation_constraint": 10.0
-      }
-    },
-    "expected_performance": {
-      "pq_handshake_us": 147,
-      "circuit_build_ms": 151,
-      "total_rtt_ms": 132,
-      "throughput_mbps": 40,
-      "success_rate_percent": 95
     },
     "test_configuration": {
-      "num_runs": 10,
-      "timeout_seconds": 120,
-      "target_url": "http://127.0.0.1:8000/",
-      "metrics_to_collect": [
-        "pq_handshake_time",
-        "circuit_build_time",
-        "http_get_time",
-        "total_rtt",
-        "throughput",
-        "packet_loss",
-        "success_flag"
-      ]
+      "timeout_seconds": 60,
+      "max_retries": 3,
+      "retry_delay_seconds": 2,
+      "target_url": "http://127.0.0.1:8000/test.html"
     }
   },
   "test_runs": [
     {
-      "pq_handshake_time_us": 50,
-      "circuit_build_time_ms": 132.15,
-      "http_get_time_ms": 44,
-      "total_rtt_ms": 132,
-      "throughput_mbps": 0.0,
-      "onionskin_size_bytes": 820,
-      "response_size_bytes": 1205,
-      "circuit_hops": 3,
-      "encryption_layers": 3,
-      "test_completed": true,
-      "start_time": 1763989089.0652149,
-      "end_time": 1763989144.0961733,
-      "duration": 55.03095841407776,
-      "success": true,
-      "exit_code": 0,
-      "topology_id": 4,
-      "topology_name": "Z4 Up - 混合直连+协作",
       "run_id": 1,
-      "timestamp": "2025-11-24T20:59:04.096296",
-      "network_config": {
-        "delay_ms": 22,
-        "bandwidth_mbps": 50,
-        "loss_percent": 0.7
-      }
+      "success": false,
+      "error": "timeout"
     },
     {
-      "pq_handshake_time_us": 50,
-      "circuit_build_time_ms": 132.15,
-      "http_get_time_ms": 44,
-      "total_rtt_ms": 132,
-      "throughput_mbps": 0.0,
-      "onionskin_size_bytes": 820,
-      "response_size_bytes": 1205,
-      "circuit_hops": 3,
-      "encryption_layers": 3,
-      "test_completed": true,
-      "start_time": 1763989151.4311395,
-      "end_time": 1763989206.4899013,
-      "duration": 55.05876183509827,
-      "success": true,
-      "exit_code": 0,
-      "topology_id": 4,
-      "topology_name": "Z4 Up - 混合直连+协作",
       "run_id": 2,
-      "timestamp": "2025-11-24T21:00:06.490237",
-      "network_config": {
-        "delay_ms": 22,
-        "bandwidth_mbps": 50,
-        "loss_percent": 0.7
-      }
+      "success": false,
+      "error": "timeout"
     },
     {
-      "pq_handshake_time_us": 50,
-      "circuit_build_time_ms": 132.15,
-      "http_get_time_ms": 44,
-      "total_rtt_ms": 132,
-      "throughput_mbps": 0.0,
-      "onionskin_size_bytes": 820,
-      "response_size_bytes": 1205,
-      "circuit_hops": 3,
-      "encryption_layers": 3,
-      "test_completed": true,
-      "start_time": 1763989213.9014971,
-      "end_time": 1763989268.9031837,
-      "duration": 55.001686573028564,
-      "success": true,
-      "exit_code": 0,
-      "topology_id": 4,
-      "topology_name": "Z4 Up - 混合直连+协作",
       "run_id": 3,
-      "timestamp": "2025-11-24T21:01:08.903733",
-      "network_config": {
-        "delay_ms": 22,
-        "bandwidth_mbps": 50,
-        "loss_percent": 0.7
-      }
+      "success": false,
+      "error": "timeout"
     },
     {
-      "pq_handshake_time_us": 50,
-      "circuit_build_time_ms": 132.15,
-      "http_get_time_ms": 44,
-      "total_rtt_ms": 132,
-      "throughput_mbps": 0.0,
-      "onionskin_size_bytes": 820,
-      "response_size_bytes": 1205,
-      "circuit_hops": 3,
-      "encryption_layers": 3,
-      "test_completed": true,
-      "start_time": 1763989276.333058,
-      "end_time": 1763989331.3694115,
-      "duration": 55.03635334968567,
-      "success": true,
-      "exit_code": 0,
-      "topology_id": 4,
-      "topology_name": "Z4 Up - 混合直连+协作",
       "run_id": 4,
-      "timestamp": "2025-11-24T21:02:11.369535",
-      "network_config": {
-        "delay_ms": 22,
-        "bandwidth_mbps": 50,
-        "loss_percent": 0.7
-      }
+      "success": false,
+      "error": "timeout"
     },
     {
-      "pq_handshake_time_us": 50,
-      "circuit_build_time_ms": 132.15,
-      "http_get_time_ms": 44,
-      "total_rtt_ms": 132,
-      "throughput_mbps": 0.0,
-      "onionskin_size_bytes": 820,
-      "response_size_bytes": 1205,
-      "circuit_hops": 3,
-      "encryption_layers": 3,
-      "test_completed": true,
-      "start_time": 1763989338.8358085,
-      "end_time": 1763989394.7524352,
-      "duration": 55.91662669181824,
-      "success": true,
-      "exit_code": 0,
-      "topology_id": 4,
-      "topology_name": "Z4 Up - 混合直连+协作",
       "run_id": 5,
-      "timestamp": "2025-11-24T21:03:14.752595",
-      "network_config": {
-        "delay_ms": 22,
-        "bandwidth_mbps": 50,
-        "loss_percent": 0.7
-      }
+      "success": false,
+      "error": "timeout"
     },
     {
-      "pq_handshake_time_us": 50,
-      "circuit_build_time_ms": 132.15,
-      "http_get_time_ms": 44,
-      "total_rtt_ms": 132,
-      "throughput_mbps": 0.0,
-      "onionskin_size_bytes": 820,
-      "response_size_bytes": 1205,
-      "circuit_hops": 3,
-      "encryption_layers": 3,
-      "test_completed": true,
-      "start_time": 1763989402.245322,
-      "end_time": 1763989457.1602933,
-      "duration": 54.914971351623535,
-      "success": true,
-      "exit_code": 0,
-      "topology_id": 4,
-      "topology_name": "Z4 Up - 混合直连+协作",
       "run_id": 6,
-      "timestamp": "2025-11-24T21:04:17.160683",
-      "network_config": {
-        "delay_ms": 22,
-        "bandwidth_mbps": 50,
-        "loss_percent": 0.7
-      }
+      "success": false,
+      "error": "timeout"
     },
     {
-      "pq_handshake_time_us": 50,
-      "circuit_build_time_ms": 132.15,
-      "http_get_time_ms": 44,
-      "total_rtt_ms": 132,
-      "throughput_mbps": 0.0,
-      "onionskin_size_bytes": 820,
-      "response_size_bytes": 1205,
-      "circuit_hops": 3,
-      "encryption_layers": 3,
-      "test_completed": true,
-      "start_time": 1763989464.5455132,
-      "end_time": 1763989519.64309,
-      "duration": 55.09757685661316,
-      "success": true,
-      "exit_code": 0,
-      "topology_id": 4,
-      "topology_name": "Z4 Up - 混合直连+协作",
       "run_id": 7,
-      "timestamp": "2025-11-24T21:05:19.643537",
-      "network_config": {
-        "delay_ms": 22,
-        "bandwidth_mbps": 50,
-        "loss_percent": 0.7
-      }
+      "success": false,
+      "error": "timeout"
     },
     {
-      "pq_handshake_time_us": 50,
-      "circuit_build_time_ms": 132.15,
-      "http_get_time_ms": 44,
-      "total_rtt_ms": 132,
-      "throughput_mbps": 0.0,
-      "onionskin_size_bytes": 820,
-      "response_size_bytes": 1205,
-      "circuit_hops": 3,
-      "encryption_layers": 3,
-      "test_completed": true,
-      "start_time": 1763989527.1527922,
-      "end_time": 1763989582.309587,
-      "duration": 55.15679478645325,
-      "success": true,
-      "exit_code": 0,
-      "topology_id": 4,
-      "topology_name": "Z4 Up - 混合直连+协作",
       "run_id": 8,
-      "timestamp": "2025-11-24T21:06:22.309903",
-      "network_config": {
-        "delay_ms": 22,
-        "bandwidth_mbps": 50,
-        "loss_percent": 0.7
-      }
+      "success": false,
+      "error": "timeout"
     },
     {
-      "pq_handshake_time_us": 50,
-      "circuit_build_time_ms": 132.15,
-      "http_get_time_ms": 44,
-      "total_rtt_ms": 132,
-      "throughput_mbps": 0.0,
-      "onionskin_size_bytes": 820,
-      "response_size_bytes": 1205,
-      "circuit_hops": 3,
-      "encryption_layers": 3,
-      "test_completed": true,
-      "start_time": 1763989589.7615225,
-      "end_time": 1763989644.7578375,
-      "duration": 54.996315002441406,
-      "success": true,
-      "exit_code": 0,
-      "topology_id": 4,
-      "topology_name": "Z4 Up - 混合直连+协作",
       "run_id": 9,
-      "timestamp": "2025-11-24T21:07:24.758163",
-      "network_config": {
-        "delay_ms": 22,
-        "bandwidth_mbps": 50,
-        "loss_percent": 0.7
-      }
+      "success": false,
+      "error": "timeout"
     },
     {
-      "pq_handshake_time_us": 50,
-      "circuit_build_time_ms": 132.15,
-      "http_get_time_ms": 44,
-      "total_rtt_ms": 132,
-      "throughput_mbps": 0.0,
-      "onionskin_size_bytes": 820,
-      "response_size_bytes": 1205,
-      "circuit_hops": 3,
-      "encryption_layers": 3,
-      "test_completed": true,
-      "start_time": 1763989652.2712371,
-      "end_time": 1763989706.094765,
-      "duration": 53.823527812957764,
-      "success": true,
-      "exit_code": 0,
-      "topology_id": 4,
-      "topology_name": "Z4 Up - 混合直连+协作",
       "run_id": 10,
-      "timestamp": "2025-11-24T21:08:26.094896",
-      "network_config": {
-        "delay_ms": 22,
-        "bandwidth_mbps": 50,
-        "loss_percent": 0.7
-      }
+      "success": false,
+      "error": "timeout"
     }
   ],
   "summary": {
     "total_runs": 10,
-    "success_count": 10,
-    "success_rate": 100.0,
-    "avg_duration": 55.00335726737976,
-    "avg_pq_handshake_time_us": 50.0,
-    "avg_circuit_build_time_ms": 132.15000000000003,
-    "avg_total_rtt_ms": 132.0
+    "success_count": 0,
+    "success_rate": 0.0
   },
-  "total_runs": 10
+  "test_date": "2025-12-11T12:36:05.248845"
 }

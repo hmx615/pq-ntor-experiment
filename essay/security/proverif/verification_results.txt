@@ -1,0 +1,128 @@
+Process 0 (that is, the initial process):
+{1}new skR: skey;
+(
+    {2}!
+    {3}let skR_1: skey = skR in
+    {4}let pkR: pkey = pk(skR_1) in
+    {5}out(net, pkR);
+    {6}in(net, (ct: ciphertext,Nc: nonce));
+    {7}event RelayReceives(Nc,ct);
+    {8}let ss: key = kem_decap(skR_1,ct) in
+    {9}new Nr: nonce;
+    {10}let Ksession: key = kdf(ss,Nc,Nr,pkR) in
+    {11}let hv: hashvalue = h(Ksession) in
+    {12}event RelayResponds(Nr,hv);
+    {13}out(net, (Nr,hv));
+    {14}event RelayAccepts(Ksession)
+) | (
+    {15}!
+    {16}let pkR_1: pkey = pk(skR) in
+    {17}new Nc_1: nonce;
+    {18}let ct_1: ciphertext = kem_encap(pkR_1,Nc_1) in
+    {19}let ss_1: key = shared_key(Nc_1) in
+    {20}event ClientSends(Nc_1,ct_1);
+    {21}out(net, (ct_1,Nc_1));
+    {22}in(net, (Nr_1: nonce,h_recv: hashvalue));
+    {23}let Ksession_1: key = kdf(ss_1,Nc_1,Nr_1,pkR_1) in
+    {24}if (h_recv = h(Ksession_1)) then
+    {25}event ClientAccepts(Ksession_1);
+    {26}if (Ksession_1 = session_key_secret) then
+    {27}out(net, Ksession_1)
+)
+
+--  Process 1 (that is, process 0, with let moved downwards):
+{1}new skR: skey;
+(
+    {2}!
+    {3}let skR_1: skey = skR in
+    {4}let pkR: pkey = pk(skR_1) in
+    {5}out(net, pkR);
+    {6}in(net, (ct: ciphertext,Nc: nonce));
+    {7}event RelayReceives(Nc,ct);
+    {8}let ss: key = kem_decap(skR_1,ct) in
+    {9}new Nr: nonce;
+    {10}let Ksession: key = kdf(ss,Nc,Nr,pkR) in
+    {11}let hv: hashvalue = h(Ksession) in
+    {12}event RelayResponds(Nr,hv);
+    {13}out(net, (Nr,hv));
+    {14}event RelayAccepts(Ksession)
+) | (
+    {15}!
+    {17}new Nc_1: nonce;
+    {16}let pkR_1: pkey = pk(skR) in
+    {18}let ct_1: ciphertext = kem_encap(pkR_1,Nc_1) in
+    {20}event ClientSends(Nc_1,ct_1);
+    {21}out(net, (ct_1,Nc_1));
+    {22}in(net, (Nr_1: nonce,h_recv: hashvalue));
+    {19}let ss_1: key = shared_key(Nc_1) in
+    {23}let Ksession_1: key = kdf(ss_1,Nc_1,Nr_1,pkR_1) in
+    {24}if (h_recv = h(Ksession_1)) then
+    {25}event ClientAccepts(Ksession_1);
+    {26}if (Ksession_1 = session_key_secret) then
+    {27}out(net, Ksession_1)
+)
+
+-- Query not attacker(session_key_secret[]) in process 1.
+Translating the process into Horn clauses...
+Completing...
+Starting query not attacker(session_key_secret[])
+RESULT not attacker(session_key_secret[]) is true.
+-- Query event(RelayReceives(nc,ct_2)) ==> event(ClientSends(nc,ct_2)) in process 1.
+Translating the process into Horn clauses...
+Completing...
+Starting query event(RelayReceives(nc,ct_2)) ==> event(ClientSends(nc,ct_2))
+goal reachable: attacker(ct_2) && attacker(nc) -> end(RelayReceives(nc,ct_2))
+
+Derivation:
+
+1. We assume as hypothesis that
+attacker(nc).
+
+2. We assume as hypothesis that
+attacker(ct_2).
+
+3. By 2, the attacker may know ct_2.
+By 1, the attacker may know nc.
+Using the function 2-tuple the attacker may obtain (ct_2,nc).
+attacker((ct_2,nc)).
+
+4. The message (ct_2,nc) that the attacker may have by 3 may be received at input {6}.
+So event RelayReceives(nc,ct_2) may be executed at {7}.
+end(RelayReceives(nc,ct_2)).
+
+5. By 4, end(RelayReceives(nc,ct_2)).
+The goal is reached, represented in the following fact:
+end(RelayReceives(nc,ct_2)).
+
+
+A more detailed output of the traces is available with
+  set traceDisplay = long.
+
+new skR: skey creating skR_2 at {1}
+
+out(net, ~M) with ~M = pk(skR_2) at {5} in copy a
+
+in(net, (a_1,a_2)) at {6} in copy a
+
+event RelayReceives(a_2,a_1) at {7} in copy a (goal)
+
+The event RelayReceives(a_2,a_1) is executed at {7} in copy a.
+A trace has been found.
+RESULT event(RelayReceives(nc,ct_2)) ==> event(ClientSends(nc,ct_2)) is false.
+-- Query event(ClientAccepts(session_key_secret[])) ==> event(RelayResponds(nr,hv_1)) in process 1.
+Translating the process into Horn clauses...
+Completing...
+Starting query event(ClientAccepts(session_key_secret[])) ==> event(RelayResponds(nr,hv_1))
+RESULT event(ClientAccepts(session_key_secret[])) ==> event(RelayResponds(nr,hv_1)) is true.
+
+--------------------------------------------------------------
+Verification summary:
+
+Query not attacker(session_key_secret[]) is true.
+
+Query event(RelayReceives(nc,ct_2)) ==> event(ClientSends(nc,ct_2)) is false.
+
+Query event(ClientAccepts(session_key_secret[])) ==> event(RelayResponds(nr,hv_1)) is true.
+
+--------------------------------------------------------------
+

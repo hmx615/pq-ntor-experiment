@@ -1,42 +1,42 @@
 {
   "topology_id": 11,
-  "topology_name": "Z5 Down - 混合多跳协作",
+  "topology_name": "Z5 Down - \u6df7\u5408\u76f4\u8fde+\u591a\u8df3\u534f\u4f5c",
   "config": {
     "topology_id": 11,
-    "topology_name": "Z5 Down - 混合多跳协作",
+    "topology_name": "Z5 Down - \u6df7\u5408\u76f4\u8fde+\u591a\u8df3\u534f\u4f5c",
     "noma_config_ref": "/home/ccc/pq-ntor-experiment/sagin-experiments/noma-topologies/configs/topology_11_*.json",
-    "description": "Z5 Down - 混合多跳协作 - downlink",
+    "description": "Z5 Down - \u6df7\u5408\u76f4\u8fde+\u591a\u8df3\u534f\u4f5c - downlink",
     "physical_topology": {
       "links": [
+        {
+          "source": "SAT",
+          "target": "Ground2",
+          "rssi": "low"
+        },
         {
           "source": "SAT",
           "target": "UAV2",
           "rssi": "high"
         },
         {
-          "source": "SAT",
-          "target": "Ground2",
-          "rssi": "low"
-        },
-        {
           "source": "UAV2",
-          "target": "Ground2",
-          "rssi": "coop"
-        },
-        {
-          "source": "Ground2",
           "target": "Ground1",
           "rssi": "high"
         },
         {
-          "source": "Ground2",
+          "source": "UAV2",
           "target": "Ground3",
           "rssi": "low"
         },
         {
-          "source": "Ground1",
+          "source": "Ground2",
           "target": "Ground3",
           "rssi": "coop"
+        },
+        {
+          "source": "Ground1",
+          "target": "Ground3",
+          "rssi": "high"
         }
       ],
       "direction": "downlink"
@@ -110,316 +110,77 @@
       "interface": "lo",
       "tc_commands": [
         "sudo tc qdisc del dev lo root 2>/dev/null || true",
-        "sudo tc qdisc add dev lo root netem delay 40ms 10ms distribution normal rate 22mbit loss 2.5%"
+        "sudo tc qdisc add dev lo root netem delay 5.43ms 1.36ms distribution normal rate 9.67mbit loss 2.00%"
       ],
       "aggregate_params": {
-        "delay_ms": 40,
-        "bandwidth_mbps": 22,
-        "loss_percent": 2.5
+        "delay_ms": 5.43,
+        "bandwidth_mbps": 9.67,
+        "loss_percent": 2.0
       }
-    },
-    "satellite_orbit_integration": {
-      "enabled": true,
-      "satellite_node": "SAT",
-      "orbit_data_source": "satellite_orbit.py",
-      "dynamic_parameters": {
-        "position_update": "per_test_run",
-        "delay_calculation": "distance_based",
-        "elevation_constraint": 10.0
-      }
-    },
-    "expected_performance": {
-      "pq_handshake_us": 147,
-      "circuit_build_ms": 276,
-      "total_rtt_ms": 240,
-      "throughput_mbps": 17,
-      "success_rate_percent": 85
     },
     "test_configuration": {
-      "num_runs": 10,
-      "timeout_seconds": 120,
-      "target_url": "http://127.0.0.1:8000/",
-      "metrics_to_collect": [
-        "pq_handshake_time",
-        "circuit_build_time",
-        "http_get_time",
-        "total_rtt",
-        "throughput",
-        "packet_loss",
-        "success_flag"
-      ]
+      "timeout_seconds": 60,
+      "max_retries": 3,
+      "retry_delay_seconds": 2,
+      "target_url": "http://127.0.0.1:8000/test.html"
     }
   },
   "test_runs": [
     {
-      "pq_handshake_time_us": 50,
-      "circuit_build_time_ms": 240.15,
-      "http_get_time_ms": 80,
-      "total_rtt_ms": 240,
-      "throughput_mbps": 0.0,
-      "onionskin_size_bytes": 820,
-      "response_size_bytes": 1205,
-      "circuit_hops": 3,
-      "encryption_layers": 3,
-      "test_completed": true,
-      "start_time": 1763993516.8635368,
-      "end_time": 1763993571.854399,
-      "duration": 54.990862131118774,
-      "success": true,
-      "exit_code": 0,
-      "topology_id": 11,
-      "topology_name": "Z5 Down - 混合多跳协作",
       "run_id": 1,
-      "timestamp": "2025-11-24T22:12:51.854527",
-      "network_config": {
-        "delay_ms": 40,
-        "bandwidth_mbps": 22,
-        "loss_percent": 2.5
-      }
+      "success": false,
+      "error": "timeout"
     },
     {
-      "pq_handshake_time_us": 50,
-      "circuit_build_time_ms": 240.15,
-      "http_get_time_ms": 80,
-      "total_rtt_ms": 240,
-      "throughput_mbps": 0.0,
-      "onionskin_size_bytes": 820,
-      "response_size_bytes": 1205,
-      "circuit_hops": 3,
-      "encryption_layers": 3,
-      "test_completed": true,
-      "start_time": 1763993580.572718,
-      "end_time": 1763993635.4044445,
-      "duration": 54.83172655105591,
-      "success": true,
-      "exit_code": 0,
-      "topology_id": 11,
-      "topology_name": "Z5 Down - 混合多跳协作",
       "run_id": 2,
-      "timestamp": "2025-11-24T22:13:55.404734",
-      "network_config": {
-        "delay_ms": 40,
-        "bandwidth_mbps": 22,
-        "loss_percent": 2.5
-      }
+      "success": false,
+      "error": "timeout"
     },
     {
-      "pq_handshake_time_us": 50,
-      "circuit_build_time_ms": 240.15,
-      "http_get_time_ms": 80,
-      "total_rtt_ms": 240,
-      "throughput_mbps": 0.0,
-      "onionskin_size_bytes": 820,
-      "response_size_bytes": 1205,
-      "circuit_hops": 3,
-      "encryption_layers": 3,
-      "test_completed": true,
-      "start_time": 1763993644.1320982,
-      "end_time": 1763993698.920821,
-      "duration": 54.78872275352478,
-      "success": true,
-      "exit_code": 0,
-      "topology_id": 11,
-      "topology_name": "Z5 Down - 混合多跳协作",
       "run_id": 3,
-      "timestamp": "2025-11-24T22:14:58.920971",
-      "network_config": {
-        "delay_ms": 40,
-        "bandwidth_mbps": 22,
-        "loss_percent": 2.5
-      }
+      "success": false,
+      "error": "timeout"
     },
     {
-      "pq_handshake_time_us": 50,
-      "circuit_build_time_ms": 240.15,
-      "http_get_time_ms": 80,
-      "total_rtt_ms": 240,
-      "throughput_mbps": 0.0,
-      "onionskin_size_bytes": 820,
-      "response_size_bytes": 1205,
-      "circuit_hops": 3,
-      "encryption_layers": 3,
-      "test_completed": true,
-      "start_time": 1763993707.6159549,
-      "end_time": 1763993762.4246545,
-      "duration": 54.80869960784912,
-      "success": true,
-      "exit_code": 0,
-      "topology_id": 11,
-      "topology_name": "Z5 Down - 混合多跳协作",
       "run_id": 4,
-      "timestamp": "2025-11-24T22:16:02.424936",
-      "network_config": {
-        "delay_ms": 40,
-        "bandwidth_mbps": 22,
-        "loss_percent": 2.5
-      }
+      "success": false,
+      "error": "timeout"
     },
     {
-      "pq_handshake_time_us": 50,
-      "circuit_build_time_ms": 240.15,
-      "http_get_time_ms": 80,
-      "total_rtt_ms": 240,
-      "throughput_mbps": 0.0,
-      "onionskin_size_bytes": 820,
-      "response_size_bytes": 1205,
-      "circuit_hops": 3,
-      "encryption_layers": 3,
-      "test_completed": true,
-      "start_time": 1763993771.144155,
-      "end_time": 1763993826.0057995,
-      "duration": 54.86164450645447,
-      "success": true,
-      "exit_code": 0,
-      "topology_id": 11,
-      "topology_name": "Z5 Down - 混合多跳协作",
       "run_id": 5,
-      "timestamp": "2025-11-24T22:17:06.006035",
-      "network_config": {
-        "delay_ms": 40,
-        "bandwidth_mbps": 22,
-        "loss_percent": 2.5
-      }
+      "success": false,
+      "error": "timeout"
     },
     {
-      "pq_handshake_time_us": 50,
-      "circuit_build_time_ms": 240.15,
-      "http_get_time_ms": 80,
-      "total_rtt_ms": 240,
-      "throughput_mbps": 0.0,
-      "onionskin_size_bytes": 820,
-      "response_size_bytes": 1205,
-      "circuit_hops": 3,
-      "encryption_layers": 3,
-      "test_completed": true,
-      "start_time": 1763993834.7284358,
-      "end_time": 1763993889.5575404,
-      "duration": 54.82910466194153,
-      "success": true,
-      "exit_code": 0,
-      "topology_id": 11,
-      "topology_name": "Z5 Down - 混合多跳协作",
       "run_id": 6,
-      "timestamp": "2025-11-24T22:18:09.557954",
-      "network_config": {
-        "delay_ms": 40,
-        "bandwidth_mbps": 22,
-        "loss_percent": 2.5
-      }
+      "success": false,
+      "error": "timeout"
     },
     {
-      "pq_handshake_time_us": 50,
-      "circuit_build_time_ms": 240.15,
-      "http_get_time_ms": 80,
-      "total_rtt_ms": 240,
-      "throughput_mbps": 0.0,
-      "onionskin_size_bytes": 820,
-      "response_size_bytes": 1205,
-      "circuit_hops": 3,
-      "encryption_layers": 3,
-      "test_completed": true,
-      "start_time": 1763993898.2441707,
-      "end_time": 1763993953.162029,
-      "duration": 54.917858362197876,
-      "success": true,
-      "exit_code": 0,
-      "topology_id": 11,
-      "topology_name": "Z5 Down - 混合多跳协作",
       "run_id": 7,
-      "timestamp": "2025-11-24T22:19:13.162309",
-      "network_config": {
-        "delay_ms": 40,
-        "bandwidth_mbps": 22,
-        "loss_percent": 2.5
-      }
+      "success": false,
+      "error": "timeout"
     },
     {
-      "pq_handshake_time_us": 50,
-      "circuit_build_time_ms": 240.15,
-      "http_get_time_ms": 80,
-      "total_rtt_ms": 240,
-      "throughput_mbps": 0.0,
-      "onionskin_size_bytes": 820,
-      "response_size_bytes": 1205,
-      "circuit_hops": 3,
-      "encryption_layers": 3,
-      "test_completed": true,
-      "start_time": 1763993961.8441858,
-      "end_time": 1763994016.6401753,
-      "duration": 54.79598951339722,
-      "success": true,
-      "exit_code": 0,
-      "topology_id": 11,
-      "topology_name": "Z5 Down - 混合多跳协作",
       "run_id": 8,
-      "timestamp": "2025-11-24T22:20:16.640493",
-      "network_config": {
-        "delay_ms": 40,
-        "bandwidth_mbps": 22,
-        "loss_percent": 2.5
-      }
+      "success": false,
+      "error": "timeout"
     },
     {
-      "pq_handshake_time_us": 50,
-      "circuit_build_time_ms": 240.15,
-      "http_get_time_ms": 80,
-      "total_rtt_ms": 240,
-      "throughput_mbps": 0.0,
-      "onionskin_size_bytes": 820,
-      "response_size_bytes": 1205,
-      "circuit_hops": 3,
-      "encryption_layers": 3,
-      "test_completed": true,
-      "start_time": 1763994025.3679354,
-      "end_time": 1763994080.2145734,
-      "duration": 54.84663796424866,
-      "success": true,
-      "exit_code": 0,
-      "topology_id": 11,
-      "topology_name": "Z5 Down - 混合多跳协作",
       "run_id": 9,
-      "timestamp": "2025-11-24T22:21:20.214827",
-      "network_config": {
-        "delay_ms": 40,
-        "bandwidth_mbps": 22,
-        "loss_percent": 2.5
-      }
+      "success": false,
+      "error": "timeout"
     },
     {
-      "pq_handshake_time_us": 50,
-      "circuit_build_time_ms": 240.15,
-      "http_get_time_ms": 80,
-      "total_rtt_ms": 240,
-      "throughput_mbps": 0.0,
-      "onionskin_size_bytes": 820,
-      "response_size_bytes": 1205,
-      "circuit_hops": 3,
-      "encryption_layers": 3,
-      "test_completed": true,
-      "start_time": 1763994088.9385846,
-      "end_time": 1763994143.8313005,
-      "duration": 54.89271593093872,
-      "success": true,
-      "exit_code": 0,
-      "topology_id": 11,
-      "topology_name": "Z5 Down - 混合多跳协作",
       "run_id": 10,
-      "timestamp": "2025-11-24T22:22:23.831421",
-      "network_config": {
-        "delay_ms": 40,
-        "bandwidth_mbps": 22,
-        "loss_percent": 2.5
-      }
+      "success": false,
+      "error": "timeout"
     }
   ],
   "summary": {
     "total_runs": 10,
-    "success_count": 10,
-    "success_rate": 100.0,
-    "avg_duration": 54.856396198272705,
-    "avg_pq_handshake_time_us": 50.0,
-    "avg_circuit_build_time_ms": 240.15000000000003,
-    "avg_total_rtt_ms": 240.0
+    "success_count": 0,
+    "success_rate": 0.0
   },
-  "total_runs": 10
+  "test_date": "2025-12-11T13:11:46.262164"
 }

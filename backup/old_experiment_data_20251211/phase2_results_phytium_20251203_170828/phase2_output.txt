@@ -1,0 +1,67 @@
+======================================================================
+Phase 2: Protocol Handshake Performance Comparison
+======================================================================
+Platform:      ARM64 Phytium Pi (FTC664 @ 2.3GHz)
+Iterations:    1000 (with 100 warmup)
+Confidence:    95% CI
+Reference:     Berger et al. (2025), SaTor (2024)
+======================================================================
+
+[1/2] Benchmarking: Classic NTOR (X25519 + HMAC-SHA256)
+      Warming up (100 iterations)...
+      Running 1000 test iterations...
+      Classic NTOR: mean=458.94 μs, median=457.00 μs, p95=464.00 μs
+
+[2/2] Benchmarking: PQ-NTOR (Kyber-512 + HKDF + HMAC)
+      Warming up (100 iterations)...
+      Running 1000 test iterations...
+      PQ-NTOR: mean=184.82 μs, median=184.00 μs, p95=190.00 μs
+
+======================================================================
+Performance Comparison Summary
+======================================================================
+Protocol              Mean      Median    Min       Max        StdDev   P95      P99
+                      (μs)      (μs)      (μs)      (μs)       (μs)     (μs)     (μs)
+------------------------------------------------------------------------------
+Classic NTOR            458.94    457.00    455.00     595.00     9.42   464.00   534.00
+PQ-NTOR                 184.82    184.00    182.00     290.00     6.04   190.00   192.00
+======================================================================
+
+======================================================================
+Overhead Analysis
+======================================================================
+Absolute Overhead:     -274.12 μs
+Relative Overhead:     0.40x
+Throughput (Classic):  2179 handshakes/sec
+Throughput (PQ-NTOR):  5411 handshakes/sec
+======================================================================
+
+======================================================================
+Comparison with Literature
+======================================================================
+Reference: Berger et al. (2025) - x86 @ 3.0GHz
+  Classic NTOR (x86):     ~40 μs (estimated)
+  PQ-NTOR (x86):          ~180 μs (estimated)
+  Overhead (x86):         ~4.5x
+
+This Work: ARM64 Phytium Pi @ 2.3GHz
+  Classic NTOR (ARM64):   458.94 μs
+  PQ-NTOR (ARM64):        184.82 μs
+  Overhead (ARM64):       0.40x
+
+⚠ Overhead ratio is lower than expected (<2×)
+======================================================================
+
+✓ CSV data saved to: phase2_handshake_comparison.csv
+
+======================================================================
+✅ Phase 2 Benchmark Completed Successfully!
+======================================================================
+
+Next Steps:
+  1. Review: phase2_handshake_comparison.csv
+  2. Visualize: python3 plot_phase2_results.py
+  3. Proceed to Phase 3: SAGIN Network Integration Testing
+======================================================================
+
+

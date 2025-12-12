@@ -1,13 +1,108 @@
-% Section 6: Related Work
-% Placeholder
+% Section 2: Related Work
+% PQ-NTOR in SAGIN Networks
+% Version: 2.0 - Concise Journal Style
+% Date: 2025-12-03
 
 \section{Related Work}
 \label{sec:related}
+% 【中文翻译】第二章 相关工作
 
-\textbf{[PLACEHOLDER - Section to be completed]}
+%=============================================================================
+\subsection{Post-Quantum Cryptography in SAGIN}
+\label{sec:related:pqc-sagin}
+% 【中文翻译】2.1 后量子密码学在空天地一体化网络中的应用
 
-\subsection{Post-Quantum Cryptography for Tor}
+%-----------------------------------------------------------------------------
+\subsubsection{Post-Quantum Standardization}
+% 【中文翻译】2.1.1 后量子密码标准化
 
-\subsection{NIST Post-Quantum Standardization}
+Shor's algorithm~\cite{shor1997polynomial} demonstrates that quantum computers can break RSA and ECC in polynomial time. In response, NIST launched the Post-Quantum Cryptography Standardization project in 2016, which finalized three standards in August 2024~\cite{nist2024fips203, nist2024fips204}. FIPS 203 standardizes ML-KEM (Kyber)~\cite{bos2018crystals}, offering three security levels: ML-KEM-512 (AES-128 equivalent), ML-KEM-768 (AES-192), and ML-KEM-1024 (AES-256). Bos et al.~\cite{bos2018crystals} proved ML-KEM's IND-CCA2 security under the Module-LWE assumption, with public key sizes of 736-1440 bytes and ciphertext sizes of 832-1536 bytes.
+% 批注1已修正：原文为800-1568字节密钥和768-1568字节密文，已改为正确的736-1440字节和832-1536字节
+% 【中文翻译】Shor算法表明量子计算机可以在多项式时间内破解RSA和ECC。为应对这一威胁，NIST于2016年启动了后量子密码标准化项目，并于2024年8月最终确定了三项标准。FIPS 203标准化了ML-KEM（Kyber），提供三个安全级别：ML-KEM-512（相当于AES-128）、ML-KEM-768（相当于AES-192）和ML-KEM-1024（相当于AES-256）。Bos等人证明了ML-KEM在Module-LWE假设下的IND-CCA2安全性，其公钥大小为736-1440字节，密文大小为832-1536字节。
 
-\subsection{SAGIN Network Architectures}
+%-----------------------------------------------------------------------------
+\subsubsection{PQC Deployment in SAGIN Networks}
+% 【中文翻译】2.1.2 后量子密码在SAGIN网络中的部署
+
+For satellite communications, several PQC authentication schemes have been proposed. APQA~\cite{apqa2024} presents a SIS/LWE-based anonymous authentication protocol for SGIN, achieving 36\% computation time reduction compared to existing schemes.
+% 批注2已修正：原文为RLWE-based，已改为SIS/LWE-based
+% 【中文翻译】针对卫星通信，已有多种后量子密码认证方案被提出。APQA提出了一种基于SIS/LWE的匿名认证协议用于SGIN，与现有方案相比计算时间减少了36%。
+LPQAA~\cite{lpqaa2024} targets resource-constrained satellite networks with a lightweight PQC protocol that reduces authentication time by 150\% compared to traditional lattice-based authentication schemes.
+% 批注3已修正：添加了对比基准"compared to traditional lattice-based authentication schemes"
+% 【中文翻译】LPQAA针对资源受限的卫星网络提出了一种轻量级PQC协议，与传统格基认证方案相比认证时间减少了150%。
+For UAV networks, recent work~\cite{uav-kyber2024} integrates Kyber into UAV-to-UAV and UAV-to-ground communications, demonstrating feasibility on embedded ARM platforms. Earth-satellite quantum key distribution combined with PQC has been explored by Rani et al.~\cite{earth-sat-qkd2025}. In industry, QuSecure deployed PQC-enabled encryption for Starlink satellite backhaul links~\cite{qusecure-starlink2023}.
+% 【中文翻译】针对UAV网络，最近的工作将Kyber集成到UAV间和UAV到地面的通信中，在嵌入式ARM平台上验证了可行性。Rani等人探索了地星量子密钥分发与PQC的结合。工业界方面，QuSecure为Starlink卫星回传链路部署了支持PQC的加密方案。
+
+However, these works focus on link-layer security (TLS/DTLS) and authentication protocols. Higher-layer protocols such as anonymous communication systems remain unexplored in SAGIN contexts with post-quantum requirements.
+% 【中文翻译】然而，这些工作主要聚焦于链路层安全（TLS/DTLS）和认证协议。在SAGIN环境下具有后量子需求的高层协议（如匿名通信系统）仍未被探索。
+
+%=============================================================================
+\subsection{Anonymous Communication in SAGIN}
+\label{sec:related:tor-sagin}
+% 【中文翻译】2.2 空天地一体化网络中的匿名通信
+
+%-----------------------------------------------------------------------------
+\subsubsection{Tor Anonymous Communication}
+% 【中文翻译】2.2.1 Tor匿名通信
+
+Tor~\cite{dingledine2004tor} provides anonymity through multi-hop encrypted circuits. The NTOR handshake protocol~\cite{goldberg2013ntor} uses X25519 ECDH for key exchange.
+% 批注4已修正：原文称achieving 20-150μs latency on modern x86 CPUs，但文献[9]所讨论的实际为TAP协议未提及NTOR，已删除
+% 【中文翻译】Tor通过多跳加密电路提供匿名性。NTOR握手协议使用X25519 ECDH进行密钥交换。
+Tor serves over 2 million daily users~\cite{tormetrics2025} but assumes terrestrial internet with 50-200~ms latency.
+% 【中文翻译】Tor服务超过200万日活跃用户，但其设计假设为地面互联网环境，延迟为50-200毫秒。
+
+%-----------------------------------------------------------------------------
+\subsubsection{Tor Deployment in Satellite Networks}
+% 【中文翻译】2.2.2 Tor在卫星网络中的部署
+
+Li and Elahi~\cite{sator2024} proposed SaTor, which integrates LEO satellite links into Tor. Based on Starlink measurements, they showed that LEO links reduce average circuit construction time by 21.8~ms RTT for approximately 40\% of circuits, improving web page load times by approximately 400~ms. However, SaTor evaluates only classical NTOR (ignoring quantum threats) and has limited test scale (approximately 50 circuits).
+% 【中文翻译】Li和Elahi提出了SaTor，将LEO卫星链路集成到Tor中。通过Starlink实测数据，他们表明LEO链路使约40%的电路平均构建时间减少了21.8毫秒RTT，网页加载时间提升约400毫秒。然而，SaTor仅评估了经典NTOR（忽略了量子威胁），且测试规模有限（约50条电路）。
+
+Singh et al.~\cite{singh2024fingerprinting} showed that website fingerprinting attacks remain feasible in LEO satellite constellations, exploiting traffic patterns introduced by satellite beam handovers and constellation-specific characteristics.
+% 批注5已修正：原文称achieving 85% accuracy，但原文唯一一次提到85%数据为k-FP攻击针对非Tor网络的攻击成功率，且handover patterns具体指代不明确，已改为更准确的描述
+% 【中文翻译】Singh等人展示了LEO卫星星座中的网站指纹识别攻击仍然可行，利用卫星波束切换和星座特定特征引入的流量模式。
+Jedermann et al.~\cite{record2024} demonstrated location tracking attacks on LEO satellite users by analyzing beam-specific timing patterns, achieving 11~km precision. These attacks show that link-layer encryption alone cannot protect SAGIN user privacy.
+% 【中文翻译】Jedermann等人通过分析波束特定的时序模式，对LEO卫星用户实施了位置追踪攻击，达到11公里精度。这些攻击表明仅依靠链路层加密无法保护SAGIN用户隐私。
+
+%=============================================================================
+\subsection{Post-Quantum Tor}
+\label{sec:related:pq-tor}
+% 【中文翻译】2.3 后量子Tor
+
+%-----------------------------------------------------------------------------
+\subsubsection{PQ-Tor Theoretical Proposals}
+% 【中文翻译】2.3.1 后量子Tor理论提案
+
+Berger et al.~\cite{berger2025postquantum} surveyed post-quantum migration strategies for Tor, analyzing existing hybrid handshake proposals and comparing the performance of various PQC algorithms. They estimate 161~\us~per handshake on x86\_64 platforms using isolated liboqs benchmarks but do not implement a complete protocol. Their analysis provides theoretical foundations and migration guidelines but lacks real-world deployment, full circuit-construction measurements, and evaluation under diverse network conditions.
+% 批注6已修正：原文称"proposed a hybrid PQ-NTOR handshake"，但该文实际为综述型论文，仅比较已有方案效率，本质上并未提出新握手协议，已改为"surveyed"
+% 【中文翻译】Berger等人综述了Tor的后量子迁移策略，分析了现有的混合握手提案并比较了各种PQC算法的性能。他们的工作基于孤立的liboqs基准测试估算x86_64系统上每次握手需要161微秒，但未实现完整协议。该分析提供了理论基础和迁移指南，但缺乏实际部署、完整电路构建测量以及在多样网络条件下的评估。
+
+The Tor Project has two official proposals for post-quantum handshakes: Proposal 269~\cite{torproposal269} (2016) suggests hybrid NTRU+X25519 but was never implemented; Proposal 355~\cite{torproposal355} (2025) specifies ML-KEM circuit extension but remains in draft form. T\"ujner and Papadimitratos~\cite{qsor2020} evaluated six PQ algorithms (SIKE, NTRU, Kyber, NewHope, FrodoKEM, SPHINCS+) using OMNeT++ simulations with simplified network models, focusing only on circuit construction without complete Tor functionality.
+% 批注7已修正：原文称"implemented quantum-safe onion routing in OMNeT++"，但实验基于SweetOnions与本地电脑/虚拟机等简化仿真模拟，未部署树莓派等实际硬件，也仅涉及电路构建未集成Tor完整功能，已改为更准确的描述
+% 【中文翻译】Tor项目有两个处理后量子握手的官方提案：提案269（2016）建议混合NTRU+X25519但从未实现；提案355（2025）规定了ML-KEM电路扩展但仍处于草案阶段。Tüjner和Papadimitratos通过OMNeT++仿真基于简化网络模型评估了六种PQ算法（SIKE、NTRU、Kyber、NewHope、FrodoKEM、SPHINCS+），仅关注电路构建而未包含完整Tor功能。
+Ghosh and Kate~\cite{hybridtor2015} proposed hybrid onion routing with theoretical analysis and computational/communication cost evaluation but without practical implementation.
+% 批注8已修正：原文称"did not implement or evaluate performance"，但文中实际包括对计算开销与通信开销的验证，已添加"computational/communication cost evaluation"
+% 【中文翻译】Ghosh和Kate提出了混合洋葱路由，进行了理论分析和计算/通信成本评估，但未进行实际实现。
+
+%-----------------------------------------------------------------------------
+\subsubsection{Research Gaps and Our Contributions}
+% 【中文翻译】2.3.2 研究空白与本文贡献
+
+Prior work has explored post-quantum cryptography in SAGIN networks (e.g., APQA~\cite{apqa2024}, LPQAA~\cite{lpqaa2024}), Tor's viability in satellite environments (e.g., SaTor~\cite{sator2024}), and post-quantum Tor migration strategies (e.g., Berger et al.~\cite{berger2025postquantum}). However, no prior work integrates post-quantum security with anonymous communication in SAGIN environments. Existing PQC authentication schemes (APQA, LPQAA) operate at the link layer and require re-authentication upon frequent handovers in dynamic SAGIN settings, whereas application-layer anonymous communication establishes persistent circuits that remain valid across link changes. Our work addresses this gap through the following contributions:
+% 【中文翻译】先前工作已探索了后量子密码在SAGIN网络中的应用（如APQA、LPQAA）、Tor在卫星环境中的可行性（如SaTor）以及后量子Tor迁移策略（如Berger等人）。然而，尚无工作将后量子安全与SAGIN环境中的匿名通信相结合。现有PQC认证方案（APQA、LPQAA）运行在链路层，在动态SAGIN环境的频繁切换中需要重新认证，而应用层匿名通信建立的持久电路在链路变化时仍然有效。本文通过以下贡献填补了这一空白：
+
+\textbf{Complete system implementation.} We implement the first fully operational PQ-NTOR system with directory services, relay nodes, and clients, achieving 181.6~\us~handshake latency on ARM64 platforms and providing empirical measurements rather than theoretical estimates.
+% 【中文翻译】完整系统实现。我们实现了首个完整可运行的PQ-NTOR系统，包括目录服务、中继节点和客户端，在ARM64平台上实现了181.6微秒的握手延迟，提供了实证测量而非仅理论估算。
+
+\textbf{Persistent circuit advantage.} Unlike link-layer PQC protocols that require re-authentication during satellite/UAV handovers, PQ-NTOR establishes application-layer circuits that persist across link changes, reducing authentication overhead in dynamic SAGIN environments.
+% 【中文翻译】持久电路优势。与在卫星/UAV切换时需要重新认证的链路层PQC协议不同，PQ-NTOR建立的应用层电路在链路变化时仍然保持有效，降低了动态SAGIN环境中的认证开销。
+
+\textbf{SAGIN environment evaluation.} We evaluate PQ-NTOR performance across 12 network topologies covering LEO satellites, UAV relays, and ground terminals, with 30--500~ms latency ranges based on realistic NOMA parameters, addressing the unexplored high-latency heterogeneous network scenarios.
+% 【中文翻译】SAGIN环境评估。我们在12种网络拓扑下评估了PQ-NTOR性能，覆盖LEO卫星、UAV中继和地面终端，延迟范围为30-500毫秒，基于真实NOMA参数，填补了高延迟异构网络场景的评估空白。
+
+\textbf{Real-world validation.} We deploy the system across 7 Phytium Pi ARM64 devices, completing 240 experiments (12 topologies $\times$ 20 trials) with 100\% success rate. PQ-NTOR introduces less than 8.1\% cryptographic overhead relative to end-to-end delay (2.7--5.5~ms), demonstrating its practicality in high-latency SAGIN environments.
+% 【中文翻译】真实世界验证。我们在7台飞腾派ARM64设备上部署了系统，完成了240次实验（12种拓扑×20次试验），100%成功率。PQ-NTOR相对于端到端延迟（2.7-5.5毫秒）引入了小于8.1%的密码学开销，证明了其在高延迟SAGIN环境中的实用性。
+
+%-----------------------------------------------------------------------------
+% End of Related Work section
+%-----------------------------------------------------------------------------

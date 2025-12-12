@@ -1,39 +1,39 @@
 {
   "topology_id": 11,
-  "topology_name": "Z5 Down - 混合多跳协作",
+  "topology_name": "Z5 Down - 混合直连+多跳协作",
   "noma_config_ref": "/home/ccc/pq-ntor-experiment/sagin-experiments/noma-topologies/configs/topology_11_*.json",
-  "description": "Z5 Down - 混合多跳协作 - downlink",
+  "description": "Z5 Down - 混合直连+多跳协作 - downlink",
   "physical_topology": {
     "links": [
+      {
+        "source": "SAT",
+        "target": "Ground2",
+        "rssi": "low"
+      },
       {
         "source": "SAT",
         "target": "UAV2",
         "rssi": "high"
       },
       {
-        "source": "SAT",
-        "target": "Ground2",
-        "rssi": "low"
-      },
-      {
         "source": "UAV2",
-        "target": "Ground2",
-        "rssi": "coop"
-      },
-      {
-        "source": "Ground2",
         "target": "Ground1",
         "rssi": "high"
       },
       {
-        "source": "Ground2",
+        "source": "UAV2",
         "target": "Ground3",
         "rssi": "low"
       },
       {
-        "source": "Ground1",
+        "source": "Ground2",
         "target": "Ground3",
         "rssi": "coop"
+      },
+      {
+        "source": "Ground1",
+        "target": "Ground3",
+        "rssi": "high"
       }
     ],
     "direction": "downlink"
@@ -107,43 +107,18 @@
     "interface": "lo",
     "tc_commands": [
       "sudo tc qdisc del dev lo root 2>/dev/null || true",
-      "sudo tc qdisc add dev lo root netem delay 40ms 10ms distribution normal rate 22mbit loss 2.5%"
+      "sudo tc qdisc add dev lo root netem delay 5.43ms 1.36ms distribution normal rate 9.67mbit loss 2.00%"
     ],
     "aggregate_params": {
-      "delay_ms": 40,
-      "bandwidth_mbps": 22,
-      "loss_percent": 2.5
+      "delay_ms": 5.43,
+      "bandwidth_mbps": 9.67,
+      "loss_percent": 2.0
     }
-  },
-  "satellite_orbit_integration": {
-    "enabled": true,
-    "satellite_node": "SAT",
-    "orbit_data_source": "satellite_orbit.py",
-    "dynamic_parameters": {
-      "position_update": "per_test_run",
-      "delay_calculation": "distance_based",
-      "elevation_constraint": 10.0
-    }
-  },
-  "expected_performance": {
-    "pq_handshake_us": 147,
-    "circuit_build_ms": 276,
-    "total_rtt_ms": 240,
-    "throughput_mbps": 17,
-    "success_rate_percent": 85
   },
   "test_configuration": {
-    "num_runs": 10,
-    "timeout_seconds": 120,
-    "target_url": "http://127.0.0.1:8000/",
-    "metrics_to_collect": [
-      "pq_handshake_time",
-      "circuit_build_time",
-      "http_get_time",
-      "total_rtt",
-      "throughput",
-      "packet_loss",
-      "success_flag"
-    ]
+    "timeout_seconds": 60,
+    "max_retries": 3,
+    "retry_delay_seconds": 2,
+    "target_url": "http://127.0.0.1:8000/test.html"
   }
 }

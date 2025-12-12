@@ -1,0 +1,878 @@
+[
+  {
+    "topology": {
+      "id": 1,
+      "name": "Z1-SAT-OMA-Center",
+      "desc": "卫星→中心用户 (OMA)",
+      "link_type": "satellite",
+      "access": "OMA",
+      "user": "center",
+      "params": {
+        "rate_mbps": 35.06,
+        "sinr_db": 3.75,
+        "distance_m": 815000
+      },
+      "nodes": [
+        "client",
+        "guard",
+        "middle"
+      ]
+    },
+    "tc_config": {
+      "rate_mbps": 35.06,
+      "delay_ms": 2.716666666666667,
+      "loss_pct": 0.5,
+      "sinr_db": 3.75
+    },
+    "tc_commands": [
+      {
+        "node": "client",
+        "ip": "192.168.5.110",
+        "clear": "sudo tc qdisc del dev eth0 root 2>/dev/null || true"
+      },
+      {
+        "node": "client",
+        "ip": "192.168.5.110",
+        "setup": "sudo tc qdisc add dev eth0 root handle 1: netem delay 2.717ms loss 0.50%"
+      },
+      {
+        "node": "client",
+        "ip": "192.168.5.110",
+        "rate": "sudo tc qdisc add dev eth0 parent 1: handle 2: tbf rate 35.06mbit burst 32kbit latency 400ms"
+      },
+      {
+        "node": "guard",
+        "ip": "192.168.5.186",
+        "clear": "sudo tc qdisc del dev eth0 root 2>/dev/null || true"
+      },
+      {
+        "node": "guard",
+        "ip": "192.168.5.186",
+        "setup": "sudo tc qdisc add dev eth0 root handle 1: netem delay 2.717ms loss 0.50%"
+      },
+      {
+        "node": "guard",
+        "ip": "192.168.5.186",
+        "rate": "sudo tc qdisc add dev eth0 parent 1: handle 2: tbf rate 35.06mbit burst 32kbit latency 400ms"
+      },
+      {
+        "node": "middle",
+        "ip": "192.168.5.187",
+        "clear": "sudo tc qdisc del dev eth0 root 2>/dev/null || true"
+      },
+      {
+        "node": "middle",
+        "ip": "192.168.5.187",
+        "setup": "sudo tc qdisc add dev eth0 root handle 1: netem delay 2.717ms loss 0.50%"
+      },
+      {
+        "node": "middle",
+        "ip": "192.168.5.187",
+        "rate": "sudo tc qdisc add dev eth0 parent 1: handle 2: tbf rate 35.06mbit burst 32kbit latency 400ms"
+      }
+    ]
+  },
+  {
+    "topology": {
+      "id": 2,
+      "name": "Z1-SAT-OMA-Edge",
+      "desc": "卫星→边缘用户 (OMA)",
+      "link_type": "satellite",
+      "access": "OMA",
+      "user": "edge",
+      "params": {
+        "rate_mbps": 18.7,
+        "sinr_db": -0.4,
+        "distance_m": 820000
+      },
+      "nodes": [
+        "client",
+        "guard",
+        "middle"
+      ]
+    },
+    "tc_config": {
+      "rate_mbps": 18.7,
+      "delay_ms": 2.7333333333333334,
+      "loss_pct": 1.0,
+      "sinr_db": -0.4
+    },
+    "tc_commands": [
+      {
+        "node": "client",
+        "ip": "192.168.5.110",
+        "clear": "sudo tc qdisc del dev eth0 root 2>/dev/null || true"
+      },
+      {
+        "node": "client",
+        "ip": "192.168.5.110",
+        "setup": "sudo tc qdisc add dev eth0 root handle 1: netem delay 2.733ms loss 1.00%"
+      },
+      {
+        "node": "client",
+        "ip": "192.168.5.110",
+        "rate": "sudo tc qdisc add dev eth0 parent 1: handle 2: tbf rate 18.7mbit burst 32kbit latency 400ms"
+      },
+      {
+        "node": "guard",
+        "ip": "192.168.5.186",
+        "clear": "sudo tc qdisc del dev eth0 root 2>/dev/null || true"
+      },
+      {
+        "node": "guard",
+        "ip": "192.168.5.186",
+        "setup": "sudo tc qdisc add dev eth0 root handle 1: netem delay 2.733ms loss 1.00%"
+      },
+      {
+        "node": "guard",
+        "ip": "192.168.5.186",
+        "rate": "sudo tc qdisc add dev eth0 parent 1: handle 2: tbf rate 18.7mbit burst 32kbit latency 400ms"
+      },
+      {
+        "node": "middle",
+        "ip": "192.168.5.187",
+        "clear": "sudo tc qdisc del dev eth0 root 2>/dev/null || true"
+      },
+      {
+        "node": "middle",
+        "ip": "192.168.5.187",
+        "setup": "sudo tc qdisc add dev eth0 root handle 1: netem delay 2.733ms loss 1.00%"
+      },
+      {
+        "node": "middle",
+        "ip": "192.168.5.187",
+        "rate": "sudo tc qdisc add dev eth0 parent 1: handle 2: tbf rate 18.7mbit burst 32kbit latency 400ms"
+      }
+    ]
+  },
+  {
+    "topology": {
+      "id": 3,
+      "name": "Z1-SAT-NOMA-Strong",
+      "desc": "卫星→强用户 (NOMA)",
+      "link_type": "satellite",
+      "access": "NOMA",
+      "user": "strong",
+      "params": {
+        "rate_mbps": 15.5,
+        "sinr_db": -1.48,
+        "distance_m": 815000
+      },
+      "nodes": [
+        "client",
+        "guard",
+        "middle"
+      ]
+    },
+    "tc_config": {
+      "rate_mbps": 15.5,
+      "delay_ms": 2.716666666666667,
+      "loss_pct": 1.0,
+      "sinr_db": -1.48
+    },
+    "tc_commands": [
+      {
+        "node": "client",
+        "ip": "192.168.5.110",
+        "clear": "sudo tc qdisc del dev eth0 root 2>/dev/null || true"
+      },
+      {
+        "node": "client",
+        "ip": "192.168.5.110",
+        "setup": "sudo tc qdisc add dev eth0 root handle 1: netem delay 2.717ms loss 1.00%"
+      },
+      {
+        "node": "client",
+        "ip": "192.168.5.110",
+        "rate": "sudo tc qdisc add dev eth0 parent 1: handle 2: tbf rate 15.5mbit burst 32kbit latency 400ms"
+      },
+      {
+        "node": "guard",
+        "ip": "192.168.5.186",
+        "clear": "sudo tc qdisc del dev eth0 root 2>/dev/null || true"
+      },
+      {
+        "node": "guard",
+        "ip": "192.168.5.186",
+        "setup": "sudo tc qdisc add dev eth0 root handle 1: netem delay 2.717ms loss 1.00%"
+      },
+      {
+        "node": "guard",
+        "ip": "192.168.5.186",
+        "rate": "sudo tc qdisc add dev eth0 parent 1: handle 2: tbf rate 15.5mbit burst 32kbit latency 400ms"
+      },
+      {
+        "node": "middle",
+        "ip": "192.168.5.187",
+        "clear": "sudo tc qdisc del dev eth0 root 2>/dev/null || true"
+      },
+      {
+        "node": "middle",
+        "ip": "192.168.5.187",
+        "setup": "sudo tc qdisc add dev eth0 root handle 1: netem delay 2.717ms loss 1.00%"
+      },
+      {
+        "node": "middle",
+        "ip": "192.168.5.187",
+        "rate": "sudo tc qdisc add dev eth0 parent 1: handle 2: tbf rate 15.5mbit burst 32kbit latency 400ms"
+      }
+    ]
+  },
+  {
+    "topology": {
+      "id": 4,
+      "name": "Z1-SAT-NOMA-Weak",
+      "desc": "卫星→弱用户 (NOMA)",
+      "link_type": "satellite",
+      "access": "NOMA",
+      "user": "weak",
+      "params": {
+        "rate_mbps": 11.72,
+        "sinr_db": -3.0,
+        "distance_m": 820000
+      },
+      "nodes": [
+        "client",
+        "guard",
+        "middle"
+      ]
+    },
+    "tc_config": {
+      "rate_mbps": 11.72,
+      "delay_ms": 2.7333333333333334,
+      "loss_pct": 1.0,
+      "sinr_db": -3.0
+    },
+    "tc_commands": [
+      {
+        "node": "client",
+        "ip": "192.168.5.110",
+        "clear": "sudo tc qdisc del dev eth0 root 2>/dev/null || true"
+      },
+      {
+        "node": "client",
+        "ip": "192.168.5.110",
+        "setup": "sudo tc qdisc add dev eth0 root handle 1: netem delay 2.733ms loss 1.00%"
+      },
+      {
+        "node": "client",
+        "ip": "192.168.5.110",
+        "rate": "sudo tc qdisc add dev eth0 parent 1: handle 2: tbf rate 11.72mbit burst 32kbit latency 400ms"
+      },
+      {
+        "node": "guard",
+        "ip": "192.168.5.186",
+        "clear": "sudo tc qdisc del dev eth0 root 2>/dev/null || true"
+      },
+      {
+        "node": "guard",
+        "ip": "192.168.5.186",
+        "setup": "sudo tc qdisc add dev eth0 root handle 1: netem delay 2.733ms loss 1.00%"
+      },
+      {
+        "node": "guard",
+        "ip": "192.168.5.186",
+        "rate": "sudo tc qdisc add dev eth0 parent 1: handle 2: tbf rate 11.72mbit burst 32kbit latency 400ms"
+      },
+      {
+        "node": "middle",
+        "ip": "192.168.5.187",
+        "clear": "sudo tc qdisc del dev eth0 root 2>/dev/null || true"
+      },
+      {
+        "node": "middle",
+        "ip": "192.168.5.187",
+        "setup": "sudo tc qdisc add dev eth0 root handle 1: netem delay 2.733ms loss 1.00%"
+      },
+      {
+        "node": "middle",
+        "ip": "192.168.5.187",
+        "rate": "sudo tc qdisc add dev eth0 parent 1: handle 2: tbf rate 11.72mbit burst 32kbit latency 400ms"
+      }
+    ]
+  },
+  {
+    "topology": {
+      "id": 5,
+      "name": "Z2-UAV-OMA-Near",
+      "desc": "无人机→近端用户 (OMA)",
+      "link_type": "uav",
+      "access": "OMA",
+      "user": "near",
+      "params": {
+        "rate_mbps": 29.86,
+        "sinr_db": 44.94,
+        "distance_m": 1000
+      },
+      "nodes": [
+        "guard",
+        "middle",
+        "exit"
+      ]
+    },
+    "tc_config": {
+      "rate_mbps": 29.86,
+      "delay_ms": 0.003333333333333333,
+      "loss_pct": 0.01,
+      "sinr_db": 44.94
+    },
+    "tc_commands": [
+      {
+        "node": "guard",
+        "ip": "192.168.5.186",
+        "clear": "sudo tc qdisc del dev eth0 root 2>/dev/null || true"
+      },
+      {
+        "node": "guard",
+        "ip": "192.168.5.186",
+        "setup": "sudo tc qdisc add dev eth0 root handle 1: netem delay 0.003ms loss 0.01%"
+      },
+      {
+        "node": "guard",
+        "ip": "192.168.5.186",
+        "rate": "sudo tc qdisc add dev eth0 parent 1: handle 2: tbf rate 29.86mbit burst 32kbit latency 400ms"
+      },
+      {
+        "node": "middle",
+        "ip": "192.168.5.187",
+        "clear": "sudo tc qdisc del dev eth0 root 2>/dev/null || true"
+      },
+      {
+        "node": "middle",
+        "ip": "192.168.5.187",
+        "setup": "sudo tc qdisc add dev eth0 root handle 1: netem delay 0.003ms loss 0.01%"
+      },
+      {
+        "node": "middle",
+        "ip": "192.168.5.187",
+        "rate": "sudo tc qdisc add dev eth0 parent 1: handle 2: tbf rate 29.86mbit burst 32kbit latency 400ms"
+      },
+      {
+        "node": "exit",
+        "ip": "192.168.5.188",
+        "clear": "sudo tc qdisc del dev eth0 root 2>/dev/null || true"
+      },
+      {
+        "node": "exit",
+        "ip": "192.168.5.188",
+        "setup": "sudo tc qdisc add dev eth0 root handle 1: netem delay 0.003ms loss 0.01%"
+      },
+      {
+        "node": "exit",
+        "ip": "192.168.5.188",
+        "rate": "sudo tc qdisc add dev eth0 parent 1: handle 2: tbf rate 29.86mbit burst 32kbit latency 400ms"
+      }
+    ]
+  },
+  {
+    "topology": {
+      "id": 6,
+      "name": "Z2-UAV-OMA-Far",
+      "desc": "无人机→远端用户 (OMA)",
+      "link_type": "uav",
+      "access": "OMA",
+      "user": "far",
+      "params": {
+        "rate_mbps": 23.99,
+        "sinr_db": 36.11,
+        "distance_m": 2600
+      },
+      "nodes": [
+        "guard",
+        "middle",
+        "exit"
+      ]
+    },
+    "tc_config": {
+      "rate_mbps": 23.99,
+      "delay_ms": 0.008666666666666666,
+      "loss_pct": 0.01,
+      "sinr_db": 36.11
+    },
+    "tc_commands": [
+      {
+        "node": "guard",
+        "ip": "192.168.5.186",
+        "clear": "sudo tc qdisc del dev eth0 root 2>/dev/null || true"
+      },
+      {
+        "node": "guard",
+        "ip": "192.168.5.186",
+        "setup": "sudo tc qdisc add dev eth0 root handle 1: netem delay 0.009ms loss 0.01%"
+      },
+      {
+        "node": "guard",
+        "ip": "192.168.5.186",
+        "rate": "sudo tc qdisc add dev eth0 parent 1: handle 2: tbf rate 23.99mbit burst 32kbit latency 400ms"
+      },
+      {
+        "node": "middle",
+        "ip": "192.168.5.187",
+        "clear": "sudo tc qdisc del dev eth0 root 2>/dev/null || true"
+      },
+      {
+        "node": "middle",
+        "ip": "192.168.5.187",
+        "setup": "sudo tc qdisc add dev eth0 root handle 1: netem delay 0.009ms loss 0.01%"
+      },
+      {
+        "node": "middle",
+        "ip": "192.168.5.187",
+        "rate": "sudo tc qdisc add dev eth0 parent 1: handle 2: tbf rate 23.99mbit burst 32kbit latency 400ms"
+      },
+      {
+        "node": "exit",
+        "ip": "192.168.5.188",
+        "clear": "sudo tc qdisc del dev eth0 root 2>/dev/null || true"
+      },
+      {
+        "node": "exit",
+        "ip": "192.168.5.188",
+        "setup": "sudo tc qdisc add dev eth0 root handle 1: netem delay 0.009ms loss 0.01%"
+      },
+      {
+        "node": "exit",
+        "ip": "192.168.5.188",
+        "rate": "sudo tc qdisc add dev eth0 parent 1: handle 2: tbf rate 23.99mbit burst 32kbit latency 400ms"
+      }
+    ]
+  },
+  {
+    "topology": {
+      "id": 7,
+      "name": "Z2-UAV-NOMA-Strong",
+      "desc": "无人机→强用户 (NOMA)",
+      "link_type": "uav",
+      "access": "NOMA",
+      "user": "strong",
+      "params": {
+        "rate_mbps": 26.38,
+        "sinr_db": 39.71,
+        "distance_m": 1000
+      },
+      "nodes": [
+        "guard",
+        "middle",
+        "exit"
+      ]
+    },
+    "tc_config": {
+      "rate_mbps": 26.38,
+      "delay_ms": 0.003333333333333333,
+      "loss_pct": 0.01,
+      "sinr_db": 39.71
+    },
+    "tc_commands": [
+      {
+        "node": "guard",
+        "ip": "192.168.5.186",
+        "clear": "sudo tc qdisc del dev eth0 root 2>/dev/null || true"
+      },
+      {
+        "node": "guard",
+        "ip": "192.168.5.186",
+        "setup": "sudo tc qdisc add dev eth0 root handle 1: netem delay 0.003ms loss 0.01%"
+      },
+      {
+        "node": "guard",
+        "ip": "192.168.5.186",
+        "rate": "sudo tc qdisc add dev eth0 parent 1: handle 2: tbf rate 26.38mbit burst 32kbit latency 400ms"
+      },
+      {
+        "node": "middle",
+        "ip": "192.168.5.187",
+        "clear": "sudo tc qdisc del dev eth0 root 2>/dev/null || true"
+      },
+      {
+        "node": "middle",
+        "ip": "192.168.5.187",
+        "setup": "sudo tc qdisc add dev eth0 root handle 1: netem delay 0.003ms loss 0.01%"
+      },
+      {
+        "node": "middle",
+        "ip": "192.168.5.187",
+        "rate": "sudo tc qdisc add dev eth0 parent 1: handle 2: tbf rate 26.38mbit burst 32kbit latency 400ms"
+      },
+      {
+        "node": "exit",
+        "ip": "192.168.5.188",
+        "clear": "sudo tc qdisc del dev eth0 root 2>/dev/null || true"
+      },
+      {
+        "node": "exit",
+        "ip": "192.168.5.188",
+        "setup": "sudo tc qdisc add dev eth0 root handle 1: netem delay 0.003ms loss 0.01%"
+      },
+      {
+        "node": "exit",
+        "ip": "192.168.5.188",
+        "rate": "sudo tc qdisc add dev eth0 parent 1: handle 2: tbf rate 26.38mbit burst 32kbit latency 400ms"
+      }
+    ]
+  },
+  {
+    "topology": {
+      "id": 8,
+      "name": "Z2-UAV-NOMA-Weak",
+      "desc": "无人机→弱用户 (NOMA)",
+      "link_type": "uav",
+      "access": "NOMA",
+      "user": "weak",
+      "params": {
+        "rate_mbps": 3.47,
+        "sinr_db": 3.68,
+        "distance_m": 2600
+      },
+      "nodes": [
+        "guard",
+        "middle",
+        "exit"
+      ]
+    },
+    "tc_config": {
+      "rate_mbps": 3.47,
+      "delay_ms": 0.008666666666666666,
+      "loss_pct": 0.5,
+      "sinr_db": 3.68
+    },
+    "tc_commands": [
+      {
+        "node": "guard",
+        "ip": "192.168.5.186",
+        "clear": "sudo tc qdisc del dev eth0 root 2>/dev/null || true"
+      },
+      {
+        "node": "guard",
+        "ip": "192.168.5.186",
+        "setup": "sudo tc qdisc add dev eth0 root handle 1: netem delay 0.009ms loss 0.50%"
+      },
+      {
+        "node": "guard",
+        "ip": "192.168.5.186",
+        "rate": "sudo tc qdisc add dev eth0 parent 1: handle 2: tbf rate 3.47mbit burst 32kbit latency 400ms"
+      },
+      {
+        "node": "middle",
+        "ip": "192.168.5.187",
+        "clear": "sudo tc qdisc del dev eth0 root 2>/dev/null || true"
+      },
+      {
+        "node": "middle",
+        "ip": "192.168.5.187",
+        "setup": "sudo tc qdisc add dev eth0 root handle 1: netem delay 0.009ms loss 0.50%"
+      },
+      {
+        "node": "middle",
+        "ip": "192.168.5.187",
+        "rate": "sudo tc qdisc add dev eth0 parent 1: handle 2: tbf rate 3.47mbit burst 32kbit latency 400ms"
+      },
+      {
+        "node": "exit",
+        "ip": "192.168.5.188",
+        "clear": "sudo tc qdisc del dev eth0 root 2>/dev/null || true"
+      },
+      {
+        "node": "exit",
+        "ip": "192.168.5.188",
+        "setup": "sudo tc qdisc add dev eth0 root handle 1: netem delay 0.009ms loss 0.50%"
+      },
+      {
+        "node": "exit",
+        "ip": "192.168.5.188",
+        "rate": "sudo tc qdisc add dev eth0 parent 1: handle 2: tbf rate 3.47mbit burst 32kbit latency 400ms"
+      }
+    ]
+  },
+  {
+    "topology": {
+      "id": 9,
+      "name": "Z3-D2D-OMA-Strong",
+      "desc": "D2D→强用户 (OMA)",
+      "link_type": "d2d",
+      "access": "OMA",
+      "user": "strong",
+      "params": {
+        "rate_mbps": 32.98,
+        "sinr_db": 49.64,
+        "distance_m": 30
+      },
+      "nodes": [
+        "middle",
+        "exit",
+        "target"
+      ]
+    },
+    "tc_config": {
+      "rate_mbps": 32.98,
+      "delay_ms": 9.999999999999999e-05,
+      "loss_pct": 0.01,
+      "sinr_db": 49.64
+    },
+    "tc_commands": [
+      {
+        "node": "middle",
+        "ip": "192.168.5.187",
+        "clear": "sudo tc qdisc del dev eth0 root 2>/dev/null || true"
+      },
+      {
+        "node": "middle",
+        "ip": "192.168.5.187",
+        "setup": "sudo tc qdisc add dev eth0 root handle 1: netem delay 0.000ms loss 0.01%"
+      },
+      {
+        "node": "middle",
+        "ip": "192.168.5.187",
+        "rate": "sudo tc qdisc add dev eth0 parent 1: handle 2: tbf rate 32.98mbit burst 32kbit latency 400ms"
+      },
+      {
+        "node": "exit",
+        "ip": "192.168.5.188",
+        "clear": "sudo tc qdisc del dev eth0 root 2>/dev/null || true"
+      },
+      {
+        "node": "exit",
+        "ip": "192.168.5.188",
+        "setup": "sudo tc qdisc add dev eth0 root handle 1: netem delay 0.000ms loss 0.01%"
+      },
+      {
+        "node": "exit",
+        "ip": "192.168.5.188",
+        "rate": "sudo tc qdisc add dev eth0 parent 1: handle 2: tbf rate 32.98mbit burst 32kbit latency 400ms"
+      },
+      {
+        "node": "target",
+        "ip": "192.168.5.189",
+        "clear": "sudo tc qdisc del dev eth0 root 2>/dev/null || true"
+      },
+      {
+        "node": "target",
+        "ip": "192.168.5.189",
+        "setup": "sudo tc qdisc add dev eth0 root handle 1: netem delay 0.000ms loss 0.01%"
+      },
+      {
+        "node": "target",
+        "ip": "192.168.5.189",
+        "rate": "sudo tc qdisc add dev eth0 parent 1: handle 2: tbf rate 32.98mbit burst 32kbit latency 400ms"
+      }
+    ]
+  },
+  {
+    "topology": {
+      "id": 10,
+      "name": "Z3-D2D-OMA-Weak",
+      "desc": "D2D→弱用户 (OMA)",
+      "link_type": "d2d",
+      "access": "OMA",
+      "user": "weak",
+      "params": {
+        "rate_mbps": 22.56,
+        "sinr_db": 33.95,
+        "distance_m": 100
+      },
+      "nodes": [
+        "middle",
+        "exit",
+        "target"
+      ]
+    },
+    "tc_config": {
+      "rate_mbps": 22.56,
+      "delay_ms": 0.0003333333333333334,
+      "loss_pct": 0.01,
+      "sinr_db": 33.95
+    },
+    "tc_commands": [
+      {
+        "node": "middle",
+        "ip": "192.168.5.187",
+        "clear": "sudo tc qdisc del dev eth0 root 2>/dev/null || true"
+      },
+      {
+        "node": "middle",
+        "ip": "192.168.5.187",
+        "setup": "sudo tc qdisc add dev eth0 root handle 1: netem delay 0.000ms loss 0.01%"
+      },
+      {
+        "node": "middle",
+        "ip": "192.168.5.187",
+        "rate": "sudo tc qdisc add dev eth0 parent 1: handle 2: tbf rate 22.56mbit burst 32kbit latency 400ms"
+      },
+      {
+        "node": "exit",
+        "ip": "192.168.5.188",
+        "clear": "sudo tc qdisc del dev eth0 root 2>/dev/null || true"
+      },
+      {
+        "node": "exit",
+        "ip": "192.168.5.188",
+        "setup": "sudo tc qdisc add dev eth0 root handle 1: netem delay 0.000ms loss 0.01%"
+      },
+      {
+        "node": "exit",
+        "ip": "192.168.5.188",
+        "rate": "sudo tc qdisc add dev eth0 parent 1: handle 2: tbf rate 22.56mbit burst 32kbit latency 400ms"
+      },
+      {
+        "node": "target",
+        "ip": "192.168.5.189",
+        "clear": "sudo tc qdisc del dev eth0 root 2>/dev/null || true"
+      },
+      {
+        "node": "target",
+        "ip": "192.168.5.189",
+        "setup": "sudo tc qdisc add dev eth0 root handle 1: netem delay 0.000ms loss 0.01%"
+      },
+      {
+        "node": "target",
+        "ip": "192.168.5.189",
+        "rate": "sudo tc qdisc add dev eth0 parent 1: handle 2: tbf rate 22.56mbit burst 32kbit latency 400ms"
+      }
+    ]
+  },
+  {
+    "topology": {
+      "id": 11,
+      "name": "Z3-D2D-NOMA-Strong",
+      "desc": "D2D→强用户 (NOMA)",
+      "link_type": "d2d",
+      "access": "NOMA",
+      "user": "strong",
+      "params": {
+        "rate_mbps": 29.51,
+        "sinr_db": 44.41,
+        "distance_m": 30
+      },
+      "nodes": [
+        "middle",
+        "exit",
+        "target"
+      ]
+    },
+    "tc_config": {
+      "rate_mbps": 29.51,
+      "delay_ms": 9.999999999999999e-05,
+      "loss_pct": 0.01,
+      "sinr_db": 44.41
+    },
+    "tc_commands": [
+      {
+        "node": "middle",
+        "ip": "192.168.5.187",
+        "clear": "sudo tc qdisc del dev eth0 root 2>/dev/null || true"
+      },
+      {
+        "node": "middle",
+        "ip": "192.168.5.187",
+        "setup": "sudo tc qdisc add dev eth0 root handle 1: netem delay 0.000ms loss 0.01%"
+      },
+      {
+        "node": "middle",
+        "ip": "192.168.5.187",
+        "rate": "sudo tc qdisc add dev eth0 parent 1: handle 2: tbf rate 29.51mbit burst 32kbit latency 400ms"
+      },
+      {
+        "node": "exit",
+        "ip": "192.168.5.188",
+        "clear": "sudo tc qdisc del dev eth0 root 2>/dev/null || true"
+      },
+      {
+        "node": "exit",
+        "ip": "192.168.5.188",
+        "setup": "sudo tc qdisc add dev eth0 root handle 1: netem delay 0.000ms loss 0.01%"
+      },
+      {
+        "node": "exit",
+        "ip": "192.168.5.188",
+        "rate": "sudo tc qdisc add dev eth0 parent 1: handle 2: tbf rate 29.51mbit burst 32kbit latency 400ms"
+      },
+      {
+        "node": "target",
+        "ip": "192.168.5.189",
+        "clear": "sudo tc qdisc del dev eth0 root 2>/dev/null || true"
+      },
+      {
+        "node": "target",
+        "ip": "192.168.5.189",
+        "setup": "sudo tc qdisc add dev eth0 root handle 1: netem delay 0.000ms loss 0.01%"
+      },
+      {
+        "node": "target",
+        "ip": "192.168.5.189",
+        "rate": "sudo tc qdisc add dev eth0 parent 1: handle 2: tbf rate 29.51mbit burst 32kbit latency 400ms"
+      }
+    ]
+  },
+  {
+    "topology": {
+      "id": 12,
+      "name": "Z3-D2D-NOMA-Weak",
+      "desc": "D2D→弱用户 (NOMA)",
+      "link_type": "d2d",
+      "access": "NOMA",
+      "user": "weak",
+      "params": {
+        "rate_mbps": 3.47,
+        "sinr_db": 3.67,
+        "distance_m": 100
+      },
+      "nodes": [
+        "middle",
+        "exit",
+        "target"
+      ]
+    },
+    "tc_config": {
+      "rate_mbps": 3.47,
+      "delay_ms": 0.0003333333333333334,
+      "loss_pct": 0.5,
+      "sinr_db": 3.67
+    },
+    "tc_commands": [
+      {
+        "node": "middle",
+        "ip": "192.168.5.187",
+        "clear": "sudo tc qdisc del dev eth0 root 2>/dev/null || true"
+      },
+      {
+        "node": "middle",
+        "ip": "192.168.5.187",
+        "setup": "sudo tc qdisc add dev eth0 root handle 1: netem delay 0.000ms loss 0.50%"
+      },
+      {
+        "node": "middle",
+        "ip": "192.168.5.187",
+        "rate": "sudo tc qdisc add dev eth0 parent 1: handle 2: tbf rate 3.47mbit burst 32kbit latency 400ms"
+      },
+      {
+        "node": "exit",
+        "ip": "192.168.5.188",
+        "clear": "sudo tc qdisc del dev eth0 root 2>/dev/null || true"
+      },
+      {
+        "node": "exit",
+        "ip": "192.168.5.188",
+        "setup": "sudo tc qdisc add dev eth0 root handle 1: netem delay 0.000ms loss 0.50%"
+      },
+      {
+        "node": "exit",
+        "ip": "192.168.5.188",
+        "rate": "sudo tc qdisc add dev eth0 parent 1: handle 2: tbf rate 3.47mbit burst 32kbit latency 400ms"
+      },
+      {
+        "node": "target",
+        "ip": "192.168.5.189",
+        "clear": "sudo tc qdisc del dev eth0 root 2>/dev/null || true"
+      },
+      {
+        "node": "target",
+        "ip": "192.168.5.189",
+        "setup": "sudo tc qdisc add dev eth0 root handle 1: netem delay 0.000ms loss 0.50%"
+      },
+      {
+        "node": "target",
+        "ip": "192.168.5.189",
+        "rate": "sudo tc qdisc add dev eth0 parent 1: handle 2: tbf rate 3.47mbit burst 32kbit latency 400ms"
+      }
+    ]
+  }
+]

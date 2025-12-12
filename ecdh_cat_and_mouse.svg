@@ -1,0 +1,93 @@
+<svg width="800" height="600" xmlns="http://www.w3.org/2000/svg" style="background-color:#f0f0f0; font-family: 'Courier New', monospace; border: 1px solid #ccc; border-radius: 10px;">
+    <defs>
+        <marker id="arrow" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="#333" />
+        </marker>
+    </defs>
+
+    <!-- Title -->
+    <text x="400" y="40" font-size="24" text-anchor="middle" font-weight="bold">ECDH Key Exchange: Tom &amp; Jerry Edition</text>
+
+    <!-- Public Parameters -->
+    <g id="public_params">
+        <text x="400" y="80" text-anchor="middle">Publicly Agreed Parameters: Elliptic Curve &amp; Generator Point (G)</text>
+    </g>
+
+    <!-- Tom (Cat) Side -->
+    <g id="tom_cat">
+        <!-- Tom Character -->
+        <g id="tom_character" transform="translate(150, 145)">
+            <circle cx="0" cy="0" r="40" fill="#95A5A6"/>
+            <path d="M -35 -50 L -15 -30 L -45 -30 Z" fill="#7F8C8D"/>
+            <path d="M 35 -50 L 15 -30 L 45 -30 Z" fill="#7F8C8D"/>
+            <circle cx="-15" cy="-10" r="4" fill="#2c3e50"/>
+            <circle cx="15" cy="-10" r="4" fill="#2c3e50"/>
+            <circle cx="0" cy="5" r="3" fill="#2c3e50"/>
+        </g>
+        <text x="150" y="220" text-anchor="middle" font-weight="bold">Tom (Cat)</text>
+
+        <!-- Private Key -->
+        <rect x="50" y="250" width="200" height="100" fill="#fff" stroke="#ccc" rx="10"/>
+        <text x="150" y="280" text-anchor="middle">1. Chooses private key:</text>
+        <text x="150" y="310" text-anchor="middle" font-weight="bold" fill="#d9534f">priv_T</text>
+
+        <!-- Public Key Calculation -->
+        <rect x="50" y="370" width="200" height="100" fill="#fff" stroke="#ccc" rx="10"/>
+        <text x="150" y="400" text-anchor="middle">2. Computes public key:</text>
+        <text x="150" y="430" text-anchor="middle" font-weight="bold" fill="#5cb85c">pub_T = priv_T * G</text>
+    </g>
+
+    <!-- Jerry (Mouse) Side -->
+    <g id="jerry_mouse">
+        <!-- Jerry Character -->
+        <g id="jerry_character" transform="translate(650, 145)">
+            <circle cx="-25" cy="-25" r="20" fill="#CD853F"/>
+            <circle cx="25" cy="-25" r="20" fill="#CD853F"/>
+            <circle cx="0" cy="0" r="30" fill="#DEB887"/>
+            <circle cx="-10" cy="-5" r="3" fill="#000"/>
+            <circle cx="10" cy="-5" r="3" fill="#000"/>
+            <path d="M 0 5 C 5 15, -5 15, 0 5" fill="#F08080"/>
+        </g>
+        <text x="650" y="220" text-anchor="middle" font-weight="bold">Jerry (Mouse)</text>
+
+        <!-- Private Key -->
+        <rect x="550" y="250" width="200" height="100" fill="#fff" stroke="#ccc" rx="10"/>
+        <text x="650" y="280" text-anchor="middle">1. Chooses private key:</text>
+        <text x="650" y="310" text-anchor="middle" font-weight="bold" fill="#d9534f">priv_J</text>
+
+        <!-- Public Key Calculation -->
+        <rect x="550" y="370" width="200" height="100" fill="#fff" stroke="#ccc" rx="10"/>
+        <text x="650" y="400" text-anchor="middle">2. Computes public key:</text>
+        <text x="650" y="430" text-anchor="middle" font-weight="bold" fill="#5cb85c">pub_J = priv_J * G</text>
+    </g>
+
+    <!-- Exchange -->
+    <g id="exchange" transform="translate(0, 20)">
+        <text x="400" y="380" text-anchor="middle" font-weight="bold" font-size="16">3. Public Key Exchange</text>
+        <!-- Tom sends pub_T to Jerry -->
+        <path d="M 260 415 L 540 415" stroke="#333" stroke-width="2" marker-end="url(#arrow)" />
+        <text x="400" y="405" text-anchor="middle" fill="#5cb85c">sends pub_T</text>
+
+        <!-- Jerry sends pub_J to Tom -->
+        <path d="M 540 445 L 260 445" stroke="#333" stroke-width="2" marker-end="url(#arrow)" />
+        <text x="400" y="460" text-anchor="middle" fill="#5cb85c">sends pub_J</text>
+    </g>
+
+    <!-- Shared Secret Calculation -->
+    <g id="shared_secret">
+        <text x="400" y="500" text-anchor="middle" font-weight="bold" font-size="16">4. Shared Secret Calculation (Result is the same!)</text>
+        <!-- Tom's Calculation -->
+        <rect x="50" y="520" width="300" height="60" fill="#fff3cd" stroke="#f0ad4e" rx="10"/>
+        <text x="200" y="545" text-anchor="middle">Tom computes:</text>
+        <text x="200" y="565" text-anchor="middle" font-weight="bold" fill="#f0ad4e">S = priv_T * pub_J</text>
+
+        <!-- Jerry's Calculation -->
+        <rect x="450" y="520" width="300" height="60" fill="#fff3cd" stroke="#f0ad4e" rx="10"/>
+        <text x="600" y="545" text-anchor="middle">Jerry computes:</text>
+        <text x="600" y="565" text-anchor="middle" font-weight="bold" fill="#f0ad4e">S = priv_J * pub_T</text>
+
+        <!-- They are equal -->
+        <path d="M 355 550 L 445 550" stroke="#333" stroke-width="2.5" />
+        <text x="400" y="555" text-anchor="middle" font-size="24" font-weight="bold">==</text>
+    </g>
+</svg>

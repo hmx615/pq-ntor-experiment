@@ -1,13 +1,236 @@
-% Section 2: Background
-% Placeholder
+% Section 3: Background
+% Provides technical background on Tor, PQC, and SAGIN
+% Version: 1.0
+% Date: 2025-12-09
 
 \section{Background}
 \label{sec:background}
+% 【中文翻译】第三章 背景知识
 
-\textbf{[PLACEHOLDER - Section to be completed]}
+This section introduces the technical foundations necessary to understand our work: the Tor network and its Ntor handshake protocol, post-quantum cryptography standardization, and SAGIN network characteristics.
+% 【中文翻译】本节介绍理解我们工作所需的技术基础：Tor网络及其Ntor握手协议、后量子密码标准化以及SAGIN网络特性。
 
-\subsection{Tor and the Ntor Handshake}
+%=============================================================================
+\subsection{Tor and the Ntor Handshake Protocol}
+\label{sec:bg-tor}
+% 【中文翻译】3.1 Tor网络与Ntor握手协议
 
-\subsection{Post-Quantum Cryptography}
+The Tor network~\cite{dingledine2004tor} provides anonymous communication by routing traffic through a series of relay nodes, encrypting data in layers like an onion. A typical Tor circuit consists of three hops: a \emph{guard} relay (entry point), a \emph{middle} relay, and an \emph{exit} relay (exit point). Each relay only knows its predecessor and successor, preventing any single node from linking the client to the destination. To establish secure communication between the client and each relay, Tor employs the Ntor handshake protocol~\cite{goldberg2013ntor}, which uses Curve25519 Elliptic Curve Diffie-Hellman (ECDH) for key exchange. Figure~\ref{fig:ntor-handshake} illustrates the protocol flow.
+% 【中文翻译】Tor网络通过一系列中继节点路由流量，像洋葱一样分层加密数据来提供匿名通信。典型的Tor电路包含三跳：守卫中继（入口点）、中间中继和出口中继（出口点）。每个中继只知道其前驱和后继节点，防止任何单个节点将客户端与目的地关联起来。为了在客户端和每个中继之间建立安全通信，Tor采用Ntor握手协议，该协议使用Curve25519椭圆曲线Diffie-Hellman (ECDH)进行密钥交换。图~\ref{fig:ntor-handshake}展示了协议流程。
 
-\subsection{SAGIN Networks}
+\begin{figure}[t]
+\centering
+\small
+\begin{tikzpicture}[
+    node distance=0.4cm,
+    actor/.style={rectangle, draw, minimum width=1.8cm, minimum height=0.5cm, align=center, font=\small\bfseries},
+    opbox/.style={rectangle, draw=black, minimum width=2.5cm, align=left, font=\scriptsize, inner sep=3pt},
+    arrow/.style={->, >=stealth, thick},
+    msg/.style={font=\scriptsize}
+]
+
+% Actors
+\node[actor] (client) {Client};
+\node[actor, right=4.5cm of client] (relay) {Relay};
+
+% Vertical timelines
+\coordinate (c0) at ($(client.south) + (0,-0.25)$);
+\coordinate (r0) at ($(relay.south) + (0,-0.25)$);
+
+% Step 1: Client generates x and X
+\node[opbox, below=0.35cm of c0, anchor=north] (box1) {
+    Generate: $x \xleftarrow{\$} \mathbb{Z}_q$ \\
+    Compute: $X = x \cdot G$
+};
+\draw[thick] (c0) -- (box1.north);
+
+% Message 1: Client -> Relay (X)
+\coordinate (c1) at ($(box1.south) + (0,-0.25)$);
+\coordinate (r1) at ($(r0) + (0,-2.0)$);
+\draw[thick] (box1.south) -- (c1);
+\draw[arrow] (c1) -- (r1) node[midway, above, msg] {$X$};
+\draw[thick] (r0) -- (r1);
+
+% Step 2: Relay generates y, Y and computes K
+\node[opbox, below=0.35cm of r1, anchor=north] (box2) {
+    Generate: $y \xleftarrow{\$} \mathbb{Z}_q$ \\
+    Compute: $Y = y \cdot G$ \\
+    Compute: $K = y \cdot X$
+};
+\draw[thick] (r1) -- (box2.north);
+
+% Message 2: Relay -> Client (Y)
+\coordinate (r2) at ($(box2.south) + (0,-0.25)$);
+\coordinate (c2) at ($(c1) + (0,-4.2)$);
+\draw[thick] (box2.south) -- (r2);
+\draw[arrow] (r2) -- (c2) node[midway, above, msg] {$Y$};
+\draw[thick] (c1) -- (c2);
+
+% Step 3: Client computes K
+\node[opbox, below=0.35cm of c2, anchor=north] (box3) {
+    Compute: $K = x \cdot Y$ \\
+    Verify: $K = x \cdot y \cdot G$
+};
+\draw[thick] (c2) -- (box3.north);
+
+% Step 4: Both derive session keys
+\node[opbox, below=0.35cm of box3, anchor=north] (box4) {
+    Derive: keys $=$ HKDF$(K)$
+};
+\draw[thick] (box3.south) -- (box4.north);
+
+\coordinate (r3) at ($(r2) + (0,-0.25)$);
+\coordinate (r4) at (r3 |- box4.north);
+\node[opbox, anchor=north] (box5) at (r4) {
+    Derive: keys $=$ HKDF$(K)$
+};
+\draw[thick] (r2) -- (r3);
+\draw[thick] (r3) -- (box5.north);
+
+% Final timeline endpoints
+\coordinate (c_end) at ($(box4.south) + (0,-0.15)$);
+\coordinate (r_end) at ($(box5.south) + (0,-0.15)$);
+\draw[thick] (box4.south) -- (c_end);
+\draw[thick] (box5.south) -- (r_end);
+
+\end{tikzpicture}
+\caption{Ntor handshake protocol interaction diagram.}
+% 【中文翻译】Ntor握手协议交互图。
+\label{fig:ntor-handshake}
+\end{figure}
+
+On modern x86-64 processors, a single Ntor handshake completes in approximately 50~\us. The protocol achieves forward secrecy and requires only 32 bytes for public keys and 32 bytes for the shared secret. However, Ntor faces an existential threat from quantum computers. Shor's algorithm~\cite{shor1997polynomial} enables quantum computers to solve the Elliptic Curve Discrete Logarithm Problem (ECDLP) in polynomial time, rendering Curve25519-based Ntor insecure. This poses an existential threat to Tor's 2+ million daily users. The threat is particularly severe under ``store-now-decrypt-later'' attacks, where adversaries collect encrypted traffic today for decryption once quantum computers become available.
+% 【中文翻译】在现代x86-64处理器上，单次Ntor握手约需50微秒完成。该协议实现了前向保密性，且公钥和共享密钥仅需各32字节。然而，Ntor面临量子计算机的生存威胁。Shor算法使量子计算机能够在多项式时间内解决椭圆曲线离散对数问题(ECDLP)，使基于Curve25519的Ntor变得不安全。这对Tor超过200万的日活跃用户构成生存威胁。在"先存储后解密"攻击下，这种威胁尤为严重，攻击者现在收集加密流量，等待量子计算机可用后再解密。
+
+%=============================================================================
+\subsection{Post-Quantum Cryptography and Kyber}
+\label{sec:bg-pqc}
+% 【中文翻译】3.2 后量子密码学与Kyber算法
+
+
+To address the quantum threat, we adopt Kyber-512 from NIST's standardized ML-KEM suite (FIPS 203)~\cite{nist2024fips203}. Kyber is a lattice-based Key Encapsulation Mechanism (KEM) built upon the Module Learning With Errors (MLWE) problem~\cite{bos2018crystals}, a structured variant of LWE that operates over polynomial rings $R_q = \mathbb{Z}_q[X]/(X^n + 1)$. The MLWE problem asks to distinguish uniformly random samples from samples of the form $(\mathbf{A}, \mathbf{A}\mathbf{s} + \mathbf{e})$, where $\mathbf{A}$ is a public matrix with ring structure, $\mathbf{s}$ is a secret vector, and $\mathbf{e}$ is a small error vector sampled from a discrete Gaussian distribution. This algebraic structure enables compact key sizes and efficient operations: Kyber-512 achieves 128-bit post-quantum security with 800-byte public keys and 768-byte ciphertexts, while the best known quantum algorithms for MLWE still require exponential time. Figure~\ref{fig:kyber-kem} illustrates the protocol interaction.
+% 【中文翻译】为应对量子威胁，我们采用NIST标准化的ML-KEM套件（FIPS 203）中的Kyber-512。Kyber是一种基于格的密钥封装机制(KEM)，构建于模块容错学习(MLWE)问题之上，这是LWE的结构化变体，在多项式环$R_q = \mathbb{Z}_q[X]/(X^n + 1)$上运算。MLWE问题要求区分均匀随机样本和形如$(\mathbf{A}, \mathbf{A}\mathbf{s} + \mathbf{e})$的样本，其中$\mathbf{A}$是具有环结构的公开矩阵，$\mathbf{s}$是秘密向量，$\mathbf{e}$是从离散高斯分布采样的小误差向量。这种代数结构实现了紧凑的密钥尺寸和高效的运算：Kyber-512以800字节公钥和768字节密文达到128位后量子安全级别，而目前已知求解MLWE的最优量子算法仍需指数时间。图~\ref{fig:kyber-kem}展示了协议交互流程。
+
+\begin{figure}[t]
+\centering
+\footnotesize
+\begin{tikzpicture}[
+    node distance=0.3cm,
+    actor/.style={rectangle, draw, minimum width=1.4cm, minimum height=0.4cm, align=center, font=\footnotesize\bfseries},
+    opbox/.style={rectangle, draw=black, minimum width=2.0cm, align=left, font=\tiny, inner sep=2pt},
+    arrow/.style={->, >=stealth, semithick},
+    msg/.style={font=\tiny}
+]
+
+% Actors
+\node[actor] (alice) {Client};
+\node[actor, right=3.5cm of alice] (bob) {Relay};
+
+% Vertical timelines start
+\coordinate (a0) at ($(alice.south) + (0,-0.2)$);
+\coordinate (b0) at ($(bob.south) + (0,-0.2)$);
+
+% Step 1: Bob generates key pair
+\node[opbox, below=0.25cm of b0, anchor=north] (box1) {
+    $(pk, sk) \leftarrow \text{KeyGen}()$
+};
+\draw[thick] (b0) -- (box1.north);
+
+% Message 1: Bob -> Alice (pk)
+\coordinate (b1) at ($(box1.south) + (0,-0.2)$);
+\coordinate (a1) at ($(a0) + (0,-1.6)$);
+\draw[thick] (box1.south) -- (b1);
+\draw[arrow] (b1) -- (a1) node[midway, above, msg] {$pk$};
+\draw[thick] (a0) -- (a1);
+
+% Step 2: Alice encapsulates
+\node[opbox, below=0.2cm of a1, anchor=north] (box2) {
+    $(ct, ss) \leftarrow \text{Encaps}(pk)$
+};
+\draw[thick] (a1) -- (box2.north);
+
+% Message 2: Alice -> Bob (ct)
+\coordinate (a2) at ($(box2.south) + (0,-0.2)$);
+\coordinate (b2) at ($(b1) + (0,-2.0)$);
+\draw[thick] (box2.south) -- (a2);
+\draw[thick] (b1) -- (b2);
+\draw[arrow] (a2) -- (b2) node[midway, above, msg] {$ct$};
+
+% Step 3: Bob decapsulates
+\node[opbox, below=0.2cm of b2, anchor=north] (box3) {
+    $ss \leftarrow \text{Decaps}(sk, ct)$
+};
+\draw[thick] (b2) -- (box3.north);
+
+% Step 4: Both have shared secret
+\coordinate (a3) at ($(a2) + (0,-1.6)$);
+\coordinate (b3) at ($(box3.south) + (0,-0.2)$);
+\draw[thick] (a2) -- (a3);
+\draw[thick] (box3.south) -- (b3);
+
+\node[opbox, below=0.2cm of a3, anchor=north] (box4) {
+    Shared: $ss$ (32 bytes)
+};
+\draw[thick] (a3) -- (box4.north);
+
+\coordinate (b4) at (b3 |- box4.north);
+\node[opbox, anchor=north] (box5) at (b4) {
+    Shared: $ss$ (32 bytes)
+};
+\draw[thick] (b3) -- (box5.north);
+
+% Final timeline endpoints
+\coordinate (a_end) at ($(box4.south) + (0,-0.12)$);
+\coordinate (b_end) at ($(box5.south) + (0,-0.12)$);
+\draw[thick] (box4.south) -- (a_end);
+\draw[thick] (box5.south) -- (b_end);
+
+\end{tikzpicture}
+\caption{Kyber-512 key encapsulation mechanism interaction diagram.}
+% 【中文翻译】Kyber-512密钥封装机制交互图。
+\label{fig:kyber-kem}
+\end{figure}
+
+\begin{table}[t]
+\centering
+\caption{Comparison of key exchange mechanisms.}
+\label{tab:key-comparison}
+\footnotesize
+\begin{tabular}{@{}lrrrcc@{}}
+\toprule
+\textbf{Scheme} & \textbf{PK} & \textbf{SK} & \textbf{CT} & \textbf{QR} & \textbf{NIST Lvl} \\
+\midrule
+X25519 & 32 & 32 & 32 & \xmark & --- \\
+Kyber-512 & 800 & 1632 & 768 & \cmark & Level 1 \\
+Hybrid & 832 & 1664 & 800 & \cmark & Level 1 \\
+\bottomrule
+\end{tabular}
+\vspace{-1mm}
+\begin{flushleft}
+\scriptsize
+PK = Public Key (bytes), SK = Secret Key (bytes), \\
+CT = Ciphertext (bytes), QR = Quantum-Resistant, \\
+NIST Lvl = NIST PQC Security Level (Level 1 $\approx$ AES-128)
+\end{flushleft}
+\end{table}
+
+Table~\ref{tab:key-comparison} compares key sizes across different schemes. While Kyber-512's keys are significantly larger than X25519's 32-byte keys, they remain manageable in modern network protocols. Although hybrid approaches combining Kyber with X25519 are recommended by IETF~\cite{ietf-hybrid-kem} for defense-in-depth, we adopt pure Kyber-512 in our implementation to isolate and evaluate post-quantum cryptographic performance without classical algorithm overhead. This design choice enables clearer performance characterization in SAGIN environments.
+% 【中文翻译】表~\ref{tab:key-comparison}比较了不同方案的密钥大小。虽然Kyber-512的密钥大小显著大于X25519的32字节密钥，但在现代网络协议中仍然是可管理的。尽管IETF推荐将Kyber与X25519结合的混合方案以实现纵深防御，但我们在实现中采用纯Kyber-512，以隔离和评估后量子密码性能，而无需经典算法的额外开销。这一设计选择使得在SAGIN环境中能够更清晰地表征性能特征。
+
+
+%=============================================================================
+\subsection{Space-Air-Ground Integrated Networks}
+\label{sec:bg-sagin}
+% 【中文翻译】3.3 空天地一体化网络  这里缺一张图
+
+SAGIN~\cite{liu2018space} architectures consist of three hierarchical layers. The space layer comprises Low Earth Orbit (LEO, 500-2000 km altitude), Medium Earth Orbit (MEO, 2000-35786 km), and Geostationary Orbit (GEO, 35786 km) satellites providing wide-area coverage. The air layer includes UAVs and High-Altitude Platforms (HAPs) serving as mobile relays and local access points. The ground layer encompasses terrestrial base stations, IoT devices, and mobile users.
+% 【中文翻译】SAGIN架构由三个层次化的层组成。空间层包括低地球轨道(LEO, 500-2000公里高度)、中地球轨道(MEO, 2000-35786公里)和地球静止轨道(GEO, 35786公里)卫星，提供广域覆盖。空中层包括无人机和高空平台，作为移动中继和本地接入点。地面层包含地面基站、物联网设备和移动用户。
+
+SAGIN exhibits unique properties that challenge traditional protocol design. Satellite links introduce 2.7-600 ms round-trip time depending on orbit altitude and topology. Link capacity varies significantly, ranging from 1 Mbps in congested LEO links to over 100 Mbps in dedicated ground-satellite links. Satellite and UAV mobility causes frequent handoffs and link state changes, creating dynamic topology. The network comprises heterogeneous nodes ranging from resource-constrained IoT sensors to high-capacity ground stations.
+% 【中文翻译】SAGIN具有独特属性，对传统协议设计提出挑战。卫星链路根据轨道高度和拓扑引入2.7-600毫秒往返时间。链路容量变化显著，从拥塞的LEO链路的1 Mbps到专用地星链路的超过100 Mbps不等。卫星和UAV的移动性导致频繁切换和链路状态变化，形成动态拓扑。网络包含异构节点，从资源受限的物联网传感器到高容量地面站不等。
+
+To address spectral efficiency and massive connectivity challenges, SAGIN deployments increasingly adopt Non-Orthogonal Multiple Access (NOMA)~\cite{your-noma-ref}. Unlike traditional Orthogonal Multiple Access (OMA), NOMA allows multiple users to share the same frequency-time resource through power-domain multiplexing, with Successive Interference Cancellation (SIC) at the receiver separating users' signals based on their different power levels.
+% 【中文翻译】为了应对频谱效率和海量连接挑战，SAGIN部署越来越多地采用非正交多址接入(NOMA)。与传统的正交多址接入(OMA)不同，NOMA通过功率域复用允许多个用户共享相同的频率-时间资源，接收端的连续干扰消除(SIC)根据不同功率水平分离用户信号。
+
+In our experiments, we model realistic SAGIN topologies using NOMA parameters from recent satellite communication research~\cite{your-sister-paper}, including uplink and downlink scenarios with varying signal-to-interference-plus-noise ratios (SINR), user distances, and cooperative relay configurations. SAGIN's global coverage makes it attractive for privacy-preserving applications in areas lacking terrestrial infrastructure. However, satellite links are vulnerable to traffic analysis~\cite{singh2024website-fingerprint} and geolocation attacks~\cite{record2024location}. Deploying Tor over SAGIN can provide end-to-end anonymity, but requires addressing the protocol's sensitivity to high latency and adapting to resource-constrained satellite/UAV nodes.
+% 【中文翻译】在我们的实验中，我们使用来自最近卫星通信研究的NOMA参数对真实SAGIN拓扑进行建模，包括具有不同信干噪比(SINR)、用户距离和协作中继配置的上行和下行场景。SAGIN的全球覆盖使其在缺乏地面基础设施的地区对隐私保护应用很有吸引力。然而，卫星链路容易受到流量分析和地理位置攻击。在SAGIN上部署Tor可以提供端到端匿名性，但需要解决协议对高延迟的敏感性并适应资源受限的卫星/UAV节点。
