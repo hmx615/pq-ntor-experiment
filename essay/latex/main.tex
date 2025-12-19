@@ -1,4 +1,4 @@
-% PQ-NTOR in SAGIN: Post-Quantum Tor for Space-Air-Ground Networks
+% Hybrid-NTOR in SAGIN: Post-Quantum Hybrid Tor for Space-Air-Ground Networks
 % Main LaTeX Document
 % Date: 2025-11-27
 
@@ -20,7 +20,7 @@
 \usepackage{enumitem}
 \usepackage{pifont}     % For checkmark and xmark symbols
 \usepackage{tikz}       % For protocol diagrams
-\usetikzlibrary{positioning,arrows.meta,calc}
+\usetikzlibrary{positioning,arrows.meta,calc,fit}
 
 % Colors for links
 \hypersetup{
@@ -41,7 +41,7 @@
 }
 
 % Custom commands
-\newcommand{\pqntor}{PQ-NTOR}
+\newcommand{\pqntor}{Hybrid-NTOR}  % Post-Quantum Hybrid NTOR (Kyber-512 + X25519)
 \newcommand{\sagin}{SAGIN}
 \newcommand{\us}{$\mu$s}
 \newcommand{\ms}{ms}
@@ -57,8 +57,8 @@
 \newcommand{\controls}{\Rightarrow}
 
 % Title and authors
-\title{\Large \bf PQ-NTOR in Space-Air-Ground Integrated Networks:\\
-Implementation and Performance Evaluation}
+\title{\Large \bf Hybrid-NTOR in Space-Air-Ground Integrated Networks:\\
+Post-Quantum Hybrid Tor Handshake Implementation and Evaluation}
 
 \author{
 {\rm Your Name}\\
@@ -81,9 +81,9 @@ coauthor@institution.edu
 \begin{abstract}
 The Tor network, serving over 2 million daily users, faces an existential threat from quantum computers capable of breaking its Curve25519-based Ntor handshake protocol. While post-quantum key encapsulation mechanisms (KEMs) like Kyber-512 have been standardized by NIST, their deployment in Tor—particularly in high-latency space-air-ground integrated networks (SAGIN)—remains unexplored.
 
-This paper presents the first complete implementation and comprehensive evaluation of PQ-NTOR for SAGIN environments. We achieve 31 \us\ average handshake latency (5.2$\times$ faster than theoretical predictions), demonstrate negligible overhead (<0.2\%) in satellite scenarios, and validate performance across 12 network topologies with 100\% success rate. Our ARM64 deployment on Phytium Pi platforms proves real-world feasibility. We provide open-source artifacts for reproducible research.
+This paper presents the first complete implementation and comprehensive evaluation of Hybrid-NTOR—a post-quantum hybrid handshake combining Kyber-512 KEM with X25519 ECDH—for SAGIN environments. We achieve 31 \us\ average handshake latency (5.2$\times$ faster than theoretical predictions), demonstrate negligible overhead (<0.2\%) in satellite scenarios, and validate performance across 12 network topologies with 100\% success rate. Our ARM64 deployment on Phytium Pi platforms proves real-world feasibility. We provide open-source artifacts for reproducible research.
 
-\textbf{Keywords:} Post-Quantum Cryptography, Tor, Anonymous Communication, SAGIN, Kyber, Space Networks
+\textbf{Keywords:} Post-Quantum Cryptography, Hybrid Cryptography, Tor, Anonymous Communication, SAGIN, Kyber, X25519
 \end{abstract}
 
 % Table of Contents (comment out for final version)

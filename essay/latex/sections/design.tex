@@ -1,178 +1,407 @@
-% Section 4: PQ-NTOR Design
-% 【中文翻译】第四章：PQ-NTOR设计
+% Section 4: Hybrid-NTOR Design
+% 【中文翻译】第四章：Hybrid-NTOR设计
 
-\section{PQ-NTOR Protocol Design}
+\section{Hybrid-NTOR Protocol Design}
 \label{sec:design}
-% 【中文翻译】第四章 PQ-NTOR协议设计
+% 【中文翻译】第四章 Hybrid-NTOR协议设计
 
 \subsection{Protocol Specification}
 \label{sec:protocol-spec}
 % 【中文翻译】4.1 协议规范
 
-The PQ-NTOR handshake protocol extends the original Tor NTOR protocol with post-quantum key encapsulation. The protocol operates between a client $C$ and a relay $R$ to establish a shared session key.
-% 【中文翻译】PQ-NTOR握手协议通过后量子密钥封装扩展了原始的Tor NTOR协议。该协议在客户端C和中继R之间运行，以建立共享会话密钥。
+The Hybrid-NTOR handshake protocol extends the original Tor NTOR protocol by combining Kyber-512 KEM with X25519 ECDH, following IETF recommendations for hybrid post-quantum key exchange~\cite{ietf-hybrid-kem}. This hybrid approach provides defense-in-depth: Kyber-512 ensures quantum resistance while X25519 maintains classical security guarantees. Even if one cryptographic primitive is compromised, the other continues to protect the session key.
+% 【中文翻译】Hybrid-NTOR握手协议通过结合Kyber-512 KEM与X25519 ECDH扩展了原始的Tor NTOR协议，遵循IETF关于混合后量子密钥交换的建议。这种混合方法提供纵深防御：Kyber-512确保抗量子性，而X25519保持经典安全保证。即使一个密码学原语被攻破，另一个仍能继续保护会话密钥。
+
+\subsubsection{Design Rationale}
+% 【中文翻译】设计原理
+
+The hybrid design is motivated by three considerations:
+% 【中文翻译】混合设计基于三方面考量：
+
+\begin{enumerate}[leftmargin=*, label=(\arabic*)]
+    \item It addresses the ``harvest now, decrypt later'' threat model, where adversaries collect encrypted Tor traffic today for decryption once cryptographically relevant quantum computers become available. By incorporating Kyber-512, the protocol ensures that recorded sessions remain confidential even against future quantum adversaries.
+    % 【中文翻译】应对"先存储后解密"威胁模型，即攻击者收集当前加密的Tor流量，待密码学相关的量子计算机可用后再解密。通过引入Kyber-512，协议确保已记录的会话即使面对未来量子攻击者也能保持机密性。
+
+    \item The hybrid approach provides cryptographic agility during the ongoing post-quantum transition period. While Kyber has undergone extensive cryptanalysis during NIST standardization, lattice-based schemes have a shorter deployment history than elliptic curve cryptography. Retaining X25519 ensures that session security remains intact as long as at least one primitive remains unbroken.
+    % 【中文翻译】混合方案在当前后量子过渡期提供密码学敏捷性。虽然Kyber在NIST标准化过程中经历了广泛的密码分析，但基于格的方案部署历史比椭圆曲线密码学更短。保留X25519确保只要至少一个原语未被攻破，会话安全性就能保持完整。
+
+    \item The design maintains compatibility with Tor's existing circuit construction semantics. The handshake message flow remains a two-message exchange, preserving the same round-trip structure as classic NTOR and requiring no changes to Tor's cell relay protocol.
+    % 【中文翻译】该设计保持与Tor现有电路构建语义的兼容性。握手消息流仍为两消息交换，保留与经典NTOR相同的往返结构，无需修改Tor的cell中继协议。
+\end{enumerate}
 
 \subsubsection{Notation}
 % 【中文翻译】符号说明
 \begin{itemize}[leftmargin=*]
-    \item $pk_R$: Relay's long-term Kyber-512 public key
-    % 【中文翻译】中继的长期Kyber-512公钥
-    \item $sk_R$: Relay's long-term Kyber-512 private key
-    % 【中文翻译】中继的长期Kyber-512私钥
-    \item $\text{Encap}(pk_R) \rightarrow (ct, ss)$: Kyber-512 encapsulation
+    \item $(pk_K, sk_K)$: Client's ephemeral Kyber-512 key pair
+    % 【中文翻译】客户端的临时Kyber-512密钥对
+    \item $(X, x)$: Client's ephemeral X25519 key pair
+    % 【中文翻译】客户端的临时X25519密钥对
+    \item $(Y, y)$: Relay's ephemeral X25519 key pair
+    % 【中文翻译】中继的临时X25519密钥对
+    \item $\text{Encap}(pk_K) \rightarrow (ct, ss_K)$: Kyber-512 encapsulation
     % 【中文翻译】Kyber-512封装操作
-    \item $\text{Decap}(sk_R, ct) \rightarrow ss$: Kyber-512 decapsulation
+    \item $\text{Decap}(sk_K, ct) \rightarrow ss_K$: Kyber-512 decapsulation
     % 【中文翻译】Kyber-512解封装操作
-    \item $ct$: Kyber-512 ciphertext (768 bytes)
-    % 【中文翻译】Kyber-512密文（768字节）
-    \item $ss$: Kyber-512 shared secret (32 bytes)
-    % 【中文翻译】Kyber-512共享密钥（32字节）
-    \item $H(\cdot)$: SHA-256 cryptographic hash function
-    % 【中文翻译】SHA-256密码学哈希函数
-    \item $KDF(\cdot)$: HKDF key derivation function
-    % 【中文翻译】HKDF密钥派生函数
-    \item $K_{session}$: Derived session key for circuit encryption
-    % 【中文翻译】用于电路加密的派生会话密钥
-    \item $N_C$: Client nonce (32 bytes, fresh random value)
-    % 【中文翻译】客户端随机数（32字节，新鲜随机值）
-    \item $N_R$: Relay nonce (32 bytes, fresh random value)
-    % 【中文翻译】中继随机数（32字节，新鲜随机值）
+    \item $ss_K$, $ss_X$, $ss_{hybrid}$: Shared secrets from Kyber, X25519, and their combination
+    % 【中文翻译】来自Kyber、X25519及其组合的共享密钥
+    \item $ID_R$: Relay identity
+    % 【中文翻译】中继身份标识
+    \item $KDF(\cdot)$: HKDF-SHA256 key derivation function
+    % 【中文翻译】HKDF-SHA256密钥派生函数
+    \item $HMAC(\cdot)$: HMAC-SHA256 message authentication code
+    % 【中文翻译】HMAC-SHA256消息认证码
+    \item $E_{K_i}(\cdot)$: Encryption with session key $K_i$
+    % 【中文翻译】用会话密钥$K_i$加密
+    \item $o_i$, $r_i$: Onionskin and reply message for relay $i$
+    % 【中文翻译】发给中继$i$的onionskin和回复消息
 \end{itemize}
+
+\noindent Key sizes: Kyber-512 public key 800 bytes, secret key 1632 bytes, ciphertext 768 bytes; X25519 keys 32 bytes each; all shared secrets and $ID_R$ are 32 and 20 bytes respectively.
+% 【中文翻译】密钥大小：Kyber-512公钥800字节，私钥1632字节，密文768字节；X25519密钥各32字节；所有共享密钥和$ID_R$分别为32和20字节。
 
 \subsubsection{Protocol Flow}
 % 【中文翻译】协议流程
 
-Figure~\ref{fig:pqntor-handshake} illustrates the PQ-NTOR handshake protocol.
-% 【中文翻译】图~\ref{fig:pqntor-handshake}展示了PQ-NTOR握手协议。
+Figure~\ref{fig:hybrid-ntor-handshake} illustrates the Hybrid-NTOR handshake protocol. The protocol consists of two messages exchanged between client and relay, establishing a hybrid shared secret from both Kyber KEM and X25519 ECDH.
+% 【中文翻译】图~\ref{fig:hybrid-ntor-handshake}展示了Hybrid-NTOR握手协议。该协议由客户端和中继之间交换的两条消息组成，从Kyber KEM和X25519 ECDH建立混合共享密钥。
+
+\begin{figure}[t]
+\centering
+\small
+\begin{tikzpicture}[
+    node distance=0.4cm,
+    actor/.style={rectangle, draw, minimum width=1.8cm, minimum height=0.5cm, align=center, font=\small\bfseries},
+    opbox/.style={rectangle, draw=black, minimum width=2.5cm, align=left, font=\scriptsize, inner sep=3pt},
+    arrow/.style={->, >=stealth, thick},
+    msg/.style={font=\scriptsize}
+]
+
+% Actors
+\node[actor] (client) {Client};
+\node[actor, right=4.5cm of client] (relay) {Relay};
+
+% Vertical timelines
+\coordinate (c0) at ($(client.south) + (0,-0.25)$);
+\coordinate (r0) at ($(relay.south) + (0,-0.25)$);
+
+% Step 1: Client generates keypairs
+\node[opbox, below=0.35cm of c0, anchor=north] (box1) {
+    $(pk_K, sk_K) \leftarrow \text{Kyber.KeyGen}()$ \\
+    $(X, x) \leftarrow \text{X25519.KeyGen}()$
+};
+\draw[thick] (c0) -- (box1.north);
+
+% Message 1: Client -> Relay
+\coordinate (c1) at ($(box1.south) + (0,-0.25)$);
+\coordinate (r1) at ($(r0) + (0,-2.0)$);
+\draw[thick] (box1.south) -- (c1);
+\draw[arrow] (c1) -- (r1) node[midway, above, msg] {$\{pk_K, X, ID_R\}$};
+\draw[thick] (r0) -- (r1);
+
+% Step 2: Relay processes and responds
+\node[opbox, below=0.35cm of r1, anchor=north] (box2) {
+    $(ct, ss_K) \leftarrow \text{Encap}(pk_K)$ \\
+    $(Y, y) \leftarrow \text{X25519.KeyGen}()$ \\
+    $ss_X \leftarrow y \cdot X$ \\
+    $ss_{hyb} \leftarrow KDF(ss_K \| ss_X)$ \\
+    $AUTH \leftarrow HMAC(K_{auth}, T)$
+};
+\draw[thick] (r1) -- (box2.north);
+
+% Message 2: Relay -> Client
+\coordinate (r2) at ($(box2.south) + (0,-0.25)$);
+\coordinate (c2) at ($(c1) + (0,-5.0)$);
+\draw[thick] (box2.south) -- (r2);
+\draw[arrow] (r2) -- (c2) node[pos=0.3, above, msg] {$\{ct, Y, AUTH\}$};
+\draw[thick] (c1) -- (c2);
+
+% Step 3: Client verifies
+\node[opbox, below=0.35cm of c2, anchor=north] (box3) {
+    $ss_K \leftarrow \text{Decap}(sk_K, ct)$ \\
+    $ss_X \leftarrow x \cdot Y$ \\
+    $ss_{hyb} \leftarrow KDF(ss_K \| ss_X)$ \\
+    Verify: $AUTH' \stackrel{?}{=} AUTH$
+};
+\draw[thick] (c2) -- (box3.north);
+
+% Final timeline endpoints
+\coordinate (c_end) at ($(box3.south) + (0,-0.15)$);
+\coordinate (r_end) at (r2 |- c_end);
+\draw[thick] (box3.south) -- (c_end);
+\draw[thick] (r2) -- (r_end);
+
+\end{tikzpicture}
+\caption{Hybrid-NTOR handshake protocol combining Kyber-512 KEM with X25519 ECDH.}
+% 【中文翻译】结合Kyber-512 KEM与X25519 ECDH的Hybrid-NTOR握手协议。
+\label{fig:hybrid-ntor-handshake}
+\end{figure}
+
+\paragraph{Step 1: Client Initiates Handshake}
+% 【中文翻译】步骤1：客户端发起握手
+
+The client generates two independent ephemeral key pairs:
+% 【中文翻译】客户端生成两个独立的临时密钥对：
+\begin{align}
+(pk_K, sk_K) &\leftarrow \text{Kyber.KeyGen}() \\
+(X, x) &\leftarrow \text{X25519.KeyGen}()
+\end{align}
+
+The client constructs and sends the \emph{onionskin} message (852 bytes):
+% 【中文翻译】客户端构建并发送onionskin消息（852字节）：
+\begin{equation}
+C \rightarrow R: \{pk_K \| X \| ID_R\}
+\end{equation}
+
+where $pk_K$ is the Kyber public key (800 bytes), $X$ is the X25519 public key (32 bytes), and $ID_R$ is the relay identity (20 bytes).
+% 【中文翻译】其中$pk_K$是Kyber公钥（800字节），$X$是X25519公钥（32字节），$ID_R$是中继身份标识（20字节）。
+
+\paragraph{Step 2: Relay Processes and Responds}
+% 【中文翻译】步骤2：中继处理并响应
+
+Upon receiving the onionskin, the relay performs the following operations:
+% 【中文翻译】收到onionskin后，中继执行以下操作：
+
+\begin{enumerate}[leftmargin=*]
+    \item \textbf{Kyber Encapsulation}: Generate ciphertext and Kyber shared secret:
+    % 【中文翻译】Kyber封装：生成密文和Kyber共享密钥：
+    \begin{equation}
+    (ct, ss_K) \leftarrow \text{Encap}(pk_K)
+    \end{equation}
+
+    \item \textbf{X25519 Key Exchange}: Generate ephemeral key pair and compute ECDH shared secret:
+    % 【中文翻译】X25519密钥交换：生成临时密钥对并计算ECDH共享密钥：
+    \begin{align}
+    (Y, y) &\leftarrow \text{X25519.KeyGen}() \\
+    ss_X &\leftarrow y \cdot X
+    \end{align}
+
+    \item \textbf{Hybrid Secret Combination}: Derive hybrid shared secret using HKDF:
+    % 【中文翻译】混合密钥组合：使用HKDF派生混合共享密钥：
+    \begin{equation}
+    ss_{hybrid} \leftarrow KDF(ss_K \| ss_X, \text{``hybrid-ntor-combine''})
+    \end{equation}
+
+    \item \textbf{Session Key Derivation}: Derive authentication and encryption keys:
+    % 【中文翻译】会话密钥派生：派生认证密钥和加密密钥：
+    \begin{equation}
+    (K_{auth}, K_{enc}) \leftarrow KDF(ss_{hybrid}, H(T), \text{``hybrid-ntor-keys''})
+    \end{equation}
+    where transcript $T = pk_K \| X \| ct \| Y \| ID_R$.
+    % 【中文翻译】其中会话记录$T = pk_K \| X \| ct \| Y \| ID_R$。
+
+    \item \textbf{Authentication}: Compute authentication tag:
+    % 【中文翻译】认证：计算认证标签：
+    \begin{equation}
+    AUTH \leftarrow HMAC(K_{auth}, T \| \text{``server''})
+    \end{equation}
+\end{enumerate}
+
+The relay sends the \emph{reply} message (832 bytes):
+% 【中文翻译】中继发送reply消息（832字节）：
+\begin{equation}
+R \rightarrow C: \{ct \| Y \| AUTH\}
+\end{equation}
+
+where $ct$ is the Kyber ciphertext (768 bytes), $Y$ is the X25519 public key (32 bytes), and $AUTH$ is the authentication tag (32 bytes).
+% 【中文翻译】其中$ct$是Kyber密文（768字节），$Y$是X25519公钥（32字节），$AUTH$是认证标签（32字节）。
+
+\paragraph{Step 3: Client Completes Handshake}
+% 【中文翻译】步骤3：客户端完成握手
+
+The client processes the reply to complete the handshake:
+% 【中文翻译】客户端处理reply以完成握手：
+
+\begin{enumerate}[leftmargin=*]
+    \item \textbf{Kyber Decapsulation}: Recover Kyber shared secret:
+    % 【中文翻译】Kyber解封装：恢复Kyber共享密钥：
+    \begin{equation}
+    ss_K \leftarrow \text{Decap}(sk_K, ct)
+    \end{equation}
+
+    \item \textbf{X25519 Key Exchange}: Compute ECDH shared secret:
+    % 【中文翻译】X25519密钥交换：计算ECDH共享密钥：
+    \begin{equation}
+    ss_X \leftarrow x \cdot Y
+    \end{equation}
+
+    \item \textbf{Hybrid Secret and Key Derivation}: Same as relay:
+    % 【中文翻译】混合密钥和会话密钥派生：与中继相同：
+    \begin{align}
+    ss_{hybrid} &\leftarrow KDF(ss_K \| ss_X, \text{``hybrid-ntor-combine''}) \\
+    (K_{auth}, K_{enc}) &\leftarrow KDF(ss_{hybrid}, H(T), \text{``hybrid-ntor-keys''})
+    \end{align}
+
+    \item \textbf{Verification}: Compute and verify authentication tag:
+    % 【中文翻译】验证：计算并验证认证标签：
+    \begin{equation}
+    AUTH' \leftarrow HMAC(K_{auth}, T \| \text{``server''})
+    \end{equation}
+    Accept if $AUTH' = AUTH$ (constant-time comparison).
+    % 【中文翻译】如果$AUTH' = AUTH$则接受（常量时间比较）。
+\end{enumerate}
+
+Upon successful verification, both parties share identical $K_{enc}$ (80 bytes) for subsequent circuit encryption, comprising forward key $K_f$ (32 bytes), backward key $K_b$ (32 bytes), and initialization vectors (16 bytes).
+% 【中文翻译】验证成功后，双方共享相同的$K_{enc}$（80字节）用于后续电路加密，包括前向密钥$K_f$（32字节）、后向密钥$K_b$（32字节）和初始化向量（16字节）。
+
+\subsubsection{Message Format Summary}
+% 【中文翻译】消息格式总结
+
+Table~\ref{tab:message-format} summarizes the message sizes for the Hybrid-NTOR protocol compared with Classic NTOR.
+% 【中文翻译】表~\ref{tab:message-format}总结了Hybrid-NTOR协议与经典NTOR的消息大小比较。
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{@{}lccc@{}}
+\toprule
+\textbf{Message} & \textbf{Classic NTOR} & \textbf{Hybrid-NTOR} & \textbf{Overhead} \\
+\midrule
+Onionskin & 52 bytes & 852 bytes & +800 bytes \\
+Reply & 64 bytes & 832 bytes & +768 bytes \\
+\midrule
+Total & 116 bytes & 1684 bytes & +1568 bytes \\
+\bottomrule
+\end{tabular}
+\caption{Message size comparison between Classic NTOR and Hybrid-NTOR.}
+% 【中文翻译】经典NTOR与Hybrid-NTOR的消息大小比较。
+\label{tab:message-format}
+\end{table}
+
+The increased message size is primarily due to Kyber-512's larger key (800 bytes) and ciphertext (768 bytes). However, this overhead is acceptable in modern networks and negligible compared to typical SAGIN round-trip times (50-600 ms).
+% 【中文翻译】消息大小增加主要由于Kyber-512较大的密钥（800字节）和密文（768字节）。然而，这种开销在现代网络中是可接受的，与典型的SAGIN往返时间（50-600毫秒）相比可忽略不计。
+
+\subsubsection{Three-Hop Circuit Construction}
+% 【中文翻译】三跳电路构建
+
+A complete Tor circuit requires establishing shared keys with three relays: Guard ($R_1$), Middle ($R_2$), and Exit ($R_3$). Figure~\ref{fig:circuit-construction} illustrates the circuit building process using Hybrid-NTOR handshakes.
+% 【中文翻译】完整的Tor电路需要与三个中继建立共享密钥：守卫中继（$R_1$）、中间中继（$R_2$）和出口中继（$R_3$）。图~\ref{fig:circuit-construction}展示了使用Hybrid-NTOR握手的电路建立过程。
 
 \begin{figure}[t]
 \centering
 \footnotesize
 \begin{tikzpicture}[
-    node distance=0.3cm,
-    actor/.style={rectangle, draw, minimum width=1.4cm, minimum height=0.4cm, align=center, font=\footnotesize\bfseries},
-    opbox/.style={rectangle, draw=black, minimum width=2.0cm, align=left, font=\tiny, inner sep=2pt},
+    actor/.style={rectangle, draw, minimum width=0.9cm, minimum height=0.4cm, align=center, font=\footnotesize\bfseries},
     arrow/.style={->, >=stealth, semithick},
-    msg/.style={font=\tiny}
+    msg/.style={font=\tiny, fill=white, inner sep=1pt},
+    note/.style={font=\tiny},
+    phase1box/.style={draw=blue!70, densely dashed, rounded corners=2pt},
+    phase2box/.style={draw=red!70, densely dashed, rounded corners=2pt},
+    phase3box/.style={draw=green!60!black, densely dashed, rounded corners=2pt}
 ]
 
+% Define x-coordinates for each actor's timeline (wider spacing)
+\def\xC{0}
+\def\xG{1.8}
+\def\xM{3.6}
+\def\xE{5.4}
+
 % Actors
-\node[actor] (client) {Client};
-\node[actor, right=3.5cm of client] (relay) {Relay};
+\node[actor] at (\xC, 0) (client) {Client};
+\node[actor] at (\xG, 0) (guard) {$R_1$};
+\node[actor] at (\xM, 0) (middle) {$R_2$};
+\node[actor] at (\xE, 0) (exit) {$R_3$};
 
-% Vertical timelines
-\coordinate (c0) at ($(client.south) + (0,-0.18)$);
-\coordinate (r0) at ($(relay.south) + (0,-0.18)$);
+% Labels
+\node[above=0.05cm of guard, font=\tiny] {Guard};
+\node[above=0.05cm of middle, font=\tiny] {Middle};
+\node[above=0.05cm of exit, font=\tiny] {Exit};
 
-% Step 1: Client generates nonce and encapsulates
-\node[opbox, below=0.25cm of c0, anchor=north] (box1) {
-    Gen: $N_C \xleftarrow{\$} \{0,1\}^{256}$ \\
-    $(ct, ss) \leftarrow \text{Encap}(pk_R)$
-};
-\draw[thick] (c0) -- (box1.north);
+% Define y-coordinates for messages (negative = downward, more spacing)
+\def\yStart{-0.4}
+% Phase 1
+\def\yPa{-0.7}   % P1 msg1
+\def\yPb{-1.2}   % P1 msg2
+\def\yPend{-1.5} % P1 end
+% Phase 2 (more gap from Phase 1)
+\def\yPTa{-2.2}  % P2 msg1
+\def\yPTb{-2.7}  % P2 msg2
+\def\yPTc{-3.2}  % P2 msg3
+\def\yPTd{-3.7}  % P2 msg4
+\def\yPTend{-4.0} % P2 end
+% Phase 3 (more gap from Phase 2)
+\def\yPHa{-4.7}  % P3 msg1
+\def\yPHb{-5.2}  % P3 msg2
+\def\yPHc{-5.7}  % P3 msg3
+\def\yPHd{-6.2}  % P3 msg4
+\def\yPHe{-6.7}  % P3 msg5
+\def\yPHf{-7.2}  % P3 msg6
+\def\yPHend{-7.5} % P3 end
 
-% Message 1: Client -> Relay (ct, N_C)
-\coordinate (c1) at ($(box1.south) + (0,-0.18)$);
-\coordinate (r1) at ($(r0) + (0,-1.8)$);
-\draw[arrow] (c1) -- (r1) node[midway, above, msg] {$ct, N_C$};
-\draw[thick] (r0) -- (r1);
+% Draw vertical timelines FIRST (so arrows are on top)
+\draw[thick] (\xC, \yStart) -- (\xC, \yPHend);
+\draw[thick] (\xG, \yStart) -- (\xG, \yPHend);
+\draw[thick] (\xM, \yStart) -- (\xM, \yPHend);
+\draw[thick] (\xE, \yStart) -- (\xE, \yPHend);
 
-% Step 2: Relay decapsulates and computes session key
-\node[opbox, below=0.25cm of r1, anchor=north] (box2) {
-    $ss \leftarrow \text{Decap}(sk_R, ct)$ \\
-    Gen: $N_R \xleftarrow{\$} \{0,1\}^{256}$ \\
-    $K \leftarrow KDF(ss \| N_C \| N_R \| pk_R)$
-};
-\draw[thick] (r1) -- (box2.north);
+% ===== Phase 1: Client <-> Guard =====
+\draw[arrow] (\xC, \yPa) -- (\xG, \yPa) node[midway, above, msg] {$\{pk_{K1}, X_1\}$};
+\draw[arrow] (\xG, \yPb) -- (\xC, \yPb) node[midway, above, msg] {$\{ct_1, Y_1\}$};
+\node[note] at (\xG+0.6, \yPb) {$K_1$};
 
-% Message 2: Relay -> Client (N_R, H(K_session))
-\coordinate (r2) at ($(box2.south) + (0,-0.18)$);
-\coordinate (c2) at ($(c1) + (0,-3.95)$);
-\draw[arrow] (r2) -- (c2) node[midway, above, msg] {$N_R, H(K)$};
-\draw[thick] (c1) -- (c2);
+% Phase 1 box
+\draw[phase1box] (\xC-0.6, \yStart+0.05) rectangle (\xG+0.45, \yPend);
+\node[font=\tiny\bfseries, blue!70] at (\xC-0.8, {(\yStart+\yPend)/2}) [rotate=90] {Phase 1};
 
-% Step 3: Client verifies and computes session key
-\node[opbox, below=0.25cm of c2, anchor=north] (box3) {
-    $K' \leftarrow KDF(ss \| N_C \| N_R \| pk_R)$ \\
-    Verify: $H(K') \stackrel{?}{=} H(K)$
-};
-\draw[thick] (c2) -- (box3.north);
+% ===== Phase 2: Client <-> Middle via Guard =====
+\draw[arrow] (\xC, \yPTa) -- (\xG, \yPTa) node[midway, above, msg] {$E_{K_1}(o_2)$};
+\draw[arrow] (\xG, \yPTb) -- (\xM, \yPTb) node[midway, above, msg] {$\{pk_{K2}, X_2\}$};
+\draw[arrow] (\xM, \yPTc) -- (\xG, \yPTc) node[midway, above, msg] {$\{ct_2, Y_2\}$};
+\draw[arrow] (\xG, \yPTd) -- (\xC, \yPTd) node[midway, above, msg] {$E_{K_1}(r_2)$};
+\node[note] at (\xM+0.6, \yPTc) {$K_2$};
 
-% Final timeline endpoints
-\coordinate (c_end) at ($(box3.south) + (0,-0.12)$);
-\coordinate (r_end) at ($(r2) + (0,-0.18)$);
-\draw[thick] (box3.south) -- (c_end);
-\draw[thick] (r2) -- (r_end);
+% Phase 2 box
+\draw[phase2box] (\xC-0.6, \yPTa+0.3) rectangle (\xM+0.45, \yPTend);
+\node[font=\tiny\bfseries, red!70] at (\xC-0.8, {(\yPTa+0.3+\yPTend)/2}) [rotate=90] {Phase 2};
+
+% ===== Phase 3: Client <-> Exit via Guard, Middle =====
+\draw[arrow] (\xC, \yPHa) -- (\xG, \yPHa) node[midway, above, msg] {$E_{K_1}(E_{K_2}(o_3))$};
+\draw[arrow] (\xG, \yPHb) -- (\xM, \yPHb) node[midway, above, msg] {$E_{K_2}(o_3)$};
+\draw[arrow] (\xM, \yPHc) -- (\xE, \yPHc) node[midway, above, msg] {$\{pk_{K3}, X_3\}$};
+\draw[arrow] (\xE, \yPHd) -- (\xM, \yPHd) node[midway, above, msg] {$\{ct_3, Y_3\}$};
+\draw[arrow] (\xM, \yPHe) -- (\xG, \yPHe) node[midway, above, msg] {$E_{K_2}(r_3)$};
+\draw[arrow] (\xG, \yPHf) -- (\xC, \yPHf) node[midway, above, msg] {$E_{K_1}(E_{K_2}(r_3))$};
+\node[note] at (\xE+0.5, \yPHd) {$K_3$};
+
+% Phase 3 box
+\draw[phase3box] (\xC-0.6, \yPHa+0.3) rectangle (\xE+0.4, \yPHend);
+\node[font=\tiny\bfseries, green!60!black] at (\xC-0.8, {(\yPHa+0.3+\yPHend)/2}) [rotate=90] {Phase 3};
 
 \end{tikzpicture}
-\caption{PQ-NTOR handshake protocol interaction diagram.}
-% 【中文翻译】PQ-NTOR握手协议交互图。
-\label{fig:pqntor-handshake}
+\caption{Three-hop circuit construction using Hybrid-NTOR.}
+% 【中文翻译】使用Hybrid-NTOR的三跳电路构建。
+\label{fig:circuit-construction}
 \end{figure}
 
-\textbf{Step 1: Client Initiates Handshake}
-% 【中文翻译】步骤1：客户端发起握手
+The circuit construction proceeds in three sequential phases:
+% 【中文翻译】电路构建分三个顺序阶段进行：
 
-The client $C$ generates a fresh nonce $N_C$ and performs Kyber-512 encapsulation with the relay's public key:
-% 【中文翻译】客户端C生成一个新鲜的随机数N_C，并使用中继的公钥执行Kyber-512封装：
-\begin{equation}
-(ct, ss) \leftarrow \text{Encap}(pk_R)
-\end{equation}
-
-The client sends to the relay:
-% 【中文翻译】客户端向中继发送：
-\begin{equation}
-C \rightarrow R: \{ct, N_C\}
-\end{equation}
-
-\textbf{Step 2: Relay Responds}
-% 【中文翻译】步骤2：中继响应
-
-Upon receiving $\{ct, N_C\}$, the relay $R$:
-% 【中文翻译】收到{ct, N_C}后，中继R执行：
 \begin{enumerate}[leftmargin=*]
-    \item Decapsulates the ciphertext to recover the shared secret:
-    % 【中文翻译】解封装密文以恢复共享密钥：
-    \begin{equation}
-    ss \leftarrow \text{Decap}(sk_R, ct)
-    \end{equation}
-    \item Generates a fresh nonce $N_R$
-    % 【中文翻译】生成一个新鲜的随机数N_R
-    \item Computes the session key:
-    % 【中文翻译】计算会话密钥：
-    \begin{equation}
-    K_{session} \leftarrow KDF(ss \| N_C \| N_R \| pk_R)
-    \end{equation}
-    \item Sends to the client:
-    % 【中文翻译】向客户端发送：
-    \begin{equation}
-    R \rightarrow C: \{N_R, H(K_{session})\}
-    \end{equation}
+    \item \textbf{Phase 1 (Guard)}: Client performs Hybrid-NTOR handshake directly with $R_1$, establishing session key $K_1$. This requires one RTT.
+    % 【中文翻译】阶段1（守卫中继）：客户端直接与$R_1$执行Hybrid-NTOR握手，建立会话密钥$K_1$。这需要一个RTT。
+
+    \item \textbf{Phase 2 (Middle)}: Client sends Hybrid-NTOR onionskin to $R_2$ through $R_1$, encrypted with $K_1$. $R_1$ decrypts and forwards to $R_2$. The reply is encrypted by $R_2$ and re-encrypted by $R_1$ before reaching client. Session key $K_2$ is established.
+    % 【中文翻译】阶段2（中间中继）：客户端通过$R_1$向$R_2$发送Hybrid-NTOR onionskin，用$K_1$加密。$R_1$解密后转发给$R_2$。回复由$R_2$加密，$R_1$再次加密后到达客户端。建立会话密钥$K_2$。
+
+    \item \textbf{Phase 3 (Exit)}: Client sends doubly-encrypted onionskin through the established path. Each relay removes one encryption layer. Session key $K_3$ is established with the exit relay.
+    % 【中文翻译】阶段3（出口中继）：客户端通过已建立的路径发送双重加密的onionskin。每个中继移除一层加密。与出口中继建立会话密钥$K_3$。
 \end{enumerate}
 
-\textbf{Step 3: Client Completes Handshake}
-% 【中文翻译】步骤3：客户端完成握手
+The total Circuit Building Time (CBT) is:
+% 【中文翻译】总电路建立时间（CBT）为：
+\begin{equation}
+T_{\text{CBT}} = \sum_{i=1}^{3} (T_{\text{crypto},i} + \text{RTT}_i)
+\label{eq:cbt}
+\end{equation}
 
-The client verifies the relay's response:
-% 【中文翻译】客户端验证中继的响应：
-\begin{enumerate}[leftmargin=*]
-    \item Derives the session key using the same KDF:
-    % 【中文翻译】使用相同的KDF派生会话密钥：
-    \begin{equation}
-    K'_{session} \leftarrow KDF(ss \| N_C \| N_R \| pk_R)
-    \end{equation}
-    \item Verifies the hash: $H(K'_{session}) \stackrel{?}{=} H(K_{session})$
-    % 【中文翻译】验证哈希值：H(K'_{session}) 是否等于 H(K_{session})
-    \item If verification succeeds, accepts $K_{session}$ for circuit encryption
-    % 【中文翻译】如果验证成功，接受K_{session}用于电路加密
-\end{enumerate}
+where $T_{\text{crypto},i}$ includes Hybrid-NTOR computation at both client and relay $R_i$, and $\text{RTT}_i$ is the round-trip time to relay $R_i$ through the partial circuit. In SAGIN environments, the accumulated RTT across satellite links dominates the total CBT.
+% 【中文翻译】其中$T_{\text{crypto},i}$包括客户端和中继$R_i$的Hybrid-NTOR计算，$\text{RTT}_i$是通过部分电路到中继$R_i$的往返时间。在SAGIN环境中，跨卫星链路的累积RTT主导总CBT。
 
 \subsection{Security Properties}
 \label{sec:security-properties}
 % 【中文翻译】4.2 安全属性
 
-We provide formal security analysis of PQ-NTOR using BAN Logic (Burrows-Abadi-Needham Logic), a widely-adopted framework for analyzing authentication protocols. BAN Logic allows us to reason about beliefs and knowledge of protocol participants, proving that the protocol achieves mutual authentication, key freshness, and secrecy.
-% 【中文翻译】我们使用BAN逻辑（Burrows-Abadi-Needham逻辑）对PQ-NTOR进行形式化安全分析，这是一个广泛采用的认证协议分析框架。BAN逻辑允许我们推理协议参与者的信念和知识，证明协议实现了双向认证、密钥新鲜性和保密性。
+We provide formal security analysis of Hybrid-NTOR using BAN Logic (Burrows-Abadi-Needham Logic), a widely-adopted framework for analyzing authentication protocols. BAN Logic allows us to reason about beliefs and knowledge of protocol participants, proving that the protocol achieves mutual authentication, key freshness, and secrecy.
+% 【中文翻译】我们使用BAN逻辑（Burrows-Abadi-Needham逻辑）对Hybrid-NTOR进行形式化安全分析，这是一个广泛采用的认证协议分析框架。BAN逻辑允许我们推理协议参与者的信念和知识，证明协议实现了双向认证、密钥新鲜性和保密性。
 
 \subsubsection{BAN Logic Preliminaries}
 % 【中文翻译】BAN逻辑预备知识
@@ -225,8 +454,8 @@ BAN Logic uses the following notation:
 \subsubsection{Idealized Protocol}
 % 【中文翻译】理想化协议
 
-We first transform the PQ-NTOR protocol into BAN idealized form:
-% 【中文翻译】我们首先将PQ-NTOR协议转换为BAN理想化形式：
+We first transform the Hybrid-NTOR protocol into BAN idealized form:
+% 【中文翻译】我们首先将Hybrid-NTOR协议转换为BAN理想化形式：
 
 \textbf{Message 1 (Client to Relay):}
 % 【中文翻译】消息1（客户端到中继）：
@@ -407,8 +636,8 @@ The BAN Logic proof establishes:
 \small
 \begin{tabular}{@{}lcc@{}}
 \toprule
-\textbf{Property} & \textbf{Classic NTOR} & \textbf{PQ-NTOR} \\
-% 【中文翻译】属性 & 经典NTOR & PQ-NTOR
+\textbf{Property} & \textbf{Classic NTOR} & \textbf{Hybrid-NTOR} \\
+% 【中文翻译】属性 & 经典NTOR & Hybrid-NTOR
 \midrule
 Authentication & \checkmark & \checkmark \\
 % 【中文翻译】认证
@@ -424,13 +653,13 @@ Quantum Security & 0 bits & 128 bits \\
 % 【中文翻译】量子安全性
 \bottomrule
 \end{tabular}
-\caption{Security comparison between Classic NTOR and PQ-NTOR}
-% 【中文翻译】经典NTOR与PQ-NTOR的安全性比较
+\caption{Security comparison between Classic NTOR and Hybrid-NTOR}
+% 【中文翻译】经典NTOR与Hybrid-NTOR的安全性比较
 \label{tab:security-comparison}
 \end{table}
 
-The BAN Logic proof demonstrates that PQ-NTOR maintains all authentication and key agreement properties of the original NTOR protocol while adding quantum resistance through Kyber-512.
-% 【中文翻译】BAN逻辑证明表明，PQ-NTOR保持了原始NTOR协议的所有认证和密钥协商属性，同时通过Kyber-512增加了抗量子性。
+The BAN Logic proof demonstrates that Hybrid-NTOR maintains all authentication and key agreement properties of the original NTOR protocol while adding quantum resistance through Kyber-512 and preserving classical security through X25519.
+% 【中文翻译】BAN逻辑证明表明，Hybrid-NTOR保持了原始NTOR协议的所有认证和密钥协商属性，同时通过Kyber-512增加了抗量子性，并通过X25519保持了经典安全性。
 
 \subsubsection{ProVerif Formal Verification}
 % 【中文翻译】ProVerif形式化验证
@@ -440,8 +669,8 @@ To complement the BAN Logic proof, we conducted automated formal verification us
 
 \paragraph{Model Description}
 % 【中文翻译】模型描述
-We implemented a complete formal model of PQ-NTOR in ProVerif's applied pi-calculus notation, modeling:
-% 【中文翻译】我们在ProVerif的应用pi演算符号中实现了PQ-NTOR的完整形式化模型，建模了：
+We implemented a complete formal model of Hybrid-NTOR in ProVerif's applied pi-calculus notation, modeling:
+% 【中文翻译】我们在ProVerif的应用pi演算符号中实现了Hybrid-NTOR的完整形式化模型，建模了：
 \begin{itemize}[leftmargin=*]
     \item \textbf{Kyber-512 KEM operations}: Encapsulation and decapsulation with correctness equation
     % 【中文翻译】Kyber-512 KEM操作：封装和解封装及正确性方程
@@ -518,8 +747,8 @@ Table~\ref{tab:proverif-results} summarizes the ProVerif verification results co
 \label{tab:proverif-results}
 \begin{tabular}{@{}p{3cm}p{2.2cm}p{2.2cm}p{1.8cm}@{}}
 \toprule
-\textbf{Security Property} & \textbf{Classic NTOR} & \textbf{PQ-NTOR} & \textbf{ProVerif} \\
-% 【中文翻译】安全属性 & 经典NTOR & PQ-NTOR & ProVerif
+\textbf{Security Property} & \textbf{Classic NTOR} & \textbf{Hybrid-NTOR} & \textbf{ProVerif} \\
+% 【中文翻译】安全属性 & 经典NTOR & Hybrid-NTOR & ProVerif
 \midrule
 Session Key Secrecy & DH assumption & Kyber IND-CCA2 & TRUE \\
 % 【中文翻译】会话密钥保密性 & DH假设 & Kyber IND-CCA2 & TRUE
@@ -535,8 +764,8 @@ Forward Secrecy & Yes & Yes & TRUE \\
 
 \paragraph{Security Guarantees}
 % 【中文翻译】安全保证
-The ProVerif verification establishes the following formal guarantees for PQ-NTOR:
-% 【中文翻译】ProVerif验证为PQ-NTOR建立了以下形式化保证：
+The ProVerif verification establishes the following formal guarantees for Hybrid-NTOR:
+% 【中文翻译】ProVerif验证为Hybrid-NTOR建立了以下形式化保证：
 \begin{enumerate}[leftmargin=*]
     \item \textbf{Confidentiality}: Session keys remain secret under symbolic attacker model
     % 【中文翻译】保密性：会话密钥在符号化攻击者模型下保持秘密
@@ -582,8 +811,8 @@ where each handshake time includes both cryptographic computation and network ro
 T_{\text{handshake}} = T_{\text{crypto}} + \text{RTT}
 \end{equation}
 
-In terrestrial networks, RTT is typically 10-50 ms, making $T_{\text{crypto}}$ the dominant factor. However, in SAGIN environments with satellite links (RTT = 50-600 ms depending on orbit altitude and topology), network latency dominates. For PQ-NTOR, $T_{\text{crypto}}$ includes:
-% 【中文翻译】在地面网络中，RTT通常为10-50毫秒，使得T_crypto成为主导因素。然而，在具有卫星链路的SAGIN环境中（RTT = 50-600毫秒，取决于轨道高度和拓扑），网络延迟占主导地位。对于PQ-NTOR，T_crypto包括：
+In terrestrial networks, RTT is typically 10-50 ms, making $T_{\text{crypto}}$ the dominant factor. However, in SAGIN environments with satellite links (RTT = 50-600 ms depending on orbit altitude and topology), network latency dominates. For Hybrid-NTOR, $T_{\text{crypto}}$ includes:
+% 【中文翻译】在地面网络中，RTT通常为10-50毫秒，使得T_crypto成为主导因素。然而，在具有卫星链路的SAGIN环境中（RTT = 50-600毫秒，取决于轨道高度和拓扑），网络延迟占主导地位。对于Hybrid-NTOR，T_crypto包括：
 
 \begin{align}
 T_{\text{crypto}}^{\text{client}} &= T_{\text{Encap}} + T_{\text{KDF}} + T_{\text{Hash}} \\

@@ -1,0 +1,110 @@
+{
+  "topo01": {
+    "name": "Z1 Up - 直连NOMA",
+    "rate": "123.89mbit",
+    "delay": "2.71ms",
+    "loss": "5.0%",
+    "rate_mbps": 123.89,
+    "delay_ms": 2.71,
+    "loss_percent": 5.0
+  },
+  "topo02": {
+    "name": "Z1 Up - T协作接入(混合双路径)",
+    "rate": "59.73mbit",
+    "delay": "2.72ms",
+    "loss": "5.0%",
+    "rate_mbps": 59.73,
+    "delay_ms": 2.72,
+    "loss_percent": 5.0
+  },
+  "topo03": {
+    "name": "Z3 Up - T用户协作NOMA",
+    "rate": "102.76mbit",
+    "delay": "2.71ms",
+    "loss": "2.0%",
+    "rate_mbps": 102.76,
+    "delay_ms": 2.71,
+    "loss_percent": 2.0
+  },
+  "topo04": {
+    "name": "Z4 Up - 混合直连+协作",
+    "rate": "95.02mbit",
+    "delay": "2.72ms",
+    "loss": "5.0%",
+    "rate_mbps": 95.02,
+    "delay_ms": 2.72,
+    "loss_percent": 5.0
+  },
+  "topo05": {
+    "name": "Z5 Up - 多层树形结构",
+    "rate": "102.76mbit",
+    "delay": "2.71ms",
+    "loss": "5.0%",
+    "rate_mbps": 102.76,
+    "delay_ms": 2.71,
+    "loss_percent": 5.0
+  },
+  "topo06": {
+    "name": "Z6 Up - 双UAV中继+T用户",
+    "rate": "91.33mbit",
+    "delay": "2.72ms",
+    "loss": "2.0%",
+    "rate_mbps": 91.33,
+    "delay_ms": 2.72,
+    "loss_percent": 2.0
+  },
+  "topo07": {
+    "name": "Z1 Down - 直连NOMA+协作",
+    "rate": "192.18mbit",
+    "delay": "2.71ms",
+    "loss": "3.0%",
+    "rate_mbps": 192.18,
+    "delay_ms": 2.71,
+    "loss_percent": 3.0
+  },
+  "topo08": {
+    "name": "Z2 Down - T协作接入+协作",
+    "rate": "177.95mbit",
+    "delay": "2.71ms",
+    "loss": "3.0%",
+    "rate_mbps": 177.95,
+    "delay_ms": 2.71,
+    "loss_percent": 3.0
+  },
+  "topo09": {
+    "name": "Z3 Down - T用户协作下行",
+    "rate": "125.97mbit",
+    "delay": "2.71ms",
+    "loss": "1.0%",
+    "rate_mbps": 125.97,
+    "delay_ms": 2.71,
+    "loss_percent": 1.0
+  },
+  "topo10": {
+    "name": "Z4 Down - 混合直连+协作",
+    "rate": "118.22mbit",
+    "delay": "2.72ms",
+    "loss": "3.0%",
+    "rate_mbps": 118.22,
+    "delay_ms": 2.72,
+    "loss_percent": 3.0
+  },
+  "topo11": {
+    "name": "Z5 Down - NOMA接收+转发+T协作",
+    "rate": "27.04mbit",
+    "delay": "2.71ms",
+    "loss": "3.0%",
+    "rate_mbps": 27.04,
+    "delay_ms": 2.71,
+    "loss_percent": 3.0
+  },
+  "topo12": {
+    "name": "Z6 Down - 双中继NOMA接收+协作+转发",
+    "rate": "22.98mbit",
+    "delay": "2.72ms",
+    "loss": "3.0%",
+    "rate_mbps": 22.98,
+    "delay_ms": 2.72,
+    "loss_percent": 3.0
+  }
+}

@@ -1,0 +1,62 @@
+{
+  "topo01": {
+    "rate_mbps": 59.27,
+    "delay_ms": 2.71,
+    "loss_percent": 3.0
+  },
+  "topo02": {
+    "rate_mbps": 16.55,
+    "delay_ms": 2.72,
+    "loss_percent": 3.0
+  },
+  "topo03": {
+    "rate_mbps": 25.19,
+    "delay_ms": 2.71,
+    "loss_percent": 1.0
+  },
+  "topo04": {
+    "rate_mbps": 23.64,
+    "delay_ms": 2.72,
+    "loss_percent": 3.0
+  },
+  "topo05": {
+    "rate_mbps": 25.19,
+    "delay_ms": 2.72,
+    "loss_percent": 3.0
+  },
+  "topo06": {
+    "rate_mbps": 22.91,
+    "delay_ms": 2.72,
+    "loss_percent": 1.0
+  },
+  "topo07": {
+    "rate_mbps": 69.43,
+    "delay_ms": 2.71,
+    "loss_percent": 2.0
+  },
+  "topo08": {
+    "rate_mbps": 44.84,
+    "delay_ms": 2.72,
+    "loss_percent": 2.0
+  },
+  "topo09": {
+    "rate_mbps": 29.84,
+    "delay_ms": 2.72,
+    "loss_percent": 0.5
+  },
+  "topo10": {
+    "rate_mbps": 28.29,
+    "delay_ms": 2.72,
+    "loss_percent": 2.0
+  },
+  "topo11": {
+    "rate_mbps": 9.67,
+    "delay_ms": 2.72,
+    "loss_percent": 2.0
+  },
+  "topo12": {
+    "rate_mbps": 8.73,
+    "delay_ms": 2.72,
+    "loss_percent": 2.0
+  }
+}

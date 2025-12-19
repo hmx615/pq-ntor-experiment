@@ -3,7 +3,9 @@
  *
  * Phase 3: SAGIN Network Integration Testing
  * Measures Circuit Build Time (CBT) across 12 SAGIN topologies
- * Compares Classic NTOR vs PQ-NTOR in real network conditions
+ * Compares Classic NTOR vs PQ-NTOR vs Hybrid NTOR in real network conditions
+ *
+ * Updated 2025-12-12: Added Hybrid NTOR support
  */
 
 #define _POSIX_C_SOURCE 200112L
@@ -23,6 +25,7 @@
 #include <openssl/evp.h>
 #include <openssl/hmac.h>
 #include "pq_ntor.h"
+#include "hybrid_ntor.h"
 #include "cell.h"
 #include "onion_crypto.h"
 #include "crypto_utils.h"
@@ -52,20 +55,21 @@ typedef struct {
     double loss_percent;  // Packet loss
 } topology_config_t;
 
-// 12 SAGIN topologies from real NOMA data (corrected 2025-12-11)
+// 12 SAGIN topologies from real NOMA data (corrected 2025-12-15 - final version)
+// Updated with correct delay values based on topology_params.json
 static const topology_config_t TOPOLOGIES[] = {
-    {"topo01",  59.27,  5.42,  3.0},  // Z1 Up - 直连NOMA
-    {"topo02",  16.55,  5.42,  3.0},  // Z1 Up - T协作接入
-    {"topo03",  25.19,  2.72,  1.0},  // Z1 Up - 双跳直连
-    {"topo04",  23.64,  5.42,  3.0},  // Z1 Up - T协作双跳
-    {"topo05",  25.19,  5.43,  3.0},  // Z1 Up - 并行NOMA
-    {"topo06",  22.91,  5.42,  1.0},  // Z1 Up - 并行协作
-    {"topo07",  69.43,  5.42,  2.0},  // Z1 Down - 直连NOMA
-    {"topo08",  38.01,  5.43,  2.0},  // Z1 Down - T协作接入
-    {"topo09",  29.84,  2.72,  0.5},  // Z1 Down - 双跳直连
-    {"topo10",  18.64,  5.42,  2.0},  // Z1 Down - T协作双跳
-    {"topo11",   9.67,  5.43,  2.0},  // Z1 Down - 并行NOMA
-    {"topo12",   8.73,  5.43,  2.0}   // Z1 Down - 并行协作
+    {"topo01",  59.27,  2.71,  3.0},  // Z1 Up - 直连NOMA
+    {"topo02",  16.55,  2.72,  3.0},  // Z2 Up - T协作接入(混合双路径)
+    {"topo03",  25.19,  2.71,  1.0},  // Z3 Up - T用户协作NOMA
+    {"topo04",  23.64,  2.72,  3.0},  // Z4 Up - 混合直连+协作
+    {"topo05",  25.19,  2.72,  3.0},  // Z5 Up - 多层树形结构
+    {"topo06",  22.91,  2.72,  1.0},  // Z6 Up - 双UAV中继+T用户
+    {"topo07",  69.43,  5.42,  2.0},  // Z1 Down - 直连NOMA+协作
+    {"topo08",  44.84,  5.42,  2.0},  // Z2 Down - T协作接入+协作
+    {"topo09",  29.84,  2.72,  0.5},  // Z3 Down - T用户协作下行
+    {"topo10",  28.29,  5.42,  2.0},  // Z4 Down - 混合直连+协作
+    {"topo11",   9.67,  5.42,  2.0},  // Z5 Down - NOMA接收+转发+T协作
+    {"topo12",   8.73,  5.42,  2.0}   // Z6 Down - 双中继NOMA+协作+转发
 };
 
 #define NUM_TOPOLOGIES (sizeof(TOPOLOGIES) / sizeof(TOPOLOGIES[0]))
@@ -133,148 +137,24 @@ static void compute_stats(double *times, int count, perf_stats_t *stats) {
     stats->ci_upper = stats->mean_ms + margin;
 }
 
-// ============ Circuit Building ============
+// ============ Circuit Building: Classic NTOR ============
 
-/**
- * Simulate 3-hop circuit build with PQ-NTOR
- * Returns Circuit Build Time in milliseconds
- */
-static double build_circuit_pq_ntor(void) {
-    uint64_t start = get_time_us();
-
-    // Simulate relay identity (20 bytes)
-    uint8_t guard_identity[20], middle_identity[20], exit_identity[20];
-    memset(guard_identity, 0x01, 20);
-    memset(middle_identity, 0x02, 20);
-    memset(exit_identity, 0x03, 20);
-
-    // ===== Hop 1: Client -> Guard =====
-    pq_ntor_client_state client_state_1;
-    uint8_t onionskin_1[PQ_NTOR_ONIONSKIN_LEN];
-
-    if (pq_ntor_client_create_onionskin(&client_state_1, onionskin_1, guard_identity) != PQ_NTOR_SUCCESS) {
-        fprintf(stderr, "Failed to create onionskin for Guard\n");
-        return -1;
-    }
-
-    // Server processes
-    pq_ntor_server_state server_state_1;
-    uint8_t reply_1[PQ_NTOR_REPLY_LEN];
-
-    if (pq_ntor_server_create_reply(&server_state_1, reply_1, onionskin_1, guard_identity) != PQ_NTOR_SUCCESS) {
-        fprintf(stderr, "Guard failed to create reply\n");
-        pq_ntor_client_state_cleanup(&client_state_1);
-        return -1;
-    }
-
-    // Client finishes handshake
-    if (pq_ntor_client_finish_handshake(&client_state_1, reply_1) != PQ_NTOR_SUCCESS) {
-        fprintf(stderr, "Client failed to finish handshake with Guard\n");
-        pq_ntor_server_state_cleanup(&server_state_1);
-        pq_ntor_client_state_cleanup(&client_state_1);
-        return -1;
-    }
-
-    uint8_t key_1[PQ_NTOR_KEY_MATERIAL_LEN];
-    pq_ntor_client_get_key(key_1, &client_state_1);
-
-    pq_ntor_client_state_cleanup(&client_state_1);
-    pq_ntor_server_state_cleanup(&server_state_1);
-
-    // ===== Hop 2: Client -> Guard -> Middle =====
-    pq_ntor_client_state client_state_2;
-    uint8_t onionskin_2[PQ_NTOR_ONIONSKIN_LEN];
-
-    if (pq_ntor_client_create_onionskin(&client_state_2, onionskin_2, middle_identity) != PQ_NTOR_SUCCESS) {
-        fprintf(stderr, "Failed to create onionskin for Middle\n");
-        return -1;
-    }
-
-    pq_ntor_server_state server_state_2;
-    uint8_t reply_2[PQ_NTOR_REPLY_LEN];
-
-    if (pq_ntor_server_create_reply(&server_state_2, reply_2, onionskin_2, middle_identity) != PQ_NTOR_SUCCESS) {
-        fprintf(stderr, "Middle failed to create reply\n");
-        pq_ntor_client_state_cleanup(&client_state_2);
-        return -1;
-    }
-
-    if (pq_ntor_client_finish_handshake(&client_state_2, reply_2) != PQ_NTOR_SUCCESS) {
-        fprintf(stderr, "Client failed to finish handshake with Middle\n");
-        pq_ntor_server_state_cleanup(&server_state_2);
-        pq_ntor_client_state_cleanup(&client_state_2);
-        return -1;
-    }
-
-    uint8_t key_2[PQ_NTOR_KEY_MATERIAL_LEN];
-    pq_ntor_client_get_key(key_2, &client_state_2);
-
-    pq_ntor_client_state_cleanup(&client_state_2);
-    pq_ntor_server_state_cleanup(&server_state_2);
-
-    // ===== Hop 3: Client -> Guard -> Middle -> Exit =====
-    pq_ntor_client_state client_state_3;
-    uint8_t onionskin_3[PQ_NTOR_ONIONSKIN_LEN];
-
-    if (pq_ntor_client_create_onionskin(&client_state_3, onionskin_3, exit_identity) != PQ_NTOR_SUCCESS) {
-        fprintf(stderr, "Failed to create onionskin for Exit\n");
-        return -1;
-    }
-
-    pq_ntor_server_state server_state_3;
-    uint8_t reply_3[PQ_NTOR_REPLY_LEN];
-
-    if (pq_ntor_server_create_reply(&server_state_3, reply_3, onionskin_3, exit_identity) != PQ_NTOR_SUCCESS) {
-        fprintf(stderr, "Exit failed to create reply\n");
-        pq_ntor_client_state_cleanup(&client_state_3);
-        return -1;
-    }
-
-    if (pq_ntor_client_finish_handshake(&client_state_3, reply_3) != PQ_NTOR_SUCCESS) {
-        fprintf(stderr, "Client failed to finish handshake with Exit\n");
-        pq_ntor_server_state_cleanup(&server_state_3);
-        pq_ntor_client_state_cleanup(&client_state_3);
-        return -1;
-    }
-
-    uint8_t key_3[PQ_NTOR_KEY_MATERIAL_LEN];
-    pq_ntor_client_get_key(key_3, &client_state_3);
-
-    pq_ntor_client_state_cleanup(&client_state_3);
-    pq_ntor_server_state_cleanup(&server_state_3);
-
-    uint64_t end = get_time_us();
-    return (double)(end - start) / 1000.0; // Convert to milliseconds
-}
-
-/**
- * Simulate 3-hop circuit build with Classic NTOR (X25519)
- * Returns Circuit Build Time in milliseconds
- */
 static double build_circuit_classic_ntor(void) {
     uint64_t start = get_time_us();
 
     // Simulate 3 hops of Classic NTOR
-    // Each hop: keygen + DH + HMAC
-
     for (int hop = 0; hop < 3; hop++) {
-        // Client keygen
         EVP_PKEY *client_pkey = NULL;
         EVP_PKEY_CTX *keygen_ctx = EVP_PKEY_CTX_new_id(EVP_PKEY_X25519, NULL);
-        if (!keygen_ctx) {
-            fprintf(stderr, "Failed to create keygen context\n");
-            return -1;
-        }
+        if (!keygen_ctx) return -1;
 
         if (EVP_PKEY_keygen_init(keygen_ctx) <= 0 ||
             EVP_PKEY_keygen(keygen_ctx, &client_pkey) <= 0) {
-            fprintf(stderr, "Client keygen failed\n");
             EVP_PKEY_CTX_free(keygen_ctx);
             return -1;
         }
         EVP_PKEY_CTX_free(keygen_ctx);
 
-        // Server keygen
         EVP_PKEY *server_pkey = NULL;
         keygen_ctx = EVP_PKEY_CTX_new_id(EVP_PKEY_X25519, NULL);
         if (!keygen_ctx) {
@@ -284,14 +164,12 @@ static double build_circuit_classic_ntor(void) {
 
         if (EVP_PKEY_keygen_init(keygen_ctx) <= 0 ||
             EVP_PKEY_keygen(keygen_ctx, &server_pkey) <= 0) {
-            fprintf(stderr, "Server keygen failed\n");
             EVP_PKEY_CTX_free(keygen_ctx);
             EVP_PKEY_free(client_pkey);
             return -1;
         }
         EVP_PKEY_CTX_free(keygen_ctx);
 
-        // DH computation
         EVP_PKEY_CTX *derive_ctx = EVP_PKEY_CTX_new(client_pkey, NULL);
         if (!derive_ctx) {
             EVP_PKEY_free(client_pkey);
@@ -310,7 +188,6 @@ static double build_circuit_classic_ntor(void) {
         uint8_t shared_secret[32];
         size_t secret_len = sizeof(shared_secret);
         if (EVP_PKEY_derive(derive_ctx, shared_secret, &secret_len) <= 0) {
-            fprintf(stderr, "DH derive failed\n");
             EVP_PKEY_CTX_free(derive_ctx);
             EVP_PKEY_free(client_pkey);
             EVP_PKEY_free(server_pkey);
@@ -321,17 +198,98 @@ static double build_circuit_classic_ntor(void) {
         EVP_PKEY_free(client_pkey);
         EVP_PKEY_free(server_pkey);
 
-        // HMAC
         uint8_t mac[32];
         uint8_t key[16] = {0};
         if (hmac_sha256(mac, key, sizeof(key), shared_secret, secret_len) != 0) {
-            fprintf(stderr, "HMAC failed\n");
             return -1;
         }
     }
 
     uint64_t end = get_time_us();
-    return (double)(end - start) / 1000.0; // Convert to milliseconds
+    return (double)(end - start) / 1000.0;
+}
+
+// ============ Circuit Building: PQ-NTOR ============
+
+static double build_circuit_pq_ntor(void) {
+    uint64_t start = get_time_us();
+
+    uint8_t identities[3][20];
+    memset(identities[0], 0x01, 20);
+    memset(identities[1], 0x02, 20);
+    memset(identities[2], 0x03, 20);
+
+    for (int hop = 0; hop < 3; hop++) {
+        pq_ntor_client_state client_state;
+        uint8_t onionskin[PQ_NTOR_ONIONSKIN_LEN];
+
+        if (pq_ntor_client_create_onionskin(&client_state, onionskin, identities[hop]) != PQ_NTOR_SUCCESS) {
+            return -1;
+        }
+
+        pq_ntor_server_state server_state;
+        uint8_t reply[PQ_NTOR_REPLY_LEN];
+
+        if (pq_ntor_server_create_reply(&server_state, reply, onionskin, identities[hop]) != PQ_NTOR_SUCCESS) {
+            pq_ntor_client_state_cleanup(&client_state);
+            return -1;
+        }
+
+        if (pq_ntor_client_finish_handshake(&client_state, reply) != PQ_NTOR_SUCCESS) {
+            pq_ntor_server_state_cleanup(&server_state);
+            pq_ntor_client_state_cleanup(&client_state);
+            return -1;
+        }
+
+        uint8_t key[PQ_NTOR_KEY_MATERIAL_LEN];
+        pq_ntor_client_get_key(key, &client_state);
+
+        pq_ntor_client_state_cleanup(&client_state);
+        pq_ntor_server_state_cleanup(&server_state);
+    }
+
+    uint64_t end = get_time_us();
+    return (double)(end - start) / 1000.0;
+}
+
+// ============ Circuit Building: Hybrid NTOR ============
+
+static double build_circuit_hybrid_ntor(void) {
+    uint64_t start = get_time_us();
+
+    uint8_t identities[3][HYBRID_NTOR_RELAY_ID_LENGTH];
+    memset(identities[0], 0x01, HYBRID_NTOR_RELAY_ID_LENGTH);
+    memset(identities[1], 0x02, HYBRID_NTOR_RELAY_ID_LENGTH);
+    memset(identities[2], 0x03, HYBRID_NTOR_RELAY_ID_LENGTH);
+
+    for (int hop = 0; hop < 3; hop++) {
+        hybrid_ntor_client_state client_state;
+        uint8_t onionskin[HYBRID_NTOR_ONIONSKIN_LEN];
+
+        if (hybrid_ntor_client_create_onionskin(&client_state, onionskin, identities[hop]) != HYBRID_NTOR_SUCCESS) {
+            return -1;
+        }
+
+        hybrid_ntor_server_state server_state;
+        uint8_t reply[HYBRID_NTOR_REPLY_LEN];
+
+        if (hybrid_ntor_server_create_reply(&server_state, reply, onionskin, identities[hop]) != HYBRID_NTOR_SUCCESS) {
+            hybrid_ntor_client_state_cleanup(&client_state);
+            return -1;
+        }
+
+        if (hybrid_ntor_client_finish_handshake(&client_state, reply) != HYBRID_NTOR_SUCCESS) {
+            hybrid_ntor_server_state_cleanup(&server_state);
+            hybrid_ntor_client_state_cleanup(&client_state);
+            return -1;
+        }
+
+        hybrid_ntor_client_state_cleanup(&client_state);
+        hybrid_ntor_server_state_cleanup(&server_state);
+    }
+
+    uint64_t end = get_time_us();
+    return (double)(end - start) / 1000.0;
 }
 
 // ============ Topology Testing ============
@@ -341,43 +299,32 @@ static int apply_tc_config(const topology_config_t *topo) {
            topo->rate_mbps, topo->delay_ms, topo->loss_percent);
 
     char cmd[512];
+    system("sudo /usr/sbin/tc qdisc del dev lo root 2>/dev/null");
 
-    // Clear existing configuration (must run as root)
-    system("tc qdisc del dev lo root 2>/dev/null");
-
-    // Apply netem directly to root (simplified - only delay and loss, no rate limiting)
-    // Note: Rate limiting with tbf may not be supported on all kernels
-    // IMPORTANT: This program must be run with sudo/root privileges
     snprintf(cmd, sizeof(cmd),
-             "tc qdisc add dev lo root netem delay %.2fms loss %.2f%%",
+             "sudo /usr/sbin/tc qdisc add dev lo root netem delay %.2fms loss %.2f%%",
              topo->delay_ms, topo->loss_percent);
 
     int ret = system(cmd);
     if (ret != 0) {
-        fprintf(stderr, "[TC] Warning: Failed to apply netem (delay+loss)\n");
+        fprintf(stderr, "[TC] Warning: Failed to apply netem\n");
         return -1;
     }
 
-    printf("[TC] Configuration applied successfully (delay=%.2fms, loss=%.2f%%)\n",
-           topo->delay_ms, topo->loss_percent);
-
-    // Note: Bandwidth limiting not applied due to kernel limitations
-    // The test focuses on latency and packet loss characteristics
-
+    printf("[TC] Configuration applied successfully\n");
     return 0;
 }
 
 static int clear_tc_config(void) {
-    printf("[TC] Clearing tc/netem configuration\n");
-    system("tc qdisc del dev lo root 2>/dev/null");
+    system("sudo /usr/sbin/tc qdisc del dev lo root 2>/dev/null");
     return 0;
 }
 
 // ============ Main Benchmark ============
 
 int main(int argc, char *argv[]) {
-    (void)argc; // Unused
-    (void)argv; // Unused
+    (void)argc;
+    (void)argv;
 
     printf("========================================\n");
     printf("Phase 3: SAGIN Network Integration Test\n");
@@ -385,11 +332,12 @@ int main(int argc, char *argv[]) {
 
     printf("Configuration:\n");
     printf("  Topologies: %d SAGIN topologies\n", (int)NUM_TOPOLOGIES);
+    printf("  Protocols:  Classic NTOR, PQ-NTOR, Hybrid NTOR\n");
     printf("  Iterations: %d (+ %d warmup)\n", NUM_ITERATIONS, WARMUP_ITERATIONS);
     printf("  Confidence: %.0f%%\n\n", CONFIDENCE_LEVEL * 100);
 
     // Open CSV output file
-    FILE *csv = fopen("phase3_sagin_cbt.csv", "w");
+    FILE *csv = fopen("/tmp/phase3_sagin_cbt.csv", "w");
     if (!csv) {
         perror("fopen");
         return 1;
@@ -408,21 +356,19 @@ int main(int argc, char *argv[]) {
         printf("  Loss:  %.2f%%\n", topo->loss_percent);
         printf("========================================\n\n");
 
-        // Apply tc/netem configuration
         apply_tc_config(topo);
-        sleep(1); // Let configuration stabilize
+        sleep(1);
 
         // ========== Test Classic NTOR ==========
-        printf("Testing Classic NTOR...\n");
+        printf("[1/3] Testing Classic NTOR...\n");
 
         double classic_times[NUM_ITERATIONS + WARMUP_ITERATIONS];
 
         for (int i = 0; i < NUM_ITERATIONS + WARMUP_ITERATIONS; i++) {
-            if (i < WARMUP_ITERATIONS) {
-                printf("  Warmup %d/%d...\r", i + 1, WARMUP_ITERATIONS);
-            } else {
-                printf("  Iteration %d/%d...\r", i - WARMUP_ITERATIONS + 1, NUM_ITERATIONS);
-            }
+            printf("  %s %d/%d...\r",
+                   i < WARMUP_ITERATIONS ? "Warmup" : "Iteration",
+                   i < WARMUP_ITERATIONS ? i + 1 : i - WARMUP_ITERATIONS + 1,
+                   i < WARMUP_ITERATIONS ? WARMUP_ITERATIONS : NUM_ITERATIONS);
             fflush(stdout);
 
             double cbt = build_circuit_classic_ntor();
@@ -433,20 +379,17 @@ int main(int argc, char *argv[]) {
             }
 
             classic_times[i] = cbt;
-            usleep(10000); // 10ms between tests
+            usleep(10000);
         }
         printf("\n");
 
         perf_stats_t classic_stats;
         compute_stats(classic_times + WARMUP_ITERATIONS, NUM_ITERATIONS, &classic_stats);
 
-        printf("Classic NTOR Results:\n");
-        printf("  Mean:   %8.2f ms\n", classic_stats.mean_ms);
-        printf("  Median: %8.2f ms\n", classic_stats.median_ms);
-        printf("  StdDev: %8.2f ms\n", classic_stats.stddev_ms);
-        printf("  95%% CI: [%.2f, %.2f] ms\n\n", classic_stats.ci_lower, classic_stats.ci_upper);
+        printf("  Classic NTOR: mean=%.3f ms, median=%.3f ms\n",
+               classic_stats.mean_ms, classic_stats.median_ms);
 
-        fprintf(csv, "%s,Classic NTOR,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f\n",
+        fprintf(csv, "%s,Classic NTOR,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f\n",
                 topo->name,
                 classic_stats.mean_ms, classic_stats.median_ms,
                 classic_stats.min_ms, classic_stats.max_ms, classic_stats.stddev_ms,
@@ -454,16 +397,15 @@ int main(int argc, char *argv[]) {
                 classic_stats.ci_lower, classic_stats.ci_upper);
 
         // ========== Test PQ-NTOR ==========
-        printf("Testing PQ-NTOR...\n");
+        printf("[2/3] Testing PQ-NTOR...\n");
 
         double pq_times[NUM_ITERATIONS + WARMUP_ITERATIONS];
 
         for (int i = 0; i < NUM_ITERATIONS + WARMUP_ITERATIONS; i++) {
-            if (i < WARMUP_ITERATIONS) {
-                printf("  Warmup %d/%d...\r", i + 1, WARMUP_ITERATIONS);
-            } else {
-                printf("  Iteration %d/%d...\r", i - WARMUP_ITERATIONS + 1, NUM_ITERATIONS);
-            }
+            printf("  %s %d/%d...\r",
+                   i < WARMUP_ITERATIONS ? "Warmup" : "Iteration",
+                   i < WARMUP_ITERATIONS ? i + 1 : i - WARMUP_ITERATIONS + 1,
+                   i < WARMUP_ITERATIONS ? WARMUP_ITERATIONS : NUM_ITERATIONS);
             fflush(stdout);
 
             double cbt = build_circuit_pq_ntor();
@@ -474,36 +416,70 @@ int main(int argc, char *argv[]) {
             }
 
             pq_times[i] = cbt;
-            usleep(10000); // 10ms between tests
+            usleep(10000);
         }
         printf("\n");
 
         perf_stats_t pq_stats;
         compute_stats(pq_times + WARMUP_ITERATIONS, NUM_ITERATIONS, &pq_stats);
 
-        printf("PQ-NTOR Results:\n");
-        printf("  Mean:   %8.2f ms\n", pq_stats.mean_ms);
-        printf("  Median: %8.2f ms\n", pq_stats.median_ms);
-        printf("  StdDev: %8.2f ms\n", pq_stats.stddev_ms);
-        printf("  95%% CI: [%.2f, %.2f] ms\n\n", pq_stats.ci_lower, pq_stats.ci_upper);
+        printf("  PQ-NTOR: mean=%.3f ms, median=%.3f ms\n",
+               pq_stats.mean_ms, pq_stats.median_ms);
 
-        fprintf(csv, "%s,PQ-NTOR,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f\n",
+        fprintf(csv, "%s,PQ-NTOR,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f\n",
                 topo->name,
                 pq_stats.mean_ms, pq_stats.median_ms,
                 pq_stats.min_ms, pq_stats.max_ms, pq_stats.stddev_ms,
                 pq_stats.p95_ms, pq_stats.p99_ms,
                 pq_stats.ci_lower, pq_stats.ci_upper);
 
+        // ========== Test Hybrid NTOR ==========
+        printf("[3/3] Testing Hybrid NTOR...\n");
+
+        double hybrid_times[NUM_ITERATIONS + WARMUP_ITERATIONS];
+
+        for (int i = 0; i < NUM_ITERATIONS + WARMUP_ITERATIONS; i++) {
+            printf("  %s %d/%d...\r",
+                   i < WARMUP_ITERATIONS ? "Warmup" : "Iteration",
+                   i < WARMUP_ITERATIONS ? i + 1 : i - WARMUP_ITERATIONS + 1,
+                   i < WARMUP_ITERATIONS ? WARMUP_ITERATIONS : NUM_ITERATIONS);
+            fflush(stdout);
+
+            double cbt = build_circuit_hybrid_ntor();
+            if (cbt < 0) {
+                fprintf(stderr, "\nHybrid NTOR circuit build failed\n");
+                fclose(csv);
+                return 1;
+            }
+
+            hybrid_times[i] = cbt;
+            usleep(10000);
+        }
+        printf("\n");
+
+        perf_stats_t hybrid_stats;
+        compute_stats(hybrid_times + WARMUP_ITERATIONS, NUM_ITERATIONS, &hybrid_stats);
+
+        printf("  Hybrid NTOR: mean=%.3f ms, median=%.3f ms\n",
+               hybrid_stats.mean_ms, hybrid_stats.median_ms);
+
+        fprintf(csv, "%s,Hybrid NTOR,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f\n",
+                topo->name,
+                hybrid_stats.mean_ms, hybrid_stats.median_ms,
+                hybrid_stats.min_ms, hybrid_stats.max_ms, hybrid_stats.stddev_ms,
+                hybrid_stats.p95_ms, hybrid_stats.p99_ms,
+                hybrid_stats.ci_lower, hybrid_stats.ci_upper);
+
         // ========== Comparison ==========
-        double overhead_ratio = pq_stats.mean_ms / classic_stats.mean_ms;
-        double absolute_overhead = pq_stats.mean_ms - classic_stats.mean_ms;
+        double pq_overhead = pq_stats.mean_ms / classic_stats.mean_ms;
+        double hybrid_overhead = hybrid_stats.mean_ms / classic_stats.mean_ms;
 
-        printf("Comparison:\n");
-        printf("  PQ overhead:  %.2fx (%.2f ms)\n", overhead_ratio, absolute_overhead);
-        printf("  Network CBT:  Classic=%.2f ms, PQ=%.2f ms\n\n",
-               classic_stats.mean_ms, pq_stats.mean_ms);
+        printf("\nComparison (vs Classic):\n");
+        printf("  PQ-NTOR:     %.2fx (%.3f ms overhead)\n",
+               pq_overhead, pq_stats.mean_ms - classic_stats.mean_ms);
+        printf("  Hybrid NTOR: %.2fx (%.3f ms overhead)\n",
+               hybrid_overhead, hybrid_stats.mean_ms - classic_stats.mean_ms);
 
-        // Clear tc configuration
         clear_tc_config();
         sleep(1);
     }
@@ -516,15 +492,20 @@ int main(int argc, char *argv[]) {
     printf("Results saved to: phase3_sagin_cbt.csv\n\n");
 
     printf("Summary:\n");
-    printf("  Tested %d topologies × 2 protocols × %d iterations\n",
+    printf("  Tested %d topologies × 3 protocols × %d iterations\n",
            (int)NUM_TOPOLOGIES, NUM_ITERATIONS);
     printf("  Total circuit builds: %d\n",
-           (int)(NUM_TOPOLOGIES * 2 * NUM_ITERATIONS));
+           (int)(NUM_TOPOLOGIES * 3 * NUM_ITERATIONS));
+
+    printf("\nProtocol Message Sizes:\n");
+    printf("  Classic NTOR: ~116 bytes total\n");
+    printf("  PQ-NTOR:      %d bytes total\n", PQ_NTOR_ONIONSKIN_LEN + PQ_NTOR_REPLY_LEN);
+    printf("  Hybrid NTOR:  %d bytes total\n", HYBRID_NTOR_ONIONSKIN_LEN + HYBRID_NTOR_REPLY_LEN);
 
     printf("\nNext steps:\n");
     printf("  1. Analyze results: python3 analyze_phase3.py\n");
     printf("  2. Generate plots: python3 visualize_phase3.py\n");
-    printf("  3. Compare with Phase 1+2 data for comprehensive analysis\n\n");
+    printf("  3. Compare with Phase 1+2 data\n\n");
 
     return 0;
 }

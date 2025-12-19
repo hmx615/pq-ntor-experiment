@@ -25,7 +25,7 @@ BENCHMARK_DIR = benchmark
 PROGRAMS_DIR = programs
 
 # 目标文件
-SRCS = $(SRC_DIR)/kyber_kem.c $(SRC_DIR)/crypto_utils.c $(SRC_DIR)/pq_ntor.c $(SRC_DIR)/classic_ntor.c $(SRC_DIR)/cell.c $(SRC_DIR)/onion_crypto.c
+SRCS = $(SRC_DIR)/kyber_kem.c $(SRC_DIR)/crypto_utils.c $(SRC_DIR)/pq_ntor.c $(SRC_DIR)/classic_ntor.c $(SRC_DIR)/hybrid_ntor.c $(SRC_DIR)/cell.c $(SRC_DIR)/onion_crypto.c
 OBJS = $(SRCS:.c=.o)
 
 # 服务器程序
@@ -45,6 +45,8 @@ TEST_CELL = test_cell
 TEST_CELL_SRC = $(TEST_DIR)/test_cell.c
 TEST_ONION = test_onion
 TEST_ONION_SRC = $(TEST_DIR)/test_onion.c
+TEST_HYBRID_NTOR = test_hybrid_ntor
+TEST_HYBRID_NTOR_SRC = $(TEST_DIR)/test_hybrid_ntor.c
 
 # 基准测试程序
 BENCHMARK = benchmark_pq_ntor
@@ -65,9 +67,9 @@ CLIENT_SRC = $(PROGRAMS_DIR)/client_main.c
 CLIENT_OBJS = $(SRC_DIR)/tor_client.o
 
 # 主要目标
-.PHONY: all clean test test-crypto test-pq-ntor test-classic-ntor test-cell test-onion test-all benchmark visualize directory relay client
+.PHONY: all clean test test-crypto test-pq-ntor test-classic-ntor test-hybrid-ntor test-cell test-onion test-all benchmark visualize directory relay client
 
-all: $(TEST_KYBER) $(TEST_CRYPTO) $(TEST_PQ_NTOR) $(TEST_CLASSIC_NTOR) $(TEST_CELL) $(TEST_ONION) $(BENCHMARK) $(DIRECTORY) $(RELAY) $(CLIENT)
+all: $(TEST_KYBER) $(TEST_CRYPTO) $(TEST_PQ_NTOR) $(TEST_CLASSIC_NTOR) $(TEST_HYBRID_NTOR) $(TEST_CELL) $(TEST_ONION) $(BENCHMARK) $(DIRECTORY) $(RELAY) $(CLIENT)
 
 # 编译 Kyber 测试程序
 $(TEST_KYBER): $(TEST_KYBER_SRC) $(SRC_DIR)/kyber_kem.o
@@ -89,6 +91,12 @@ $(TEST_PQ_NTOR): $(TEST_PQ_NTOR_SRC) $(OBJS)
 
 # 编译 Classic NTOR 测试程序
 $(TEST_CLASSIC_NTOR): $(TEST_CLASSIC_NTOR_SRC) $(SRC_DIR)/classic_ntor.o $(SRC_DIR)/crypto_utils.o
+	@echo "Building $@..."
+	$(CC) $(CFLAGS) $(INCLUDES) -o $@ $^ $(LIBS)
+	@echo "✓ Built: $@"
+
+# 编译 Hybrid NTOR 测试程序
+$(TEST_HYBRID_NTOR): $(TEST_HYBRID_NTOR_SRC) $(SRC_DIR)/hybrid_ntor.o $(SRC_DIR)/kyber_kem.o $(SRC_DIR)/crypto_utils.o
 	@echo "Building $@..."
 	$(CC) $(CFLAGS) $(INCLUDES) -o $@ $^ $(LIBS)
 	@echo "✓ Built: $@"
@@ -138,6 +146,13 @@ test-classic-ntor: $(TEST_CLASSIC_NTOR)
 	@echo "=============================="
 	./$(TEST_CLASSIC_NTOR)
 
+# 运行 Hybrid NTOR 测试
+test-hybrid-ntor: $(TEST_HYBRID_NTOR)
+	@echo ""
+	@echo "Running Hybrid NTOR test..."
+	@echo "=============================="
+	./$(TEST_HYBRID_NTOR)
+
 # 运行 Cell 测试
 test-cell: $(TEST_CELL)
 	@echo ""
@@ -153,7 +168,7 @@ test-onion: $(TEST_ONION)
 	./$(TEST_ONION)
 
 # 运行所有测试
-test-all: $(TEST_KYBER) $(TEST_CRYPTO) $(TEST_PQ_NTOR) $(TEST_CLASSIC_NTOR) $(TEST_CELL) $(TEST_ONION)
+test-all: $(TEST_KYBER) $(TEST_CRYPTO) $(TEST_PQ_NTOR) $(TEST_CLASSIC_NTOR) $(TEST_HYBRID_NTOR) $(TEST_CELL) $(TEST_ONION)
 	@echo ""
 	@echo "Running all tests..."
 	@echo "=============================="
@@ -164,6 +179,8 @@ test-all: $(TEST_KYBER) $(TEST_CRYPTO) $(TEST_PQ_NTOR) $(TEST_CLASSIC_NTOR) $(TE
 	./$(TEST_PQ_NTOR)
 	@echo ""
 	./$(TEST_CLASSIC_NTOR)
+	@echo ""
+	./$(TEST_HYBRID_NTOR)
 	@echo ""
 	./$(TEST_CELL)
 	@echo ""
@@ -230,7 +247,7 @@ info:
 clean:
 	@echo "Cleaning..."
 	rm -f $(OBJS) $(SERVER_OBJS) $(RELAY_OBJS) $(CLIENT_OBJS)
-	rm -f $(TEST_KYBER) $(TEST_CRYPTO) $(TEST_PQ_NTOR) $(TEST_CLASSIC_NTOR) $(TEST_CELL) $(TEST_ONION) $(BENCHMARK) $(DIRECTORY) $(RELAY) $(CLIENT)
+	rm -f $(TEST_KYBER) $(TEST_CRYPTO) $(TEST_PQ_NTOR) $(TEST_CLASSIC_NTOR) $(TEST_HYBRID_NTOR) $(TEST_CELL) $(TEST_ONION) $(BENCHMARK) $(DIRECTORY) $(RELAY) $(CLIENT)
 	rm -f $(BENCHMARK_DIR)/*.csv $(BENCHMARK_DIR)/*.png $(BENCHMARK_DIR)/*.tex
 	@echo "✓ Clean complete"
 

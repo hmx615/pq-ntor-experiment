@@ -92,12 +92,12 @@
     "interface": "lo",
     "tc_commands": [
       "sudo tc qdisc del dev lo root 2>/dev/null || true",
-      "sudo tc qdisc add dev lo root netem delay 5.42ms 1.35ms distribution normal rate 23.64mbit loss 3.00%"
+      "sudo tc qdisc add dev lo root netem delay 2.72ms 0.68ms distribution normal rate 95.02mbit loss 5.00%"
     ],
     "aggregate_params": {
-      "delay_ms": 5.42,
-      "bandwidth_mbps": 23.64,
-      "loss_percent": 3.0
+      "delay_ms": 2.72,
+      "bandwidth_mbps": 95.02,
+      "loss_percent": 5.0
     }
   },
   "test_configuration": {

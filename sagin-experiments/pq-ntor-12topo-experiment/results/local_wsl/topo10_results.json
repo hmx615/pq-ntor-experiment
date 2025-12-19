@@ -100,12 +100,12 @@
       "interface": "lo",
       "tc_commands": [
         "sudo tc qdisc del dev lo root 2>/dev/null || true",
-        "sudo tc qdisc add dev lo root netem delay 5.42ms 1.35ms distribution normal rate 18.64mbit loss 2.00%"
+        "sudo tc qdisc add dev lo root netem delay 2.72ms 0.68ms distribution normal rate 118.22mbit loss 3.00%"
       ],
       "aggregate_params": {
-        "delay_ms": 5.42,
-        "bandwidth_mbps": 18.64,
-        "loss_percent": 2.0
+        "delay_ms": 2.72,
+        "bandwidth_mbps": 118.22,
+        "loss_percent": 3.0
       }
     },
     "test_configuration": {
@@ -118,43 +118,59 @@
   "test_runs": [
     {
       "run_id": 1,
-      "success": false,
-      "error": "timeout"
+      "success": true,
+      "returncode": 0,
+      "stdout": "============================================\n  PQ-Tor Client\n============================================\n\n[Client] Initialized with directory localhost:5000\n[1/4] Fetching directory...\n[Client] Fetching node list from directory...\n[Client] Found 1 guards, 1 middles, 1 exits\n\n[2/4] Building 3-hop circuit...\n[Client] Building 3-hop circuit...\n[Client] Creating first hop to Guard 127.0.0.1:6001\n[Client] Connected to Guard\n[Client] Creating Hybrid NTOR onionskin (Kyber+X25519)...\n[Client] Hybrid NT",
+      "stderr": ""
     },
     {
       "run_id": 2,
-      "success": false,
-      "error": "timeout"
+      "success": true,
+      "returncode": 0,
+      "stdout": "============================================\n  PQ-Tor Client\n============================================\n\n[Client] Initialized with directory localhost:5000\n[1/4] Fetching directory...\n[Client] Fetching node list from directory...\n[Client] Found 1 guards, 1 middles, 1 exits\n\n[2/4] Building 3-hop circuit...\n[Client] Building 3-hop circuit...\n[Client] Creating first hop to Guard 127.0.0.1:6001\n[Client] Connected to Guard\n[Client] Creating Hybrid NTOR onionskin (Kyber+X25519)...\n[Client] Hybrid NT",
+      "stderr": ""
     },
     {
       "run_id": 3,
-      "success": false,
-      "error": "timeout"
+      "success": true,
+      "returncode": 0,
+      "stdout": "============================================\n  PQ-Tor Client\n============================================\n\n[Client] Initialized with directory localhost:5000\n[1/4] Fetching directory...\n[Client] Fetching node list from directory...\n[Client] Found 1 guards, 1 middles, 1 exits\n\n[2/4] Building 3-hop circuit...\n[Client] Building 3-hop circuit...\n[Client] Creating first hop to Guard 127.0.0.1:6001\n[Client] Connected to Guard\n[Client] Creating Hybrid NTOR onionskin (Kyber+X25519)...\n[Client] Hybrid NT",
+      "stderr": ""
     },
     {
       "run_id": 4,
-      "success": false,
-      "error": "timeout"
+      "success": true,
+      "returncode": 0,
+      "stdout": "============================================\n  PQ-Tor Client\n============================================\n\n[Client] Initialized with directory localhost:5000\n[1/4] Fetching directory...\n[Client] Fetching node list from directory...\n[Client] Found 1 guards, 1 middles, 1 exits\n\n[2/4] Building 3-hop circuit...\n[Client] Building 3-hop circuit...\n[Client] Creating first hop to Guard 127.0.0.1:6001\n[Client] Connected to Guard\n[Client] Creating Hybrid NTOR onionskin (Kyber+X25519)...\n[Client] Hybrid NT",
+      "stderr": ""
     },
     {
       "run_id": 5,
-      "success": false,
-      "error": "timeout"
+      "success": true,
+      "returncode": 0,
+      "stdout": "============================================\n  PQ-Tor Client\n============================================\n\n[Client] Initialized with directory localhost:5000\n[1/4] Fetching directory...\n[Client] Fetching node list from directory...\n[Client] Found 1 guards, 1 middles, 1 exits\n\n[2/4] Building 3-hop circuit...\n[Client] Building 3-hop circuit...\n[Client] Creating first hop to Guard 127.0.0.1:6001\n[Client] Connected to Guard\n[Client] Creating Hybrid NTOR onionskin (Kyber+X25519)...\n[Client] Hybrid NT",
+      "stderr": ""
     },
     {
       "run_id": 6,
-      "success": false,
-      "error": "timeout"
+      "success": true,
+      "returncode": 0,
+      "stdout": "============================================\n  PQ-Tor Client\n============================================\n\n[Client] Initialized with directory localhost:5000\n[1/4] Fetching directory...\n[Client] Fetching node list from directory...\n[Client] Found 1 guards, 1 middles, 1 exits\n\n[2/4] Building 3-hop circuit...\n[Client] Building 3-hop circuit...\n[Client] Creating first hop to Guard 127.0.0.1:6001\n[Client] Connected to Guard\n[Client] Creating Hybrid NTOR onionskin (Kyber+X25519)...\n[Client] Hybrid NT",
+      "stderr": ""
     },
     {
       "run_id": 7,
-      "success": false,
-      "error": "timeout"
+      "success": true,
+      "returncode": 0,
+      "stdout": "============================================\n  PQ-Tor Client\n============================================\n\n[Client] Initialized with directory localhost:5000\n[1/4] Fetching directory...\n[Client] Fetching node list from directory...\n[Client] Found 1 guards, 1 middles, 1 exits\n\n[2/4] Building 3-hop circuit...\n[Client] Building 3-hop circuit...\n[Client] Creating first hop to Guard 127.0.0.1:6001\n[Client] Connected to Guard\n[Client] Creating Hybrid NTOR onionskin (Kyber+X25519)...\n[Client] Hybrid NT",
+      "stderr": ""
     },
     {
       "run_id": 8,
-      "success": false,
-      "error": "timeout"
+      "success": true,
+      "returncode": 0,
+      "stdout": "============================================\n  PQ-Tor Client\n============================================\n\n[Client] Initialized with directory localhost:5000\n[1/4] Fetching directory...\n[Client] Fetching node list from directory...\n[Client] Found 1 guards, 1 middles, 1 exits\n\n[2/4] Building 3-hop circuit...\n[Client] Building 3-hop circuit...\n[Client] Creating first hop to Guard 127.0.0.1:6001\n[Client] Connected to Guard\n[Client] Creating Hybrid NTOR onionskin (Kyber+X25519)...\n[Client] Hybrid NT",
+      "stderr": ""
     },
     {
       "run_id": 9,
@@ -163,14 +179,16 @@
     },
     {
       "run_id": 10,
-      "success": false,
-      "error": "timeout"
+      "success": true,
+      "returncode": 0,
+      "stdout": "============================================\n  PQ-Tor Client\n============================================\n\n[Client] Initialized with directory localhost:5000\n[1/4] Fetching directory...\n[Client] Fetching node list from directory...\n[Client] Found 1 guards, 1 middles, 1 exits\n\n[2/4] Building 3-hop circuit...\n[Client] Building 3-hop circuit...\n[Client] Creating first hop to Guard 127.0.0.1:6001\n[Client] Connected to Guard\n[Client] Creating Hybrid NTOR onionskin (Kyber+X25519)...\n[Client] Hybrid NT",
+      "stderr": ""
     }
   ],
   "summary": {
     "total_runs": 10,
-    "success_count": 0,
-    "success_rate": 0.0
+    "success_count": 9,
+    "success_rate": 90.0
   },
-  "test_date": "2025-12-11T13:06:40.984454"
+  "test_date": "2025-12-16T16:47:08.680321"
 }

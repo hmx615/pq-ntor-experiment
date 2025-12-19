@@ -1,0 +1,124 @@
+Dear Mr. He:
+              
+Thank you for submitting your paper - #1571094914 ('A Trust-Based Adaptive Authentication Scheme for Space-Air-Ground Integrated NOMA System')  to 2025 IEEE International Conference on Communications (ICC): Communication and Information System Security Symposium. 
+
+This year, we have received 2778 submissions, and all papers underwent a rigorous review process.  With an acceptance rate set by IEEE ComSoc at below 40%, many good and interesting papers could not be included in the technical program.  After considering the reviews and a discussion among the symposium co-chairs, we regret that your paper could not be accepted for inclusion in the symposium program.
+ 
+Review reports of your paper are shown at the end of this email, or they can be found on EDAS at https://edas.info/showPaper.php?m=1571094914, which we hope you will find useful in improving your paper.
+ 
+We still welcome your attendance and participation in IEEE ICC 2025 in Montreal, Canada.
+
+If you have new results that you would like to publish and present at IEEE ICC 2025, please consider submitting a workshop paper. 
+
+Thank you again for submitting your paper to IEEE ICC 2025, and we hope that you will be able to attend this flagship conference.
+ 
+Thank you and best regards,
+
+Hossam Hassanein, Soumaya Cherkaoui, and Dusit (Tao) Niyato
+
+IEEE ICC 2025 Technical Program Chairs
+
+---
+
+======= ICC review 1 =======
+
+> *** Relevance and timeliness: Rate the importance and timeliness of the topic addressed in the paper within its area of research.
+Acceptable (3)
+
+> *** Technical content and scientific rigour: Rate the technical content of the paper (e.g.: completeness of the analysis or simulation study, thoroughness of the treatise, accuracy of the models, etc.), its soundness and scientific rigour.
+Valid work but limited contribution. (3)
+
+> *** Novelty and originality: Rate the novelty and originality of the ideas or results presented in the paper.
+Minor variations on a well investigated subject. (2)
+
+> *** Quality of presentation: Rate the paper organization, the clearness of text and figures, the completeness and accuracy of references.
+Readable, but revision is needed in some parts. (3)
+
+> *** Strong aspects: Comments to the author: what are the strong aspects of the paper
+
+- The study targets a relevant and emerging topic within the domain of 6G communication.
+- The proposed dual-mode authentication mechanism (trusted and untrusted modes) adapts to different trust environments, providing flexible security guarantees.
+
+> *** Weak aspects: Comments to the author: what are the weak aspects of the paper?
+
+- The proposed scheme is built on idealized assumptions such as perfect trust in certification authorities, optimal communication channels, and ideal system configurations. However, the absence of real-world tests or prototype implementations raises concerns about its feasibility. Theoretical models alone are insufficient to establish the scheme's robustness in unpredictable network environments.
+- The performance evaluation is based solely on simulated metrics such as communication delays and computational costs, with no empirical benchmarks or hardware implementations. This undermines the credibility of the claimed efficiency improvements, especially when the paper compares its scheme with other well-established protocols.
+- While the paper fails to provide a clear, detailed explanation of its unique contributions. Key innovations such as adaptive trust-based authentication are not distinctly separated from prior works, making the originality of the proposed scheme unclear.
+
+> *** Recommended changes: Please indicate any changes that should be made to the paper if accepted.
+
+-  To enhance the scheme's credibility, the authors should benchmark their proposed authentication model against both theoretical and real-world implementations. Comparative analyses should include relevant metrics such as communication latency, computational overhead, and system scalability. Implementing prototypes on industry-standard platforms or simulation tools like NS3 or MATLAB would provide stronger empirical evidence.
+- Several sections in the paper, such as the technical framework and performance evaluation, should be rewritten for clarity. A logical flow of sections, clear definitions of technical terms, and well-labeled figures would improve readability. Authors should also consider simplifying overly complex explanations and ensuring consistent terminology throughout the manuscript.
+- The literature review should be expanded to include recent works on post-quantum cryptography, NOMA-based security protocols, and trust-based authentication mechanisms. Including comparisons with state-of-the-art methods would highlight the proposed scheme's novelty and address current gaps. Referencing high-impact publications from leading journals and conferences would further validate the research context.
+
+> *** Submission Policy: Does the paper list the same author(s), title and abstract (minor wording differences in the abstract are okay) in its PDF file and EDAS registration? (yes/no)
+
+Yes
+
+======= ICC review 2 =======
+
+> *** Relevance and timeliness: Rate the importance and timeliness of the topic addressed in the paper within its area of research.
+Acceptable (3)
+
+> *** Technical content and scientific rigour: Rate the technical content of the paper (e.g.: completeness of the analysis or simulation study, thoroughness of the treatise, accuracy of the models, etc.), its soundness and scientific rigour.
+Marginal work and simple contribution. Some flaws. (2)
+
+> *** Novelty and originality: Rate the novelty and originality of the ideas or results presented in the paper.
+Minor variations on a well investigated subject. (2)
+
+> *** Quality of presentation: Rate the paper organization, the clearness of text and figures, the completeness and accuracy of references.
+Readable, but revision is needed in some parts. (3)
+
+> *** Strong aspects: Comments to the author: what are the strong aspects of the paper
+
+In this paper, authors aim to address the quantum attack’ threat to the secure access authentication for the cooperative non-orthogonal multiple access (C-NOMA) . To deal with this problem, authors design a trust-based adaptive access authentication scheme. Authors analyze the security and performance in theory, and show their scheme enjoys extra message accessbility for near users compared with existing baseline works.
+
+The paper studies an important problem. The C-NOMA scheme is supposed to be a key technique for potential Internet-of-Everything in the near future. Post-Quantum security standard has been published by NIST.
+
+> *** Weak aspects: Comments to the author: what are the weak aspects of the paper?
+
+1) No rigorous security analyses is provided. The security proofs or formal verification is vital for the authentication protocol which is the security base of the underlying space-air-ground integrated NOMA System. Authors are suggested to either formally define and prove the security of their protocol, and/or use softwares such as ProVerif.
+
+2)The technical contribution is relatively low. According to table IV, the only extra feature that authors’  scheme introduces is the message accessibility for near users.
+
+3)The evaluation is oversimplified. Authors fail to implement their scheme and evaluate it in practice.
+
+> *** Recommended changes: Please indicate any changes that should be made to the paper if accepted.
+
+Authors wrote “It is worth noted that UAVs in the air commonly have much better channel quality (i.e., mostly line-of-sight channel) and higher computational capabilities than those of the ground users (i.e., probably non line-of-sight channel and IoT devices“. Authors are recommended to add more evidences to support this claim.
+
+P2: “space , air and ground”: an extra space is between space and the comma.
+
+> *** Submission Policy: Does the paper list the same author(s), title and abstract (minor wording differences in the abstract are okay) in its PDF file and EDAS registration? (yes/no)
+
+yes
+
+======= ICC review 3 =======
+
+> *** Relevance and timeliness: Rate the importance and timeliness of the topic addressed in the paper within its area of research.
+Excellent (5)
+
+> *** Technical content and scientific rigour: Rate the technical content of the paper (e.g.: completeness of the analysis or simulation study, thoroughness of the treatise, accuracy of the models, etc.), its soundness and scientific rigour.
+Solid work of notable importance. (4)
+
+> *** Novelty and originality: Rate the novelty and originality of the ideas or results presented in the paper.
+Significant original work and novel results. (4)
+
+> *** Quality of presentation: Rate the paper organization, the clearness of text and figures, the completeness and accuracy of references.
+Excellent. (5)
+
+> *** Strong aspects: Comments to the author: what are the strong aspects of the paper
+
+This paper proposed a trust-based adaptive access authentication scheme to resist quantum attack while guarantee communication performance for C-NOMA communications in SAGIN. A dedicated NTRU key generation algorithm was designed by considering both trust and untrust C-NOMA relay scenarios.
+
+> *** Weak aspects: Comments to the author: what are the weak aspects of the paper?
+
+1. The reference [10] compared in this work seems out of date.
+
+> *** Recommended changes: Please indicate any changes that should be made to the paper if accepted.
+
+This paper is good, and can be accepted without changes.
+
+> *** Submission Policy: Does the paper list the same author(s), title and abstract (minor wording differences in the abstract are okay) in its PDF file and EDAS registration? (yes/no)
+
+yes

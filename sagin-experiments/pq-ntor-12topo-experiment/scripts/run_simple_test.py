@@ -153,7 +153,7 @@ def run_client_test(topo_id, run_id):
              '-u', 'http://localhost:8000/'],
             capture_output=True,
             text=True,
-            timeout=30,
+            timeout=60,  # 增加超时时间以适应网络延迟
             cwd=PQ_NTOR_DIR
         )
 

@@ -2,20 +2,18 @@
  * @file phase2_handshake_comparison.c
  * @brief Phase 2: Protocol Handshake Performance Comparison
  *
- * 对比测试 PQ-NTOR vs Classic NTOR 完整握手性能
- *
- * 测试内容:
- * 1. Classic NTOR完整握手 (X25519 + HMAC-SHA256)
- * 2. PQ-NTOR完整握手 (Kyber-512 + HKDF + HMAC)
- * 3. 统计对比分析 (均值、中位数、P95、P99、开销倍数)
+ * 对比测试三种NTOR握手协议性能:
+ * 1. Classic NTOR (X25519 + HMAC-SHA256)
+ * 2. PQ-NTOR (Kyber-512 + HKDF + HMAC)
+ * 3. Hybrid NTOR (Kyber-512 + X25519 + HKDF + HMAC)
  *
  * 参考文献:
  * - Berger et al. (2025): "Gradually Deploying Post-Quantum Cryptography in Tor"
+ * - IETF draft-ietf-tls-hybrid-design: Hybrid key exchange
  * - SaTor (Li & Elahi 2024): Section 5 Performance Evaluation
- * - NDSS-PQTLS2020: Paired t-test methodology
  *
  * @author Claude Code Assistant
- * @date 2025-12-03
+ * @date 2025-12-12 (Updated for Hybrid NTOR)
  */
 
 #include <stdio.h>
@@ -28,6 +26,7 @@
 #include <openssl/hmac.h>
 
 #include "pq_ntor.h"
+#include "hybrid_ntor.h"
 #include "kyber_kem.h"
 #include "crypto_utils.h"
 
@@ -117,11 +116,6 @@ static void compute_stats(double *times, int count, perf_stats_t *stats) {
 // Classic NTOR实现 (X25519 + HMAC-SHA256) - 简化版
 // ============================================================================
 
-/**
- * Classic NTOR完整握手 - 简化实现
- * 使用简单的DH + HMAC模拟Classic NTOR
- * 注意: 这是简化版本,主要用于性能对比基准
- */
 static int classic_ntor_full_handshake(uint8_t *shared_key_out) {
     EVP_PKEY *client_pkey = NULL;
     EVP_PKEY *server_pkey = NULL;
@@ -179,15 +173,10 @@ cleanup:
 // PQ-NTOR实现 (Kyber-512 + HKDF + HMAC)
 // ============================================================================
 
-/**
- * PQ-NTOR完整握手
- * 流程: 客户端创建onionskin -> 服务端创建reply -> 客户端完成握手
- */
 static int pq_ntor_full_handshake(uint8_t *shared_key_out) {
     uint8_t relay_identity[PQ_NTOR_RELAY_ID_LENGTH];
-    memset(relay_identity, 0xAB, sizeof(relay_identity));  // 测试用identity
+    memset(relay_identity, 0xAB, sizeof(relay_identity));
 
-    // 1. 客户端创建onionskin
     pq_ntor_client_state client_state;
     uint8_t onionskin[PQ_NTOR_ONIONSKIN_LEN];
 
@@ -195,7 +184,6 @@ static int pq_ntor_full_handshake(uint8_t *shared_key_out) {
         return -1;
     }
 
-    // 2. 服务端创建reply
     pq_ntor_server_state server_state;
     uint8_t reply[PQ_NTOR_REPLY_LEN];
 
@@ -204,23 +192,58 @@ static int pq_ntor_full_handshake(uint8_t *shared_key_out) {
         return -1;
     }
 
-    // 3. 客户端完成握手
     if (pq_ntor_client_finish_handshake(&client_state, reply) != 0) {
         pq_ntor_client_state_cleanup(&client_state);
         pq_ntor_server_state_cleanup(&server_state);
         return -1;
     }
 
-    // 4. 提取密钥材料
     if (pq_ntor_client_get_key(shared_key_out, &client_state) != 0) {
         pq_ntor_client_state_cleanup(&client_state);
         pq_ntor_server_state_cleanup(&server_state);
         return -1;
     }
 
-    // 清理
     pq_ntor_client_state_cleanup(&client_state);
     pq_ntor_server_state_cleanup(&server_state);
+
+    return 0;
+}
+
+// ============================================================================
+// Hybrid NTOR实现 (Kyber-512 + X25519 + HKDF + HMAC)
+// ============================================================================
+
+static int hybrid_ntor_full_handshake(uint8_t *shared_key_out) {
+    uint8_t relay_identity[HYBRID_NTOR_RELAY_ID_LENGTH];
+    memset(relay_identity, 0xAB, sizeof(relay_identity));
+
+    hybrid_ntor_client_state client_state;
+    uint8_t onionskin[HYBRID_NTOR_ONIONSKIN_LEN];
+
+    if (hybrid_ntor_client_create_onionskin(&client_state, onionskin, relay_identity) != HYBRID_NTOR_SUCCESS) {
+        return -1;
+    }
+
+    hybrid_ntor_server_state server_state;
+    uint8_t reply[HYBRID_NTOR_REPLY_LEN];
+
+    if (hybrid_ntor_server_create_reply(&server_state, reply, onionskin, relay_identity) != HYBRID_NTOR_SUCCESS) {
+        hybrid_ntor_client_state_cleanup(&client_state);
+        return -1;
+    }
+
+    if (hybrid_ntor_client_finish_handshake(&client_state, reply) != HYBRID_NTOR_SUCCESS) {
+        hybrid_ntor_client_state_cleanup(&client_state);
+        hybrid_ntor_server_state_cleanup(&server_state);
+        return -1;
+    }
+
+    // 提取密钥
+    memcpy(shared_key_out, client_state.k_enc, HYBRID_NTOR_KEY_ENC_LEN);
+
+    hybrid_ntor_client_state_cleanup(&client_state);
+    hybrid_ntor_server_state_cleanup(&server_state);
 
     return 0;
 }
@@ -263,6 +286,23 @@ static void benchmark_pq_ntor(double *times, int iterations) {
     }
 }
 
+static void benchmark_hybrid_ntor(double *times, int iterations) {
+    uint8_t shared_key[HYBRID_NTOR_KEY_ENC_LEN];
+
+    for (int i = 0; i < iterations; i++) {
+        uint64_t start = get_time_us();
+
+        if (hybrid_ntor_full_handshake(shared_key) != 0) {
+            fprintf(stderr, "Hybrid NTOR handshake failed at iteration %d\n", i);
+            times[i] = 0.0;
+            continue;
+        }
+
+        uint64_t end = get_time_us();
+        times[i] = (double)(end - start);
+    }
+}
+
 // ============================================================================
 // 结果输出
 // ============================================================================
@@ -274,7 +314,7 @@ static void print_header(void) {
     printf("Platform:      ARM64 Phytium Pi (FTC664 @ 2.3GHz)\n");
     printf("Iterations:    %d (with %d warmup)\n", TEST_ITERATIONS, WARMUP_ITERATIONS);
     printf("Confidence:    95%% CI\n");
-    printf("Reference:     Berger et al. (2025), SaTor (2024)\n");
+    printf("Protocols:     Classic NTOR, PQ-NTOR, Hybrid NTOR\n");
     printf("======================================================================\n\n");
 }
 
@@ -290,7 +330,9 @@ static void print_stats_row(const char *protocol, const perf_stats_t *stats) {
            stats->p99_us);
 }
 
-static void save_csv(const perf_stats_t *classic_stats, const perf_stats_t *pq_stats) {
+static void save_csv(const perf_stats_t *classic_stats,
+                     const perf_stats_t *pq_stats,
+                     const perf_stats_t *hybrid_stats) {
     FILE *fp = fopen("phase2_handshake_comparison.csv", "w");
     if (!fp) {
         fprintf(stderr, "Warning: Failed to create CSV file\n");
@@ -306,6 +348,10 @@ static void save_csv(const perf_stats_t *classic_stats, const perf_stats_t *pq_s
             pq_stats->mean_us, pq_stats->median_us, pq_stats->min_us,
             pq_stats->max_us, pq_stats->stddev_us, pq_stats->p95_us,
             pq_stats->p99_us, pq_stats->ci_lower, pq_stats->ci_upper);
+    fprintf(fp, "Hybrid NTOR,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f\n",
+            hybrid_stats->mean_us, hybrid_stats->median_us, hybrid_stats->min_us,
+            hybrid_stats->max_us, hybrid_stats->stddev_us, hybrid_stats->p95_us,
+            hybrid_stats->p99_us, hybrid_stats->ci_lower, hybrid_stats->ci_upper);
 
     fclose(fp);
     printf("✓ CSV data saved to: phase2_handshake_comparison.csv\n");
@@ -319,10 +365,12 @@ int main(void) {
     print_header();
 
     // 分配内存
-    double *classic_times = malloc((WARMUP_ITERATIONS + TEST_ITERATIONS) * sizeof(double));
-    double *pq_times = malloc((WARMUP_ITERATIONS + TEST_ITERATIONS) * sizeof(double));
+    int total_iterations = WARMUP_ITERATIONS + TEST_ITERATIONS;
+    double *classic_times = malloc(total_iterations * sizeof(double));
+    double *pq_times = malloc(total_iterations * sizeof(double));
+    double *hybrid_times = malloc(total_iterations * sizeof(double));
 
-    if (!classic_times || !pq_times) {
+    if (!classic_times || !pq_times || !hybrid_times) {
         fprintf(stderr, "Memory allocation failed\n");
         return 1;
     }
@@ -331,18 +379,13 @@ int main(void) {
     // 1. Classic NTOR测试
     // ========================================================================
 
-    printf("[1/2] Benchmarking: Classic NTOR (X25519 + HMAC-SHA256)\n");
+    printf("[1/3] Benchmarking: Classic NTOR (X25519 + HMAC-SHA256)\n");
     printf("      Warming up (%d iterations)...\n", WARMUP_ITERATIONS);
-
-    // 预热
     benchmark_classic_ntor(classic_times, WARMUP_ITERATIONS);
 
     printf("      Running %d test iterations...\n", TEST_ITERATIONS);
-
-    // 正式测试
     benchmark_classic_ntor(classic_times + WARMUP_ITERATIONS, TEST_ITERATIONS);
 
-    // 计算统计
     perf_stats_t classic_stats;
     compute_stats(classic_times + WARMUP_ITERATIONS, TEST_ITERATIONS, &classic_stats);
 
@@ -353,18 +396,13 @@ int main(void) {
     // 2. PQ-NTOR测试
     // ========================================================================
 
-    printf("[2/2] Benchmarking: PQ-NTOR (Kyber-512 + HKDF + HMAC)\n");
+    printf("[2/3] Benchmarking: PQ-NTOR (Kyber-512 + HKDF + HMAC)\n");
     printf("      Warming up (%d iterations)...\n", WARMUP_ITERATIONS);
-
-    // 预热
     benchmark_pq_ntor(pq_times, WARMUP_ITERATIONS);
 
     printf("      Running %d test iterations...\n", TEST_ITERATIONS);
-
-    // 正式测试
     benchmark_pq_ntor(pq_times + WARMUP_ITERATIONS, TEST_ITERATIONS);
 
-    // 计算统计
     perf_stats_t pq_stats;
     compute_stats(pq_times + WARMUP_ITERATIONS, TEST_ITERATIONS, &pq_stats);
 
@@ -372,7 +410,24 @@ int main(void) {
            pq_stats.mean_us, pq_stats.median_us, pq_stats.p95_us);
 
     // ========================================================================
-    // 3. 对比分析
+    // 3. Hybrid NTOR测试
+    // ========================================================================
+
+    printf("[3/3] Benchmarking: Hybrid NTOR (Kyber-512 + X25519 + HKDF + HMAC)\n");
+    printf("      Warming up (%d iterations)...\n", WARMUP_ITERATIONS);
+    benchmark_hybrid_ntor(hybrid_times, WARMUP_ITERATIONS);
+
+    printf("      Running %d test iterations...\n", TEST_ITERATIONS);
+    benchmark_hybrid_ntor(hybrid_times + WARMUP_ITERATIONS, TEST_ITERATIONS);
+
+    perf_stats_t hybrid_stats;
+    compute_stats(hybrid_times + WARMUP_ITERATIONS, TEST_ITERATIONS, &hybrid_stats);
+
+    printf("      Hybrid NTOR: mean=%.2f μs, median=%.2f μs, p95=%.2f μs\n\n",
+           hybrid_stats.mean_us, hybrid_stats.median_us, hybrid_stats.p95_us);
+
+    // ========================================================================
+    // 4. 对比分析
     // ========================================================================
 
     printf("======================================================================\n");
@@ -383,61 +438,75 @@ int main(void) {
     printf("------------------------------------------------------------------------------\n");
     print_stats_row("Classic NTOR", &classic_stats);
     print_stats_row("PQ-NTOR", &pq_stats);
+    print_stats_row("Hybrid NTOR", &hybrid_stats);
     printf("======================================================================\n\n");
 
     // 开销分析
-    double overhead_ratio = pq_stats.mean_us / classic_stats.mean_us;
-    double overhead_absolute = pq_stats.mean_us - classic_stats.mean_us;
+    double pq_overhead = pq_stats.mean_us / classic_stats.mean_us;
+    double hybrid_overhead = hybrid_stats.mean_us / classic_stats.mean_us;
+    double hybrid_vs_pq = hybrid_stats.mean_us / pq_stats.mean_us;
 
     printf("======================================================================\n");
-    printf("Overhead Analysis\n");
+    printf("Overhead Analysis (relative to Classic NTOR)\n");
     printf("======================================================================\n");
-    printf("Absolute Overhead:     %.2f μs\n", overhead_absolute);
-    printf("Relative Overhead:     %.2fx\n", overhead_ratio);
-    printf("Throughput (Classic):  %.0f handshakes/sec\n", 1000000.0 / classic_stats.mean_us);
-    printf("Throughput (PQ-NTOR):  %.0f handshakes/sec\n", 1000000.0 / pq_stats.mean_us);
+    printf("PQ-NTOR Overhead:        %.2fx (%.2f μs absolute)\n",
+           pq_overhead, pq_stats.mean_us - classic_stats.mean_us);
+    printf("Hybrid NTOR Overhead:    %.2fx (%.2f μs absolute)\n",
+           hybrid_overhead, hybrid_stats.mean_us - classic_stats.mean_us);
+    printf("Hybrid vs PQ-NTOR:       %.2fx\n", hybrid_vs_pq);
+    printf("\n");
+    printf("Throughput:\n");
+    printf("  Classic NTOR:   %.0f handshakes/sec\n", 1000000.0 / classic_stats.mean_us);
+    printf("  PQ-NTOR:        %.0f handshakes/sec\n", 1000000.0 / pq_stats.mean_us);
+    printf("  Hybrid NTOR:    %.0f handshakes/sec\n", 1000000.0 / hybrid_stats.mean_us);
     printf("======================================================================\n\n");
 
-    // 文献对比
+    // 消息大小比较
     printf("======================================================================\n");
-    printf("Comparison with Literature\n");
+    printf("Message Size Comparison\n");
     printf("======================================================================\n");
-    printf("Reference: Berger et al. (2025) - x86 @ 3.0GHz\n");
-    printf("  Classic NTOR (x86):     ~40 μs (estimated)\n");
-    printf("  PQ-NTOR (x86):          ~180 μs (estimated)\n");
-    printf("  Overhead (x86):         ~4.5x\n");
-    printf("\n");
-    printf("This Work: ARM64 Phytium Pi @ 2.3GHz\n");
-    printf("  Classic NTOR (ARM64):   %.2f μs\n", classic_stats.mean_us);
-    printf("  PQ-NTOR (ARM64):        %.2f μs\n", pq_stats.mean_us);
-    printf("  Overhead (ARM64):       %.2fx\n", overhead_ratio);
-    printf("\n");
+    printf("Protocol          Onionskin (bytes)    Reply (bytes)    Total (bytes)\n");
+    printf("----------------------------------------------------------------------\n");
+    printf("Classic NTOR      %d                   %d               %d\n",
+           32 + 20, 32 + 32, 32 + 20 + 32 + 32);  // X25519 PK + ID, X25519 PK + AUTH
+    printf("PQ-NTOR           %d                  %d               %d\n",
+           PQ_NTOR_ONIONSKIN_LEN, PQ_NTOR_REPLY_LEN,
+           PQ_NTOR_ONIONSKIN_LEN + PQ_NTOR_REPLY_LEN);
+    printf("Hybrid NTOR       %d                  %d               %d\n",
+           HYBRID_NTOR_ONIONSKIN_LEN, HYBRID_NTOR_REPLY_LEN,
+           HYBRID_NTOR_ONIONSKIN_LEN + HYBRID_NTOR_REPLY_LEN);
+    printf("======================================================================\n\n");
 
-    // 判断结果合理性
-    if (overhead_ratio >= 2.0 && overhead_ratio <= 6.0) {
-        printf("✓ Overhead ratio is within expected range (2-6×)\n");
-    } else if (overhead_ratio < 2.0) {
-        printf("⚠ Overhead ratio is lower than expected (<2×)\n");
-    } else {
-        printf("⚠ Overhead ratio is higher than expected (>6×)\n");
-    }
+    // 安全性对比
+    printf("======================================================================\n");
+    printf("Security Properties\n");
+    printf("======================================================================\n");
+    printf("Protocol          Classical Security    Quantum Security    Hybrid\n");
+    printf("----------------------------------------------------------------------\n");
+    printf("Classic NTOR      128-bit (X25519)      BROKEN              No\n");
+    printf("PQ-NTOR           N/A                   128-bit (Kyber)     No\n");
+    printf("Hybrid NTOR       128-bit (X25519)      128-bit (Kyber)     Yes\n");
     printf("======================================================================\n\n");
 
     // 保存CSV
-    save_csv(&classic_stats, &pq_stats);
+    save_csv(&classic_stats, &pq_stats, &hybrid_stats);
 
     printf("\n======================================================================\n");
     printf("✅ Phase 2 Benchmark Completed Successfully!\n");
     printf("======================================================================\n");
+    printf("\nKey Findings:\n");
+    printf("  - Hybrid NTOR provides both classical and quantum security\n");
+    printf("  - Hybrid overhead vs Classic: %.2fx\n", hybrid_overhead);
+    printf("  - Hybrid overhead vs PQ-NTOR: %.2fx\n", hybrid_vs_pq);
     printf("\nNext Steps:\n");
     printf("  1. Review: phase2_handshake_comparison.csv\n");
-    printf("  2. Visualize: python3 plot_phase2_results.py\n");
-    printf("  3. Proceed to Phase 3: SAGIN Network Integration Testing\n");
+    printf("  2. Proceed to Phase 3: SAGIN Network Integration Testing\n");
     printf("======================================================================\n\n");
 
     // 清理
     free(classic_times);
     free(pq_times);
+    free(hybrid_times);
 
     return 0;
 }

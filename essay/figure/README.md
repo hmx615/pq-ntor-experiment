@@ -1,273 +1,142 @@
-# 实验图表目录
+# PQ-NTOR SAGIN 实验图表目录
 
-## 📁 图表文件说明
-
-本目录包含所有实验可视化图表，共**12张PDF图表 + 3张PNG汇总图**
+本目录包含论文实验的所有可视化图表。
 
 ---
 
-## 📊 Phase 2: 文献对比图（3张）
+## 三阶段实验设计
 
-### 图2-1: 握手时间对比
-**文件**: `phase2_fig1_handshake_comparison.pdf`
+| 阶段 | 名称 | 内容 | 图表数量 |
+|------|------|------|----------|
+| Phase 1 | 密码学原语基准测试 | ML-KEM/HKDF/HMAC独立性能 | **3张** |
+| Phase 2 | 文献对比 | 4平台握手性能对比 | **3张** |
+| Phase 3 | SAGIN端到端测试 | 12拓扑CBT分析（三协议） | **10张** |
 
-**内容**: 4个平台的Classic NTOR与PQ-NTOR握手时间对比
-- Intel x86 (Tor官方) - 引用 `\cite{Berger2025}`
-- Hardware Research - 引用 `\cite{X25519-Hardware2017}`
-- Raspberry Pi 4 - 引用 `\cite{PQC-ARM-Benchmark2023}`
-- Phytium Pi (我们的实现) - 本文工作
+**总计: 16张PDF图表**
 
-**LaTeX引用示例**:
-```latex
-\begin{figure}[htbp]
-  \centering
-  \includegraphics[width=0.9\textwidth]{figure/phase2_fig1_handshake_comparison.pdf}
-  \caption{Phase 2: Handshake Performance Comparison with Literature}
-  \label{fig:phase2_handshake_comparison}
-\end{figure}
+---
+
+## 协议支持
+
+Phase 3 所有图表现已支持**三种协议**对比：
+
+| 协议 | 算法 | 图表颜色 |
+|------|------|----------|
+| Classic NTOR | X25519 ECDH | 蓝色 |
+| PQ-NTOR | ML-KEM-768 (Kyber) | 红色 |
+| Hybrid NTOR | X25519 + ML-KEM-768 | 绿色 |
+
+---
+
+## Phase 1: 密码学原语基准测试 (3张图)
+
+在飞腾派平台上测试各密码学操作的独立性能。
+
+| 图表 | 文件名 | 说明 |
+|------|--------|------|
+| 图1-1 | `phase1_fig1_crypto_performance.pdf` | 性能柱状图（含误差棒） |
+| 图1-2 | `phase1_fig2_crypto_breakdown.pdf` | 操作时间分解饼图 |
+| 图1-3 | `phase1_fig3_crypto_statistics.pdf` | 统计信息汇总表 |
+
+**数据来源**: `/sagin-experiments/docker/build_context/c/phase1_crypto_benchmarks.csv`
+
+**测试操作**:
+| 操作 | 平均时间 (µs) | 说明 |
+|------|--------------|------|
+| Kyber-512 Keygen | 6.68 | 密钥生成 |
+| Kyber-512 Encaps | 8.78 | 封装 |
+| Kyber-512 Decaps | 5.92 | 解封装 |
+| HKDF-SHA256 | 3.31 | 密钥派生 |
+| HMAC-SHA256 | 1.11 | 消息认证 |
+
+---
+
+## Phase 2: 文献对比 (3张图)
+
+与文献中不同平台的握手性能对比。
+
+| 图表 | 文件名 | 说明 |
+|------|--------|------|
+| 图2-1 | `phase2_fig1_handshake_comparison.pdf` | 4平台握手时间对比柱状图 |
+| 图2-2 | `phase2_fig2_overhead_comparison.pdf` | PQ-NTOR相对开销倍数对比 |
+| 图2-3 | `phase2_fig3_summary_table.pdf` | 性能汇总表格 |
+
+**对比平台**:
+- Intel x86 (Tor官方实现)
+- Hardware Research (硬件优化实现)
+- Raspberry Pi 4
+- 飞腾派 (本文实现)
+
+---
+
+## Phase 3: SAGIN网络端到端测试 (10张图)
+
+12种SAGIN拓扑下的Circuit Build Time (CBT)对比分析，支持**三种协议**。
+
+| 图表 | 文件名 | 说明 |
+|------|--------|------|
+| 图3-1 | `phase3_fig1_cbt_comparison.pdf` | 三协议CBT柱状对比图 |
+| 图3-2 | `phase3_fig2_overhead_ratio.pdf` | **折线+柱状图**：Classic基准柱 + PQ/Hybrid开销折线 |
+| 图3-3 | `phase3_fig3_absolute_overhead.pdf` | 绝对开销对比 (ms) |
+| 图3-4 | `phase3_fig4_cbt_breakdown.pdf` | CBT组成分解堆叠图 |
+| 图3-5 | `phase3_fig5_network_ratio.pdf` | 网络延迟占比对比（三协议） |
+| 图3-6 | `phase3_fig6_overhead_vs_bandwidth.pdf` | 开销 vs 带宽散点图 |
+| 图3-7 | `phase3_fig7_overhead_vs_delay.pdf` | 开销 vs 延迟散点图 |
+| 图3-8 | `phase3_fig8_bandwidth_category.pdf` | 按带宽分类汇总 |
+| 图3-9 | `phase3_fig9_best_worst_scenarios.pdf` | 最佳/最差场景对比 |
+| 图3-10 | `phase3_fig10_summary_table.pdf` | 三协议性能汇总表 |
+
+**数据来源**: `/sagin-experiments/pq-ntor-12topo-experiment/results/local_wsl/phase3_sagin_cbt_with_network_20251216.csv`
+
+### 关键发现 (三协议对比)
+
+| 指标 | Classic NTOR | PQ-NTOR | Hybrid NTOR |
+|------|-------------|---------|-------------|
+| 平均CBT | ~19.4 ms | ~19.3 ms | ~19.9 ms |
+| 平均开销 | 1.000× | ~0.99× | ~1.03× |
+| 网络占比 | ~83.8% | ~84.4% | ~81.5% |
+
+---
+
+## 12种SAGIN拓扑
+
+### 上行链路 (topo01-06)
+| 拓扑 | 描述 | 带宽 | 延迟 | 丢包率 |
+|------|------|------|------|--------|
+| topo01 | Z1 Up - 直连NOMA | 123.89 Mbps | 2.71 ms | 5.0% |
+| topo02 | Z2 Up - T协作接入 | 59.73 Mbps | 2.72 ms | 5.0% |
+| topo03 | Z3 Up - T用户协作NOMA | 102.76 Mbps | 2.71 ms | 2.0% |
+| topo04 | Z4 Up - 混合直连+协作 | 95.02 Mbps | 2.72 ms | 5.0% |
+| topo05 | Z5 Up - 多层树形结构 | 102.76 Mbps | 2.71 ms | 5.0% |
+| topo06 | Z6 Up - 双UAV中继+T | 91.33 Mbps | 2.72 ms | 2.0% |
+
+### 下行链路 (topo07-12)
+| 拓扑 | 描述 | 带宽 | 延迟 | 丢包率 |
+|------|------|------|------|--------|
+| topo07 | Z1 Down - 直连NOMA+协作 | 192.18 Mbps | 2.71 ms | 3.0% |
+| topo08 | Z2 Down - T协作接入+协作 | 177.95 Mbps | 2.71 ms | 3.0% |
+| topo09 | Z3 Down - T用户协作下行 | 125.97 Mbps | 2.71 ms | 1.0% |
+| topo10 | Z4 Down - 混合直连+协作 | 118.22 Mbps | 2.72 ms | 3.0% |
+| topo11 | Z5 Down - NOMA接收+转发 | 27.04 Mbps | 2.71 ms | 3.0% |
+| topo12 | Z6 Down - 双中继NOMA+协作 | 22.98 Mbps | 2.72 ms | 3.0% |
+
+---
+
+## 其他文档
+
+| 文件 | 说明 |
+|------|------|
+| `EXPERIMENT_PARAMETERS.md` | 完整实验参数文档（功率、带宽、12拓扑参数） |
+| `SHIMEI_MODEL_PARAMETERS.md` | 师妹NOMA物理层模型参数 |
+
+---
+
+## 图表生成脚本
+
+```bash
+python3 /home/ccc/pq-ntor-experiment/essay/visualize_comprehensive_comparison_pdf.py
 ```
 
 ---
 
-### 图2-2: PQ开销倍数对比
-**文件**: `phase2_fig2_overhead_comparison.pdf`
-
-**内容**: 4个平台的PQ-NTOR相对开销倍数
-- 我们的结果用红色突出显示（1.8-3.0×）
-- 显示我们的开销低于文献报告的x86平台（4.3-6.5×）
-
-**关键数据**:
-- Intel x86: 4.3-6.5×
-- Hardware Research: 3.3-10×
-- Raspberry Pi 4: 2.6-4.4×
-- **Phytium Pi (Ours): 1.8-3.0×** ← 最优
-
----
-
-### 图2-3: 性能汇总表
-**文件**: `phase2_fig3_summary_table.pdf`
-
-**内容**: 表格形式汇总所有平台性能数据
-- 包含Classic NTOR、PQ-NTOR、开销倍数、数据来源
-- 我们的数据行用粉色背景突出
-
----
-
-## 📊 Phase 3: SAGIN拓扑分析（9张）
-
-### 图3-1: 端到端CBT对比
-**文件**: `phase3_fig1_cbt_comparison.pdf`
-
-**内容**: 12个SAGIN拓扑的完整CBT对比（按PQ开销降序排列）
-- Classic NTOR vs PQ-NTOR柱状图
-- 每个拓扑标注网络参数（带宽/延迟/丢包率）
-- 颜色编码：绿色=高带宽，橙色=中等，红色=低带宽
-
-**论文要点**:
-- 不同拓扑显示明显差异，验证网络模拟有效性
-- 高带宽场景下PQ开销极小（1.02×）
-
----
-
-### 图3-2: PQ开销倍数
-**文件**: `phase3_fig2_overhead_ratio.pdf`
-
-**内容**: 12个拓扑的PQ-NTOR相对开销（降序排列）
-- 绿色柱：<1.1× (几乎无开销)
-- 橙色柱：1.1-1.5× (小开销)
-- 红色柱：>1.5× (需注意)
-
-**关键发现**:
-- 高带宽拓扑：1.02-1.07× (绿色)
-- 中等带宽：1.20-1.26× (橙色)
-- 低带宽：1.48-1.99× (红色)
-
----
-
-### 图3-3: PQ绝对开销
-**文件**: `phase3_fig3_absolute_overhead.pdf`
-
-**内容**: 每个拓扑的PQ-NTOR绝对时间开销（ms）
-- 便于理解实际延迟影响
-- 高带宽：+0.56-2.42 ms (可忽略)
-- 低带宽：+17.49-18.18 ms (显著)
-
----
-
-### 图3-4: CBT组成分解
-**文件**: `phase3_fig4_cbt_breakdown.pdf`
-
-**内容**: PQ-NTOR的CBT四部分堆叠图
-- 红色：密码学计算（0.55-1.00 ms）
-- 灰色：网络传播延迟（16.32-32.76 ms）
-- 蓝色：传输延迟（取决于带宽）
-- 橙色：重传延迟（取决于丢包率）
-
-**论文要点**: 清晰展示**网络延迟主导**（占比81.7%）
-
----
-
-### 图3-5: 网络延迟占比
-**文件**: `phase3_fig5_network_ratio.pdf`
-
-**内容**: Classic NTOR vs PQ-NTOR的网络延迟占比对比
-- 显示网络延迟在总CBT中的百分比
-- Classic: 83-98%
-- PQ-NTOR: 44-99% (低带宽场景下降至44%)
-
----
-
-### 图3-6: PQ开销 vs 带宽（散点图）
-**文件**: `phase3_fig6_overhead_vs_bandwidth.pdf`
-
-**内容**: 散点图展示PQ开销与带宽的关系
-- X轴：带宽（对数刻度）
-- Y轴：PQ开销倍数
-- 颜色：链路延迟
-
-**关键发现**: **带宽是主要影响因素，延迟影响较小**
-
----
-
-### 图3-7: PQ开销 vs 延迟（散点图）
-**文件**: `phase3_fig7_overhead_vs_delay.pdf`
-
-**内容**: 散点图展示PQ开销与延迟的关系
-- X轴：链路延迟
-- Y轴：PQ开销倍数
-- 颜色：带宽
-
-**关键发现**: 延迟对PQ开销影响较小，带宽是决定因素
-
----
-
-### 图3-8: 按带宽分类汇总
-**文件**: `phase3_fig8_bandwidth_category.pdf`
-
-**内容**: 3类带宽的平均PQ开销柱状图
-- 高带宽 (>25 Mbps): 1.03× (绿色) - **几乎无开销**
-- 中等带宽 (10-25 Mbps): 1.21× (橙色) - 小开销
-- 低带宽 (<10 Mbps): 1.76× (红色) - 明显开销
-
-**论文核心结论**: 在典型SAGIN高带宽场景下，PQ-NTOR的端到端开销可忽略
-
----
-
-### 图3-9: 最佳/最差场景对比
-**文件**: `phase3_fig9_best_worst_scenarios.pdf`
-
-**内容**: 横向柱状图展示前3名和后3名拓扑
-- 上半部分（Best）: topo02, topo03, topo05 (1.02-1.03×)
-- 下半部分（Worst）: topo12, topo11, topo10 (1.48-1.99×)
-
-**论文要点**: 即使在最差场景下，PQ开销也在可接受范围（<2×）
-
----
-
-## 🖼️ PNG汇总图（3张）
-
-### 1. Phase 2文献对比汇总
-**文件**: `phase2_literature_comparison.png`
-
-包含Phase 2的3张子图汇总（3行×1列布局）
-
----
-
-### 2. Phase 3 SAGIN综合分析
-**文件**: `phase3_sagin_comprehensive.png`
-
-包含Phase 3的6张核心子图汇总（3行×2列布局）
-
----
-
-### 3. Phase 3开销专项分析
-**文件**: `phase3_overhead_analysis.png`
-
-包含Phase 3的4张开销分析子图（2行×2列布局）
-
----
-
-## 📖 LaTeX论文使用建议
-
-### 1. 引用参考文献
-
-Phase 2图表中的文献引用：
-```latex
-\cite{Berger2025}            % arXiv 2025/479 - PQ-Tor最新研究
-\cite{X25519-Hardware2017}   % Hardware研究 - X25519硬件优化
-\cite{PQC-ARM-Benchmark2023} % MDPI 2023 - ARM平台PQC基准测试
-```
-
-### 2. 图表引用示例
-
-```latex
-如图~\ref{fig:phase2_handshake_comparison}所示，我们的PQ-NTOR实现在飞腾派ARM64平台上
-实现了181.64~µs的握手时间，优于Raspberry Pi 4的263~µs (ML-KEM-512)
-\cite{PQC-ARM-Benchmark2023}，相对开销为1.8-3.0×，显著低于Intel x86平台报告的
-4.3-6.5×开销\cite{Berger2025}。
-
-在SAGIN网络场景下（图~\ref{fig:phase3_overhead_ratio}），高带宽拓扑（>25 Mbps）的
-PQ-NTOR端到端开销仅为1.02-1.07×，网络延迟主导（图~\ref{fig:phase3_cbt_breakdown}），
-占总CBT的81.7\%，使得后量子安全的性能成本几乎可以忽略。
-```
-
-### 3. 图表标题建议
-
-```latex
-% Phase 2
-\caption{Handshake Performance Comparison: Our Work vs Literature}
-\caption{PQ-NTOR Relative Overhead Across Different Platforms}
-\caption{Performance Summary of Classic NTOR and PQ-NTOR}
-
-% Phase 3
-\caption{Circuit Build Time Across 12 SAGIN Topologies}
-\caption{PQ-NTOR Relative Overhead by SAGIN Topology}
-\caption{PQ-NTOR Absolute Time Overhead in SAGIN Networks}
-\caption{PQ-NTOR CBT Breakdown by Component}
-\caption{Network Delay Dominance in SAGIN Scenarios}
-\caption{Impact of Bandwidth on PQ-NTOR Overhead}
-\caption{Impact of Link Delay on PQ-NTOR Overhead}
-\caption{PQ-NTOR Overhead by Bandwidth Category}
-\caption{Best vs Worst Case Scenarios for PQ-NTOR Deployment}
-```
-
----
-
-## 🎯 关键论文论点支撑
-
-### 论点1: 我们的PQ-NTOR实现性能优异
-**支撑图表**: phase2_fig1, phase2_fig2
-**数据**: 181.64 µs，优于Raspberry Pi 4 (263 µs)，开销1.8-3.0×低于x86 (4.3-6.5×)
-
-### 论点2: 网络延迟主导SAGIN场景
-**支撑图表**: phase3_fig4, phase3_fig5
-**数据**: 网络延迟占比81.7%，密码学差异被稀释
-
-### 论点3: 高带宽场景下PQ开销可忽略
-**支撑图表**: phase3_fig6, phase3_fig8
-**数据**: >25 Mbps带宽下，PQ开销仅1.03× (+0.56-2.42 ms)
-
-### 论点4: 低带宽是唯一瓶颈
-**支撑图表**: phase3_fig9
-**数据**: <10 Mbps带宽下，PQ开销1.76-1.99×，主要因传输延迟
-
----
-
-## 📝 生成脚本
-
-- **PDF单图生成**: `visualize_comprehensive_comparison_pdf.py`
-- **PNG汇总图生成**: `visualize_comprehensive_comparison.py`
-- **数据分析**: `analyze_phase3_with_network.py`
-
----
-
-## 📅 更新日志
-
-- **2025-12-04**: 初始创建，包含12张PDF + 3张PNG
-- 文献数据库已更新，新增2篇性能基准参考文献
-
----
-
-**文件总数**: 15 (12 PDF + 3 PNG)
-**论文推荐**: 优先使用PDF文件（矢量图，无损放大）
-**备用**: PNG文件用于预览和演示
+*更新时间: 2025-12-16*

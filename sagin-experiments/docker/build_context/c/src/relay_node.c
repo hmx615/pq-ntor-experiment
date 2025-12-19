@@ -184,7 +184,7 @@ void relay_node_destroy_circuit(relay_node_t *node, circuit_t *circuit) {
 }
 
 /**
- * Handle CREATE2 cell (establish circuit with PQ-Ntor)
+ * Handle CREATE2 cell (establish circuit with Hybrid Ntor)
  */
 int relay_node_handle_create2(relay_node_t *node, cell_t *cell, int conn_fd) {
     printf("[%s] Handling CREATE2 for circuit %u\n",
@@ -192,7 +192,7 @@ int relay_node_handle_create2(relay_node_t *node, cell_t *cell, int conn_fd) {
 
     // Parse CREATE2 payload
     uint16_t handshake_type, handshake_len;
-    uint8_t handshake_data[PQ_NTOR_ONIONSKIN_LEN];
+    uint8_t handshake_data[HYBRID_NTOR_ONIONSKIN_LEN];
 
     if (cell_parse_create2(cell, &handshake_type, handshake_data, &handshake_len) != 0) {
         fprintf(stderr, "[%s] Failed to parse CREATE2 cell\n",
@@ -216,38 +216,38 @@ int relay_node_handle_create2(relay_node_t *node, cell_t *cell, int conn_fd) {
 
     circuit->state = CIRCUIT_STATE_HANDSHAKE;
 
-    // Perform PQ-Ntor server handshake
-    pq_ntor_server_state server_state;
-    uint8_t reply[PQ_NTOR_REPLY_LEN];
+    // Perform Hybrid Ntor server handshake (Kyber-512 + X25519)
+    hybrid_ntor_server_state server_state;
+    uint8_t reply[HYBRID_NTOR_REPLY_LEN];
 
-    int ret = pq_ntor_server_create_reply(&server_state, reply,
-                                          handshake_data, node->config.identity);
-    if (ret != PQ_NTOR_SUCCESS) {
-        fprintf(stderr, "[%s] PQ-Ntor handshake failed\n",
+    int ret = hybrid_ntor_server_create_reply(&server_state, reply,
+                                              handshake_data, node->config.identity);
+    if (ret != HYBRID_NTOR_SUCCESS) {
+        fprintf(stderr, "[%s] Hybrid Ntor handshake failed\n",
                 relay_role_to_string(node->config.role));
         relay_node_destroy_circuit(node, circuit);
         return -1;
     }
 
     // Extract encryption key material (K_enc)
-    uint8_t key_material[PQ_NTOR_KEY_ENC_LEN];
-    pq_ntor_server_get_key(key_material, &server_state);
+    uint8_t key_material[HYBRID_NTOR_KEY_ENC_LEN];
+    hybrid_ntor_server_get_key(key_material, &server_state);
 
     // Initialize crypto layer for this circuit
     if (onion_layer_init(&circuit->crypto_layer, key_material) != 0) {
         fprintf(stderr, "[%s] Failed to initialize crypto layer\n",
                 relay_role_to_string(node->config.role));
-        pq_ntor_server_state_cleanup(&server_state);
+        hybrid_ntor_server_state_cleanup(&server_state);
         relay_node_destroy_circuit(node, circuit);
         return -1;
     }
 
     // Send CREATED2 reply
-    cell_t *created2 = cell_create_created2(cell->circ_id, reply, PQ_NTOR_REPLY_LEN);
+    cell_t *created2 = cell_create_created2(cell->circ_id, reply, HYBRID_NTOR_REPLY_LEN);
     if (!created2) {
         fprintf(stderr, "[%s] Failed to create CREATED2 cell\n",
                 relay_role_to_string(node->config.role));
-        pq_ntor_server_state_cleanup(&server_state);
+        hybrid_ntor_server_state_cleanup(&server_state);
         relay_node_destroy_circuit(node, circuit);
         return -1;
     }
@@ -256,16 +256,16 @@ int relay_node_handle_create2(relay_node_t *node, cell_t *cell, int conn_fd) {
         fprintf(stderr, "[%s] Failed to send CREATED2 cell\n",
                 relay_role_to_string(node->config.role));
         cell_free(created2);
-        pq_ntor_server_state_cleanup(&server_state);
+        hybrid_ntor_server_state_cleanup(&server_state);
         relay_node_destroy_circuit(node, circuit);
         return -1;
     }
 
     cell_free(created2);
-    pq_ntor_server_state_cleanup(&server_state);
+    hybrid_ntor_server_state_cleanup(&server_state);
 
     circuit->state = CIRCUIT_STATE_OPEN;
-    printf("[%s] Circuit %u established\n",
+    printf("[%s] Circuit %u established (Hybrid Kyber+X25519)\n",
            relay_role_to_string(node->config.role), cell->circ_id);
 
     return 0;
@@ -371,7 +371,7 @@ int relay_node_handle_extend2(relay_node_t *node,
     relay.stream_id = 0;
 
     uint16_t reply_len;
-    uint8_t reply_data[PQ_NTOR_REPLY_LEN];
+    uint8_t reply_data[HYBRID_NTOR_REPLY_LEN];
     cell_parse_created2(created2, reply_data, &reply_len);
     memcpy(relay.data, reply_data, reply_len);
     relay.length = reply_len;

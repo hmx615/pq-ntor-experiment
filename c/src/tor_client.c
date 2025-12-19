@@ -1,5 +1,7 @@
 /**
- * tor_client.c - PQ-Tor Client Implementation
+ * tor_client.c - Hybrid PQ-Tor Client Implementation
+ *
+ * Uses Hybrid NTOR (Kyber-512 + X25519) for post-quantum security
  */
 
 #define _POSIX_C_SOURCE 200112L
@@ -7,6 +9,7 @@
 
 #include "tor_client.h"
 #include "classic_ntor.h"
+#include "hybrid_ntor.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -236,12 +239,12 @@ int tor_client_create_first_hop(tor_client_t *client, const tor_node_t *guard) {
 
     printf("[Client] Connected to Guard\n");
 
-    // Perform handshake (PQ-NTOR or Classic NTOR)
-    uint8_t onionskin[PQ_NTOR_ONIONSKIN_LEN];  // Max size
+    // Perform handshake (Hybrid NTOR or Classic NTOR)
+    uint8_t onionskin[HYBRID_NTOR_ONIONSKIN_LEN];  // Max size (Hybrid > Classic)
     uint16_t onionskin_len;
-    uint8_t reply[PQ_NTOR_REPLY_LEN];  // Max size
+    uint8_t reply[HYBRID_NTOR_REPLY_LEN];  // Max size (Hybrid > Classic)
     uint16_t reply_len;
-    uint8_t key_material[PQ_NTOR_KEY_ENC_LEN];
+    uint8_t key_material[HYBRID_NTOR_KEY_ENC_LEN];
 
     if (client->config.use_classic_ntor) {
         // Classic NTOR handshake
@@ -320,16 +323,16 @@ int tor_client_create_first_hop(tor_client_t *client, const tor_node_t *guard) {
         return 0;
 
     } else {
-        // PQ-NTOR handshake
-        pq_ntor_client_state pq_state;
-        printf("[Client] Creating PQ-NTOR onionskin...\n");
-        if (pq_ntor_client_create_onionskin(&pq_state, onionskin, guard->identity) != PQ_NTOR_SUCCESS) {
-            fprintf(stderr, "[Client] Failed to create PQ-NTOR onionskin\n");
+        // Hybrid NTOR handshake (Kyber-512 + X25519)
+        hybrid_ntor_client_state hybrid_state;
+        printf("[Client] Creating Hybrid NTOR onionskin (Kyber+X25519)...\n");
+        if (hybrid_ntor_client_create_onionskin(&hybrid_state, onionskin, guard->identity) != HYBRID_NTOR_SUCCESS) {
+            fprintf(stderr, "[Client] Failed to create Hybrid NTOR onionskin\n");
             close(sockfd);
             return -1;
         }
-        onionskin_len = PQ_NTOR_ONIONSKIN_LEN;
-        printf("[Client] PQ-NTOR onionskin created (%d bytes)\n", onionskin_len);
+        onionskin_len = HYBRID_NTOR_ONIONSKIN_LEN;
+        printf("[Client] Hybrid NTOR onionskin created (%d bytes)\n", onionskin_len);
 
         // Generate circuit ID
         circuit_id_t circ_id = (circuit_id_t)((rand() << 16) | rand()) & 0x7FFFFFFF;
@@ -372,15 +375,15 @@ int tor_client_create_first_hop(tor_client_t *client, const tor_node_t *guard) {
         cell_free(created2);
 
         // Finish handshake
-        if (pq_ntor_client_finish_handshake(&pq_state, reply) != PQ_NTOR_SUCCESS) {
-            fprintf(stderr, "[Client] PQ-NTOR handshake failed\n");
+        if (hybrid_ntor_client_finish_handshake(&hybrid_state, reply) != HYBRID_NTOR_SUCCESS) {
+            fprintf(stderr, "[Client] Hybrid NTOR handshake failed\n");
             close(sockfd);
             return -1;
         }
 
         // Extract key material
-        pq_ntor_client_get_key(key_material, &pq_state);
-        pq_ntor_client_state_cleanup(&pq_state);
+        hybrid_ntor_client_get_key(key_material, &hybrid_state);
+        hybrid_ntor_client_state_cleanup(&hybrid_state);
 
         // Initialize circuit
         client->circuit = calloc(1, sizeof(tor_circuit_t));
@@ -392,7 +395,7 @@ int tor_client_create_first_hop(tor_client_t *client, const tor_node_t *guard) {
         onion_crypto_init(&client->circuit->crypto);
         onion_crypto_add_layer(&client->circuit->crypto, 0, key_material);
 
-        printf("[Client] First hop established (PQ-NTOR)\n");
+        printf("[Client] First hop established (Hybrid Kyber+X25519)\n");
         return 0;
     }
 }
@@ -404,12 +407,12 @@ static int extend_circuit(tor_client_t *client, const tor_node_t *next_node, int
     printf("[Client] Extending circuit to %s:%u\n", next_node->hostname, next_node->port);
 
     // Create onionskin for next hop
-    uint8_t onionskin[PQ_NTOR_ONIONSKIN_LEN];  // Max size
+    uint8_t onionskin[HYBRID_NTOR_ONIONSKIN_LEN];  // Max size (Hybrid > Classic)
     uint16_t onionskin_len;
-    uint8_t key_material[PQ_NTOR_KEY_ENC_LEN];
+    uint8_t key_material[HYBRID_NTOR_KEY_ENC_LEN];
 
     classic_ntor_client_state classic_state;
-    pq_ntor_client_state pq_state;
+    hybrid_ntor_client_state hybrid_state;
 
     if (client->config.use_classic_ntor) {
         // Classic NTOR
@@ -419,12 +422,12 @@ static int extend_circuit(tor_client_t *client, const tor_node_t *next_node, int
         }
         onionskin_len = CLASSIC_NTOR_ONIONSKIN_LEN;
     } else {
-        // PQ-NTOR
-        if (pq_ntor_client_create_onionskin(&pq_state, onionskin, next_node->identity) != PQ_NTOR_SUCCESS) {
-            fprintf(stderr, "[Client] Failed to create PQ-NTOR onionskin\n");
+        // Hybrid NTOR (Kyber-512 + X25519)
+        if (hybrid_ntor_client_create_onionskin(&hybrid_state, onionskin, next_node->identity) != HYBRID_NTOR_SUCCESS) {
+            fprintf(stderr, "[Client] Failed to create Hybrid NTOR onionskin\n");
             return -1;
         }
-        onionskin_len = PQ_NTOR_ONIONSKIN_LEN;
+        onionskin_len = HYBRID_NTOR_ONIONSKIN_LEN;
     }
 
     // Build EXTEND2 payload: [256:hostname][2:port][2:htype][2:hlen][hlen:hdata]
@@ -496,12 +499,12 @@ static int extend_circuit(tor_client_t *client, const tor_node_t *next_node, int
         classic_ntor_client_get_key(key_material, &classic_state);
         classic_ntor_client_state_cleanup(&classic_state);
     } else {
-        if (pq_ntor_client_finish_handshake(&pq_state, relay.data) != PQ_NTOR_SUCCESS) {
-            fprintf(stderr, "[Client] PQ-NTOR extension handshake failed\n");
+        if (hybrid_ntor_client_finish_handshake(&hybrid_state, relay.data) != HYBRID_NTOR_SUCCESS) {
+            fprintf(stderr, "[Client] Hybrid NTOR extension handshake failed\n");
             return -1;
         }
-        pq_ntor_client_get_key(key_material, &pq_state);
-        pq_ntor_client_state_cleanup(&pq_state);
+        hybrid_ntor_client_get_key(key_material, &hybrid_state);
+        hybrid_ntor_client_state_cleanup(&hybrid_state);
     }
 
     // Add new crypto layer

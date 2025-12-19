@@ -12,7 +12,7 @@ LIBOQS_LIB = $(LIBOQS_DIR)/lib
 
 # 包含路径和库路径
 INCLUDES = -I$(LIBOQS_INCLUDE) -Isrc
-LIBS = -L$(LIBOQS_LIB) -loqs -lssl -lcrypto -Wl,-rpath,$(LIBOQS_LIB)
+LIBS = -L$(LIBOQS_LIB) -loqs -lssl -lcrypto -lpthread -lm -Wl,-rpath,$(LIBOQS_LIB)
 
 # 可选：编译 Kyber768 版本（默认 Kyber512）
 # 取消注释下面这行来使用 Kyber768
@@ -25,7 +25,7 @@ BENCHMARK_DIR = benchmark
 PROGRAMS_DIR = programs
 
 # 目标文件
-SRCS = $(SRC_DIR)/kyber_kem.c $(SRC_DIR)/crypto_utils.c $(SRC_DIR)/pq_ntor.c $(SRC_DIR)/cell.c $(SRC_DIR)/onion_crypto.c
+SRCS = $(SRC_DIR)/kyber_kem.c $(SRC_DIR)/crypto_utils.c $(SRC_DIR)/pq_ntor.c $(SRC_DIR)/classic_ntor.c $(SRC_DIR)/hybrid_ntor.c $(SRC_DIR)/cell.c $(SRC_DIR)/onion_crypto.c
 OBJS = $(SRCS:.c=.o)
 
 # 服务器程序
@@ -39,26 +39,18 @@ TEST_CRYPTO = test_crypto
 TEST_CRYPTO_SRC = $(TEST_DIR)/test_crypto.c
 TEST_PQ_NTOR = test_pq_ntor
 TEST_PQ_NTOR_SRC = $(TEST_DIR)/test_pq_ntor.c
+TEST_CLASSIC_NTOR = test_classic_ntor
+TEST_CLASSIC_NTOR_SRC = $(TEST_DIR)/test_classic_ntor.c
 TEST_CELL = test_cell
 TEST_CELL_SRC = $(TEST_DIR)/test_cell.c
 TEST_ONION = test_onion
 TEST_ONION_SRC = $(TEST_DIR)/test_onion.c
+TEST_HYBRID_NTOR = test_hybrid_ntor
+TEST_HYBRID_NTOR_SRC = $(TEST_DIR)/test_hybrid_ntor.c
 
 # 基准测试程序
 BENCHMARK = benchmark_pq_ntor
 BENCHMARK_SRC = $(BENCHMARK_DIR)/benchmark_pq_ntor.c
-
-# Phase 1 密码学基元benchmark
-PHASE1_BENCH = phase1_crypto_primitives
-PHASE1_BENCH_SRC = $(BENCHMARK_DIR)/phase1_crypto_primitives.c
-
-# Phase 2 协议握手对比benchmark
-PHASE2_BENCH = phase2_handshake_comparison
-PHASE2_BENCH_SRC = $(BENCHMARK_DIR)/phase2_handshake_comparison.c
-
-# Phase 3 SAGIN网络集成benchmark
-PHASE3_BENCH = phase3_sagin_network
-PHASE3_BENCH_SRC = $(BENCHMARK_DIR)/phase3_sagin_network.c
 
 # 目录服务器程序
 DIRECTORY = directory
@@ -75,9 +67,9 @@ CLIENT_SRC = $(PROGRAMS_DIR)/client_main.c
 CLIENT_OBJS = $(SRC_DIR)/tor_client.o
 
 # 主要目标
-.PHONY: all clean test test-crypto test-pq-ntor test-cell test-onion test-all benchmark phase1 phase2 phase3 visualize directory relay client
+.PHONY: all clean test test-crypto test-pq-ntor test-classic-ntor test-hybrid-ntor test-cell test-onion test-all benchmark visualize directory relay client
 
-all: $(TEST_KYBER) $(TEST_CRYPTO) $(TEST_PQ_NTOR) $(TEST_CELL) $(TEST_ONION) $(BENCHMARK) $(PHASE1_BENCH) $(PHASE2_BENCH) $(PHASE3_BENCH) $(DIRECTORY) $(RELAY) $(CLIENT)
+all: $(TEST_KYBER) $(TEST_CRYPTO) $(TEST_PQ_NTOR) $(TEST_CLASSIC_NTOR) $(TEST_HYBRID_NTOR) $(TEST_CELL) $(TEST_ONION) $(BENCHMARK) $(DIRECTORY) $(RELAY) $(CLIENT)
 
 # 编译 Kyber 测试程序
 $(TEST_KYBER): $(TEST_KYBER_SRC) $(SRC_DIR)/kyber_kem.o
@@ -93,6 +85,18 @@ $(TEST_CRYPTO): $(TEST_CRYPTO_SRC) $(SRC_DIR)/crypto_utils.o
 
 # 编译 PQ-Ntor 测试程序
 $(TEST_PQ_NTOR): $(TEST_PQ_NTOR_SRC) $(OBJS)
+	@echo "Building $@..."
+	$(CC) $(CFLAGS) $(INCLUDES) -o $@ $^ $(LIBS)
+	@echo "✓ Built: $@"
+
+# 编译 Classic NTOR 测试程序
+$(TEST_CLASSIC_NTOR): $(TEST_CLASSIC_NTOR_SRC) $(SRC_DIR)/classic_ntor.o $(SRC_DIR)/crypto_utils.o
+	@echo "Building $@..."
+	$(CC) $(CFLAGS) $(INCLUDES) -o $@ $^ $(LIBS)
+	@echo "✓ Built: $@"
+
+# 编译 Hybrid NTOR 测试程序
+$(TEST_HYBRID_NTOR): $(TEST_HYBRID_NTOR_SRC) $(SRC_DIR)/hybrid_ntor.o $(SRC_DIR)/kyber_kem.o $(SRC_DIR)/crypto_utils.o
 	@echo "Building $@..."
 	$(CC) $(CFLAGS) $(INCLUDES) -o $@ $^ $(LIBS)
 	@echo "✓ Built: $@"
@@ -135,6 +139,20 @@ test-pq-ntor: $(TEST_PQ_NTOR)
 	@echo "=============================="
 	./$(TEST_PQ_NTOR)
 
+# 运行 Classic NTOR 测试
+test-classic-ntor: $(TEST_CLASSIC_NTOR)
+	@echo ""
+	@echo "Running Classic NTOR test..."
+	@echo "=============================="
+	./$(TEST_CLASSIC_NTOR)
+
+# 运行 Hybrid NTOR 测试
+test-hybrid-ntor: $(TEST_HYBRID_NTOR)
+	@echo ""
+	@echo "Running Hybrid NTOR test..."
+	@echo "=============================="
+	./$(TEST_HYBRID_NTOR)
+
 # 运行 Cell 测试
 test-cell: $(TEST_CELL)
 	@echo ""
@@ -150,7 +168,7 @@ test-onion: $(TEST_ONION)
 	./$(TEST_ONION)
 
 # 运行所有测试
-test-all: $(TEST_KYBER) $(TEST_CRYPTO) $(TEST_PQ_NTOR) $(TEST_CELL) $(TEST_ONION)
+test-all: $(TEST_KYBER) $(TEST_CRYPTO) $(TEST_PQ_NTOR) $(TEST_CLASSIC_NTOR) $(TEST_HYBRID_NTOR) $(TEST_CELL) $(TEST_ONION)
 	@echo ""
 	@echo "Running all tests..."
 	@echo "=============================="
@@ -160,6 +178,10 @@ test-all: $(TEST_KYBER) $(TEST_CRYPTO) $(TEST_PQ_NTOR) $(TEST_CELL) $(TEST_ONION
 	@echo ""
 	./$(TEST_PQ_NTOR)
 	@echo ""
+	./$(TEST_CLASSIC_NTOR)
+	@echo ""
+	./$(TEST_HYBRID_NTOR)
+	@echo ""
 	./$(TEST_CELL)
 	@echo ""
 	./$(TEST_ONION)
@@ -167,12 +189,6 @@ test-all: $(TEST_KYBER) $(TEST_CRYPTO) $(TEST_PQ_NTOR) $(TEST_CELL) $(TEST_ONION
 # 编译基准测试程序
 $(BENCHMARK): $(BENCHMARK_SRC) $(OBJS)
 	@echo "Building benchmark..."
-	$(CC) $(CFLAGS) $(INCLUDES) -o $@ $^ $(LIBS) -lm
-	@echo "✓ Built: $@"
-
-# 编译Phase 1密码学基元benchmark
-$(PHASE1_BENCH): $(PHASE1_BENCH_SRC) $(OBJS)
-	@echo "Building Phase 1 Crypto Primitives Benchmark..."
 	$(CC) $(CFLAGS) $(INCLUDES) -o $@ $^ $(LIBS) -lm
 	@echo "✓ Built: $@"
 
@@ -200,39 +216,6 @@ benchmark: $(BENCHMARK)
 	@echo "Running performance benchmark..."
 	@echo "=============================="
 	./$(BENCHMARK)
-
-# 运行Phase 1密码学基元benchmark
-phase1: $(PHASE1_BENCH)
-	@echo ""
-	@echo "Running Phase 1: Cryptographic Primitives Benchmark..."
-	@echo "========================================================"
-	./$(PHASE1_BENCH)
-
-# 编译Phase 2协议握手对比benchmark
-$(PHASE2_BENCH): $(PHASE2_BENCH_SRC) $(OBJS)
-	@echo "Building Phase 2 Handshake Comparison Benchmark..."
-	$(CC) $(CFLAGS) $(INCLUDES) -o $@ $^ $(LIBS) -lpthread -lm
-	@echo "✓ Built: $@"
-
-# 运行Phase 2协议握手对比benchmark
-phase2: $(PHASE2_BENCH)
-	@echo ""
-	@echo "Running Phase 2: Protocol Handshake Comparison..."
-	@echo "=================================================="
-	./$(PHASE2_BENCH)
-
-# 编译Phase 3 SAGIN网络集成benchmark
-$(PHASE3_BENCH): $(PHASE3_BENCH_SRC) $(OBJS)
-	@echo "Building Phase 3 SAGIN Network Integration Benchmark..."
-	$(CC) $(CFLAGS) $(INCLUDES) -o $@ $^ $(LIBS) -lpthread -lm
-	@echo "✓ Built: $@"
-
-# 运行Phase 3 SAGIN网络集成benchmark
-phase3: $(PHASE3_BENCH)
-	@echo ""
-	@echo "Running Phase 3: SAGIN Network Integration Test..."
-	@echo "==================================================="
-	./$(PHASE3_BENCH)
 
 # 可视化基准测试结果
 visualize: benchmark
@@ -264,7 +247,7 @@ info:
 clean:
 	@echo "Cleaning..."
 	rm -f $(OBJS) $(SERVER_OBJS) $(RELAY_OBJS) $(CLIENT_OBJS)
-	rm -f $(TEST_KYBER) $(TEST_CRYPTO) $(TEST_PQ_NTOR) $(TEST_CELL) $(TEST_ONION) $(BENCHMARK) $(DIRECTORY) $(RELAY) $(CLIENT)
+	rm -f $(TEST_KYBER) $(TEST_CRYPTO) $(TEST_PQ_NTOR) $(TEST_CLASSIC_NTOR) $(TEST_HYBRID_NTOR) $(TEST_CELL) $(TEST_ONION) $(BENCHMARK) $(DIRECTORY) $(RELAY) $(CLIENT)
 	rm -f $(BENCHMARK_DIR)/*.csv $(BENCHMARK_DIR)/*.png $(BENCHMARK_DIR)/*.tex
 	@echo "✓ Clean complete"
 

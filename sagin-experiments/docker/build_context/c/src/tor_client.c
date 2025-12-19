@@ -1,11 +1,15 @@
 /**
- * tor_client.c - PQ-Tor Client Implementation
+ * tor_client.c - Hybrid PQ-Tor Client Implementation
+ *
+ * Uses Hybrid NTOR (Kyber-512 + X25519) for post-quantum security
  */
 
 #define _POSIX_C_SOURCE 200112L
 #define _DEFAULT_SOURCE
 
 #include "tor_client.h"
+#include "classic_ntor.h"
+#include "hybrid_ntor.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -235,85 +239,165 @@ int tor_client_create_first_hop(tor_client_t *client, const tor_node_t *guard) {
 
     printf("[Client] Connected to Guard\n");
 
-    // Perform PQ-Ntor handshake
-    pq_ntor_client_state client_state;
-    uint8_t onionskin[PQ_NTOR_ONIONSKIN_LEN];
-
-    printf("[Client] Creating PQ-Ntor onionskin...\n");
-    if (pq_ntor_client_create_onionskin(&client_state, onionskin, guard->identity) != PQ_NTOR_SUCCESS) {
-        fprintf(stderr, "[Client] Failed to create onionskin\n");
-        close(sockfd);
-        return -1;
-    }
-    printf("[Client] Onionskin created (%d bytes)\n", PQ_NTOR_ONIONSKIN_LEN);
-
-    // Generate circuit ID
-    circuit_id_t circ_id = (circuit_id_t)((rand() << 16) | rand()) & 0x7FFFFFFF;
-    printf("[Client] Generated circuit ID: %u\n", circ_id);
-
-    // Create CREATE2 cell
-    printf("[Client] Creating CREATE2 cell...\n");
-    cell_t *create2 = cell_create_create2(circ_id, 0x0002, onionskin, PQ_NTOR_ONIONSKIN_LEN);
-    if (!create2) {
-        fprintf(stderr, "[Client] Failed to create CREATE2 cell\n");
-        close(sockfd);
-        return -1;
-    }
-    printf("[Client] CREATE2 cell created\n");
-
-    // Send CREATE2
-    printf("[Client] Sending CREATE2 cell (circ_id=%u, size=%d bytes)...\n", circ_id, CELL_LEN);
-    if (cell_send(sockfd, create2) != 0) {
-        fprintf(stderr, "[Client] Failed to send CREATE2\n");
-        cell_free(create2);
-        close(sockfd);
-        return -1;
-    }
-    cell_free(create2);
-
-    printf("[Client] CREATE2 sent successfully, waiting for CREATED2...\n");
-
-    // Receive CREATED2
-    cell_t *created2 = cell_recv(sockfd);
-    if (!created2 || created2->command != CELL_CREATED2) {
-        fprintf(stderr, "[Client] Failed to receive CREATED2\n");
-        if (created2) cell_free(created2);
-        close(sockfd);
-        return -1;
-    }
-
-    printf("[Client] Received CREATED2\n");
-
-    // Parse reply
-    uint8_t reply[PQ_NTOR_REPLY_LEN];
+    // Perform handshake (Hybrid NTOR or Classic NTOR)
+    uint8_t onionskin[HYBRID_NTOR_ONIONSKIN_LEN];  // Max size (Hybrid > Classic)
+    uint16_t onionskin_len;
+    uint8_t reply[HYBRID_NTOR_REPLY_LEN];  // Max size (Hybrid > Classic)
     uint16_t reply_len;
-    cell_parse_created2(created2, reply, &reply_len);
-    cell_free(created2);
+    uint8_t key_material[HYBRID_NTOR_KEY_ENC_LEN];
 
-    // Finish handshake
-    if (pq_ntor_client_finish_handshake(&client_state, reply) != PQ_NTOR_SUCCESS) {
-        fprintf(stderr, "[Client] Handshake failed\n");
-        close(sockfd);
-        return -1;
+    if (client->config.use_classic_ntor) {
+        // Classic NTOR handshake
+        classic_ntor_client_state classic_state;
+        printf("[Client] Creating Classic NTOR onionskin...\n");
+        if (classic_ntor_client_create_onionskin(&classic_state, onionskin, guard->identity) != CLASSIC_NTOR_SUCCESS) {
+            fprintf(stderr, "[Client] Failed to create Classic NTOR onionskin\n");
+            close(sockfd);
+            return -1;
+        }
+        onionskin_len = CLASSIC_NTOR_ONIONSKIN_LEN;
+        printf("[Client] Classic NTOR onionskin created (%d bytes)\n", onionskin_len);
+
+        // Generate circuit ID
+        circuit_id_t circ_id = (circuit_id_t)((rand() << 16) | rand()) & 0x7FFFFFFF;
+        printf("[Client] Generated circuit ID: %u\n", circ_id);
+
+        // Create CREATE2 cell
+        printf("[Client] Creating CREATE2 cell...\n");
+        cell_t *create2 = cell_create_create2(circ_id, 0x0002, onionskin, onionskin_len);
+        if (!create2) {
+            fprintf(stderr, "[Client] Failed to create CREATE2 cell\n");
+            close(sockfd);
+            return -1;
+        }
+
+        // Send CREATE2
+        printf("[Client] Sending CREATE2 cell (circ_id=%u)...\n", circ_id);
+        if (cell_send(sockfd, create2) != 0) {
+            fprintf(stderr, "[Client] Failed to send CREATE2\n");
+            cell_free(create2);
+            close(sockfd);
+            return -1;
+        }
+        cell_free(create2);
+
+        printf("[Client] CREATE2 sent, waiting for CREATED2...\n");
+
+        // Receive CREATED2
+        cell_t *created2 = cell_recv(sockfd);
+        if (!created2 || created2->command != CELL_CREATED2) {
+            fprintf(stderr, "[Client] Failed to receive CREATED2\n");
+            if (created2) cell_free(created2);
+            close(sockfd);
+            return -1;
+        }
+
+        printf("[Client] Received CREATED2\n");
+
+        // Parse reply
+        cell_parse_created2(created2, reply, &reply_len);
+        cell_free(created2);
+
+        // Finish handshake
+        if (classic_ntor_client_finish_handshake(&classic_state, reply) != CLASSIC_NTOR_SUCCESS) {
+            fprintf(stderr, "[Client] Classic NTOR handshake failed\n");
+            close(sockfd);
+            return -1;
+        }
+
+        // Extract key material
+        classic_ntor_client_get_key(key_material, &classic_state);
+        classic_ntor_client_state_cleanup(&classic_state);
+
+        // Initialize circuit
+        client->circuit = calloc(1, sizeof(tor_circuit_t));
+        client->circuit->circ_id = circ_id;
+        client->circuit->guard_fd = sockfd;
+        memcpy(&client->circuit->guard, guard, sizeof(tor_node_t));
+
+        // Initialize crypto with first layer
+        onion_crypto_init(&client->circuit->crypto);
+        onion_crypto_add_layer(&client->circuit->crypto, 0, key_material);
+
+        printf("[Client] First hop established (Classic NTOR)\n");
+        return 0;
+
+    } else {
+        // Hybrid NTOR handshake (Kyber-512 + X25519)
+        hybrid_ntor_client_state hybrid_state;
+        printf("[Client] Creating Hybrid NTOR onionskin (Kyber+X25519)...\n");
+        if (hybrid_ntor_client_create_onionskin(&hybrid_state, onionskin, guard->identity) != HYBRID_NTOR_SUCCESS) {
+            fprintf(stderr, "[Client] Failed to create Hybrid NTOR onionskin\n");
+            close(sockfd);
+            return -1;
+        }
+        onionskin_len = HYBRID_NTOR_ONIONSKIN_LEN;
+        printf("[Client] Hybrid NTOR onionskin created (%d bytes)\n", onionskin_len);
+
+        // Generate circuit ID
+        circuit_id_t circ_id = (circuit_id_t)((rand() << 16) | rand()) & 0x7FFFFFFF;
+        printf("[Client] Generated circuit ID: %u\n", circ_id);
+
+        // Create CREATE2 cell
+        printf("[Client] Creating CREATE2 cell...\n");
+        cell_t *create2 = cell_create_create2(circ_id, 0x0002, onionskin, onionskin_len);
+        if (!create2) {
+            fprintf(stderr, "[Client] Failed to create CREATE2 cell\n");
+            close(sockfd);
+            return -1;
+        }
+
+        // Send CREATE2
+        printf("[Client] Sending CREATE2 cell (circ_id=%u)...\n", circ_id);
+        if (cell_send(sockfd, create2) != 0) {
+            fprintf(stderr, "[Client] Failed to send CREATE2\n");
+            cell_free(create2);
+            close(sockfd);
+            return -1;
+        }
+        cell_free(create2);
+
+        printf("[Client] CREATE2 sent, waiting for CREATED2...\n");
+
+        // Receive CREATED2
+        cell_t *created2 = cell_recv(sockfd);
+        if (!created2 || created2->command != CELL_CREATED2) {
+            fprintf(stderr, "[Client] Failed to receive CREATED2\n");
+            if (created2) cell_free(created2);
+            close(sockfd);
+            return -1;
+        }
+
+        printf("[Client] Received CREATED2\n");
+
+        // Parse reply
+        cell_parse_created2(created2, reply, &reply_len);
+        cell_free(created2);
+
+        // Finish handshake
+        if (hybrid_ntor_client_finish_handshake(&hybrid_state, reply) != HYBRID_NTOR_SUCCESS) {
+            fprintf(stderr, "[Client] Hybrid NTOR handshake failed\n");
+            close(sockfd);
+            return -1;
+        }
+
+        // Extract key material
+        hybrid_ntor_client_get_key(key_material, &hybrid_state);
+        hybrid_ntor_client_state_cleanup(&hybrid_state);
+
+        // Initialize circuit
+        client->circuit = calloc(1, sizeof(tor_circuit_t));
+        client->circuit->circ_id = circ_id;
+        client->circuit->guard_fd = sockfd;
+        memcpy(&client->circuit->guard, guard, sizeof(tor_node_t));
+
+        // Initialize crypto with first layer
+        onion_crypto_init(&client->circuit->crypto);
+        onion_crypto_add_layer(&client->circuit->crypto, 0, key_material);
+
+        printf("[Client] First hop established (Hybrid Kyber+X25519)\n");
+        return 0;
     }
-
-    // Extract key material
-    uint8_t key_material[PQ_NTOR_KEY_ENC_LEN];
-    pq_ntor_client_get_key(key_material, &client_state);
-    pq_ntor_client_state_cleanup(&client_state);
-
-    // Initialize circuit
-    client->circuit = calloc(1, sizeof(tor_circuit_t));
-    client->circuit->circ_id = circ_id;
-    client->circuit->guard_fd = sockfd;
-    memcpy(&client->circuit->guard, guard, sizeof(tor_node_t));
-
-    // Initialize crypto with first layer
-    onion_crypto_init(&client->circuit->crypto);
-    onion_crypto_add_layer(&client->circuit->crypto, 0, key_material);
-
-    printf("[Client] First hop established\n");
-    return 0;
 }
 
 /**
@@ -323,28 +407,42 @@ static int extend_circuit(tor_client_t *client, const tor_node_t *next_node, int
     printf("[Client] Extending circuit to %s:%u\n", next_node->hostname, next_node->port);
 
     // Create onionskin for next hop
-    pq_ntor_client_state client_state;
-    uint8_t onionskin[PQ_NTOR_ONIONSKIN_LEN];
+    uint8_t onionskin[HYBRID_NTOR_ONIONSKIN_LEN];  // Max size (Hybrid > Classic)
+    uint16_t onionskin_len;
+    uint8_t key_material[HYBRID_NTOR_KEY_ENC_LEN];
 
-    if (pq_ntor_client_create_onionskin(&client_state, onionskin, next_node->identity) != PQ_NTOR_SUCCESS) {
-        fprintf(stderr, "[Client] Failed to create onionskin\n");
-        return -1;
+    classic_ntor_client_state classic_state;
+    hybrid_ntor_client_state hybrid_state;
+
+    if (client->config.use_classic_ntor) {
+        // Classic NTOR
+        if (classic_ntor_client_create_onionskin(&classic_state, onionskin, next_node->identity) != CLASSIC_NTOR_SUCCESS) {
+            fprintf(stderr, "[Client] Failed to create Classic NTOR onionskin\n");
+            return -1;
+        }
+        onionskin_len = CLASSIC_NTOR_ONIONSKIN_LEN;
+    } else {
+        // Hybrid NTOR (Kyber-512 + X25519)
+        if (hybrid_ntor_client_create_onionskin(&hybrid_state, onionskin, next_node->identity) != HYBRID_NTOR_SUCCESS) {
+            fprintf(stderr, "[Client] Failed to create Hybrid NTOR onionskin\n");
+            return -1;
+        }
+        onionskin_len = HYBRID_NTOR_ONIONSKIN_LEN;
     }
 
     // Build EXTEND2 payload: [256:hostname][2:port][2:htype][2:hlen][hlen:hdata]
-    uint8_t extend_data[1200];  // Increased size to accommodate full onionskin
+    uint8_t extend_data[1200];  // Max size to accommodate full onionskin
     memset(extend_data, 0, 256);
     strncpy((char*)extend_data, next_node->hostname, 255);
     extend_data[256] = (next_node->port >> 8) & 0xFF;
     extend_data[257] = next_node->port & 0xFF;
     extend_data[258] = 0x00;  // htype = 0x0002
     extend_data[259] = 0x02;
-    uint16_t hlen = PQ_NTOR_ONIONSKIN_LEN;
-    extend_data[260] = (hlen >> 8) & 0xFF;
-    extend_data[261] = hlen & 0xFF;
-    memcpy(extend_data + 262, onionskin, PQ_NTOR_ONIONSKIN_LEN);
+    extend_data[260] = (onionskin_len >> 8) & 0xFF;
+    extend_data[261] = onionskin_len & 0xFF;
+    memcpy(extend_data + 262, onionskin, onionskin_len);
 
-    uint16_t extend_len = 262 + PQ_NTOR_ONIONSKIN_LEN;
+    uint16_t extend_len = 262 + onionskin_len;
 
     // Create RELAY_EXTEND2 cell
     printf("[Client] Creating RELAY_EXTEND2 cell (extend_len=%u)...\n", extend_len);
@@ -393,16 +491,23 @@ static int extend_circuit(tor_client_t *client, const tor_node_t *next_node, int
     printf("[Client] Received EXTENDED2\n");
 
     // Finish handshake
-    if (pq_ntor_client_finish_handshake(&client_state, relay.data) != PQ_NTOR_SUCCESS) {
-        fprintf(stderr, "[Client] Extension handshake failed\n");
-        return -1;
+    if (client->config.use_classic_ntor) {
+        if (classic_ntor_client_finish_handshake(&classic_state, relay.data) != CLASSIC_NTOR_SUCCESS) {
+            fprintf(stderr, "[Client] Classic NTOR extension handshake failed\n");
+            return -1;
+        }
+        classic_ntor_client_get_key(key_material, &classic_state);
+        classic_ntor_client_state_cleanup(&classic_state);
+    } else {
+        if (hybrid_ntor_client_finish_handshake(&hybrid_state, relay.data) != HYBRID_NTOR_SUCCESS) {
+            fprintf(stderr, "[Client] Hybrid NTOR extension handshake failed\n");
+            return -1;
+        }
+        hybrid_ntor_client_get_key(key_material, &hybrid_state);
+        hybrid_ntor_client_state_cleanup(&hybrid_state);
     }
 
     // Add new crypto layer
-    uint8_t key_material[PQ_NTOR_KEY_ENC_LEN];
-    pq_ntor_client_get_key(key_material, &client_state);
-    pq_ntor_client_state_cleanup(&client_state);
-
     onion_crypto_add_layer(&client->circuit->crypto, layer_idx, key_material);
 
     printf("[Client] Circuit extended (layer %d added)\n", layer_idx);

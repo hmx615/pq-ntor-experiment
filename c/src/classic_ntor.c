@@ -9,7 +9,7 @@
 #include <string.h>
 #include <openssl/evp.h>
 #include <openssl/rand.h>
-#include <openssl/core_names.h>
+/* Note: openssl/core_names.h is OpenSSL 3.0+ only, not needed here */
 
 /**
  * @brief 生成 X25519 密钥对

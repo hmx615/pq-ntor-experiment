@@ -12,10 +12,10 @@
 #include <arpa/inet.h>
 #include <errno.h>
 
-/* Hardcoded node list (for 7π Physical Cluster) */
+/* Hardcoded node list (for 7π cluster deployment) */
 static node_info_t nodes[] = {
     {
-        .hostname = "192.168.5.186",  // Pi #3 (Guard)
+        .hostname = "192.168.5.186",  // Guard (Pi #186)
         .port = 6000,
         .type = NODE_TYPE_GUARD,
         .identity = {0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01,
@@ -23,7 +23,7 @@ static node_info_t nodes[] = {
         .active = true
     },
     {
-        .hostname = "192.168.5.187",  // Pi #4 (Middle)
+        .hostname = "192.168.5.187",  // Middle (Pi #187)
         .port = 6001,
         .type = NODE_TYPE_MIDDLE,
         .identity = {0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02,
@@ -31,7 +31,7 @@ static node_info_t nodes[] = {
         .active = true
     },
     {
-        .hostname = "192.168.5.188",  // Pi #5 (Exit)
+        .hostname = "192.168.5.188",  // Exit (Pi #188)
         .port = 6002,
         .type = NODE_TYPE_EXIT,
         .identity = {0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03,

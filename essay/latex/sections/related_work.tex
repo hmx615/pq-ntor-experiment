@@ -1,5 +1,5 @@
 % Section 2: Related Work
-% PQ-NTOR in SAGIN Networks
+% Hybrid-NTOR in SAGIN Networks
 % Version: 2.0 - Concise Journal Style
 % Date: 2025-12-03
 
@@ -74,7 +74,7 @@ Jedermann et al.~\cite{record2024} demonstrated location tracking attacks on LEO
 % 【中文翻译】2.3.1 后量子Tor理论提案
 
 Berger et al.~\cite{berger2025postquantum} surveyed post-quantum migration strategies for Tor, analyzing existing hybrid handshake proposals and comparing the performance of various PQC algorithms. They estimate 161~\us~per handshake on x86\_64 platforms using isolated liboqs benchmarks but do not implement a complete protocol. Their analysis provides theoretical foundations and migration guidelines but lacks real-world deployment, full circuit-construction measurements, and evaluation under diverse network conditions.
-% 批注6已修正：原文称"proposed a hybrid PQ-NTOR handshake"，但该文实际为综述型论文，仅比较已有方案效率，本质上并未提出新握手协议，已改为"surveyed"
+% 批注6已修正：原文称"proposed a hybrid Hybrid-NTOR handshake"，但该文实际为综述型论文，仅比较已有方案效率，本质上并未提出新握手协议，已改为"surveyed"
 % 【中文翻译】Berger等人综述了Tor的后量子迁移策略，分析了现有的混合握手提案并比较了各种PQC算法的性能。他们的工作基于孤立的liboqs基准测试估算x86_64系统上每次握手需要161微秒，但未实现完整协议。该分析提供了理论基础和迁移指南，但缺乏实际部署、完整电路构建测量以及在多样网络条件下的评估。
 
 The Tor Project has two official proposals for post-quantum handshakes: Proposal 269~\cite{torproposal269} (2016) suggests hybrid NTRU+X25519 but was never implemented; Proposal 355~\cite{torproposal355} (2025) specifies ML-KEM circuit extension but remains in draft form. T\"ujner and Papadimitratos~\cite{qsor2020} evaluated six PQ algorithms (SIKE, NTRU, Kyber, NewHope, FrodoKEM, SPHINCS+) using OMNeT++ simulations with simplified network models, focusing only on circuit construction without complete Tor functionality.
@@ -91,17 +91,17 @@ Ghosh and Kate~\cite{hybridtor2015} proposed hybrid onion routing with theoretic
 Prior work has explored post-quantum cryptography in SAGIN networks (e.g., APQA~\cite{apqa2024}, LPQAA~\cite{lpqaa2024}), Tor's viability in satellite environments (e.g., SaTor~\cite{sator2024}), and post-quantum Tor migration strategies (e.g., Berger et al.~\cite{berger2025postquantum}). However, no prior work integrates post-quantum security with anonymous communication in SAGIN environments. Existing PQC authentication schemes (APQA, LPQAA) operate at the link layer and require re-authentication upon frequent handovers in dynamic SAGIN settings, whereas application-layer anonymous communication establishes persistent circuits that remain valid across link changes. Our work addresses this gap through the following contributions:
 % 【中文翻译】先前工作已探索了后量子密码在SAGIN网络中的应用（如APQA、LPQAA）、Tor在卫星环境中的可行性（如SaTor）以及后量子Tor迁移策略（如Berger等人）。然而，尚无工作将后量子安全与SAGIN环境中的匿名通信相结合。现有PQC认证方案（APQA、LPQAA）运行在链路层，在动态SAGIN环境的频繁切换中需要重新认证，而应用层匿名通信建立的持久电路在链路变化时仍然有效。本文通过以下贡献填补了这一空白：
 
-\textbf{Complete system implementation.} We implement the first fully operational PQ-NTOR system with directory services, relay nodes, and clients, achieving 181.6~\us~handshake latency on ARM64 platforms and providing empirical measurements rather than theoretical estimates.
-% 【中文翻译】完整系统实现。我们实现了首个完整可运行的PQ-NTOR系统，包括目录服务、中继节点和客户端，在ARM64平台上实现了181.6微秒的握手延迟，提供了实证测量而非仅理论估算。
+\textbf{Complete system implementation.} We implement the first fully operational Hybrid-NTOR system with directory services, relay nodes, and clients, achieving 1099.8~\us~handshake latency on ARM64 platforms and providing empirical measurements rather than theoretical estimates.
+% 【中文翻译】完整系统实现。我们实现了首个完整可运行的Hybrid-NTOR系统，包括目录服务、中继节点和客户端，在ARM64平台上实现了1099.8微秒的握手延迟，提供了实证测量而非仅理论估算。
 
-\textbf{Persistent circuit advantage.} Unlike link-layer PQC protocols that require re-authentication during satellite/UAV handovers, PQ-NTOR establishes application-layer circuits that persist across link changes, reducing authentication overhead in dynamic SAGIN environments.
-% 【中文翻译】持久电路优势。与在卫星/UAV切换时需要重新认证的链路层PQC协议不同，PQ-NTOR建立的应用层电路在链路变化时仍然保持有效，降低了动态SAGIN环境中的认证开销。
+\textbf{Persistent circuit advantage.} Unlike link-layer PQC protocols that require re-authentication during satellite/UAV handovers, Hybrid-NTOR establishes application-layer circuits that persist across link changes, reducing authentication overhead in dynamic SAGIN environments.
+% 【中文翻译】持久电路优势。与在卫星/UAV切换时需要重新认证的链路层PQC协议不同，Hybrid-NTOR建立的应用层电路在链路变化时仍然保持有效，降低了动态SAGIN环境中的认证开销。
 
-\textbf{SAGIN environment evaluation.} We evaluate PQ-NTOR performance across 12 network topologies covering LEO satellites, UAV relays, and ground terminals, with 30--500~ms latency ranges based on realistic NOMA parameters, addressing the unexplored high-latency heterogeneous network scenarios.
-% 【中文翻译】SAGIN环境评估。我们在12种网络拓扑下评估了PQ-NTOR性能，覆盖LEO卫星、UAV中继和地面终端，延迟范围为30-500毫秒，基于真实NOMA参数，填补了高延迟异构网络场景的评估空白。
+\textbf{SAGIN environment evaluation.} We evaluate Hybrid-NTOR performance across 12 network topologies covering LEO satellites, UAV relays, and ground terminals, with 30--500~ms latency ranges based on realistic NOMA parameters, addressing the unexplored high-latency heterogeneous network scenarios.
+% 【中文翻译】SAGIN环境评估。我们在12种网络拓扑下评估了Hybrid-NTOR性能，覆盖LEO卫星、UAV中继和地面终端，延迟范围为30-500毫秒，基于真实NOMA参数，填补了高延迟异构网络场景的评估空白。
 
-\textbf{Real-world validation.} We deploy the system across 7 Phytium Pi ARM64 devices, completing 240 experiments (12 topologies $\times$ 20 trials) with 100\% success rate. PQ-NTOR introduces less than 8.1\% cryptographic overhead relative to end-to-end delay (2.7--5.5~ms), demonstrating its practicality in high-latency SAGIN environments.
-% 【中文翻译】真实世界验证。我们在7台飞腾派ARM64设备上部署了系统，完成了240次实验（12种拓扑×20次试验），100%成功率。PQ-NTOR相对于端到端延迟（2.7-5.5毫秒）引入了小于8.1%的密码学开销，证明了其在高延迟SAGIN环境中的实用性。
+\textbf{Real-world validation.} We deploy the system across 7 Phytium Pi ARM64 devices, completing 240 experiments (12 topologies $\times$ 20 trials) with 100\% success rate. Hybrid-NTOR introduces less than 8.1\% cryptographic overhead relative to end-to-end delay (2.7--5.5~ms), demonstrating its practicality in high-latency SAGIN environments.
+% 【中文翻译】真实世界验证。我们在7台飞腾派ARM64设备上部署了系统，完成了240次实验（12种拓扑×20次试验），100%成功率。Hybrid-NTOR相对于端到端延迟（2.7-5.5毫秒）引入了小于8.1%的密码学开销，证明了其在高延迟SAGIN环境中的实用性。
 
 %-----------------------------------------------------------------------------
 % End of Related Work section

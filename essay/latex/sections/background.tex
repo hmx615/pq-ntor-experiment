@@ -113,62 +113,62 @@ To address the quantum threat, we adopt Kyber-512 from NIST's standardized ML-KE
 
 \begin{figure}[t]
 \centering
-\footnotesize
+\small
 \begin{tikzpicture}[
-    node distance=0.3cm,
-    actor/.style={rectangle, draw, minimum width=1.4cm, minimum height=0.4cm, align=center, font=\footnotesize\bfseries},
-    opbox/.style={rectangle, draw=black, minimum width=2.0cm, align=left, font=\tiny, inner sep=2pt},
-    arrow/.style={->, >=stealth, semithick},
-    msg/.style={font=\tiny}
+    node distance=0.4cm,
+    actor/.style={rectangle, draw, minimum width=1.8cm, minimum height=0.5cm, align=center, font=\small\bfseries},
+    opbox/.style={rectangle, draw=black, minimum width=2.5cm, align=left, font=\scriptsize, inner sep=3pt},
+    arrow/.style={->, >=stealth, thick},
+    msg/.style={font=\scriptsize}
 ]
 
 % Actors
 \node[actor] (alice) {Client};
-\node[actor, right=3.5cm of alice] (bob) {Relay};
+\node[actor, right=4.5cm of alice] (bob) {Relay};
 
 % Vertical timelines start
-\coordinate (a0) at ($(alice.south) + (0,-0.2)$);
-\coordinate (b0) at ($(bob.south) + (0,-0.2)$);
+\coordinate (a0) at ($(alice.south) + (0,-0.25)$);
+\coordinate (b0) at ($(bob.south) + (0,-0.25)$);
 
 % Step 1: Bob generates key pair
-\node[opbox, below=0.25cm of b0, anchor=north] (box1) {
+\node[opbox, below=0.35cm of b0, anchor=north] (box1) {
     $(pk, sk) \leftarrow \text{KeyGen}()$
 };
 \draw[thick] (b0) -- (box1.north);
 
 % Message 1: Bob -> Alice (pk)
-\coordinate (b1) at ($(box1.south) + (0,-0.2)$);
-\coordinate (a1) at ($(a0) + (0,-1.6)$);
+\coordinate (b1) at ($(box1.south) + (0,-0.25)$);
+\coordinate (a1) at ($(a0) + (0,-2.0)$);
 \draw[thick] (box1.south) -- (b1);
 \draw[arrow] (b1) -- (a1) node[midway, above, msg] {$pk$};
 \draw[thick] (a0) -- (a1);
 
 % Step 2: Alice encapsulates
-\node[opbox, below=0.2cm of a1, anchor=north] (box2) {
+\node[opbox, below=0.35cm of a1, anchor=north] (box2) {
     $(ct, ss) \leftarrow \text{Encaps}(pk)$
 };
 \draw[thick] (a1) -- (box2.north);
 
 % Message 2: Alice -> Bob (ct)
-\coordinate (a2) at ($(box2.south) + (0,-0.2)$);
-\coordinate (b2) at ($(b1) + (0,-2.0)$);
+\coordinate (a2) at ($(box2.south) + (0,-0.25)$);
+\coordinate (b2) at ($(b1) + (0,-2.5)$);
 \draw[thick] (box2.south) -- (a2);
 \draw[thick] (b1) -- (b2);
 \draw[arrow] (a2) -- (b2) node[midway, above, msg] {$ct$};
 
 % Step 3: Bob decapsulates
-\node[opbox, below=0.2cm of b2, anchor=north] (box3) {
+\node[opbox, below=0.35cm of b2, anchor=north] (box3) {
     $ss \leftarrow \text{Decaps}(sk, ct)$
 };
 \draw[thick] (b2) -- (box3.north);
 
 % Step 4: Both have shared secret
-\coordinate (a3) at ($(a2) + (0,-1.6)$);
-\coordinate (b3) at ($(box3.south) + (0,-0.2)$);
+\coordinate (a3) at ($(a2) + (0,-2.0)$);
+\coordinate (b3) at ($(box3.south) + (0,-0.25)$);
 \draw[thick] (a2) -- (a3);
 \draw[thick] (box3.south) -- (b3);
 
-\node[opbox, below=0.2cm of a3, anchor=north] (box4) {
+\node[opbox, below=0.35cm of a3, anchor=north] (box4) {
     Shared: $ss$ (32 bytes)
 };
 \draw[thick] (a3) -- (box4.north);
@@ -180,8 +180,8 @@ To address the quantum threat, we adopt Kyber-512 from NIST's standardized ML-KE
 \draw[thick] (b3) -- (box5.north);
 
 % Final timeline endpoints
-\coordinate (a_end) at ($(box4.south) + (0,-0.12)$);
-\coordinate (b_end) at ($(box5.south) + (0,-0.12)$);
+\coordinate (a_end) at ($(box4.south) + (0,-0.15)$);
+\coordinate (b_end) at ($(box5.south) + (0,-0.15)$);
 \draw[thick] (box4.south) -- (a_end);
 \draw[thick] (box5.south) -- (b_end);
 
@@ -214,8 +214,8 @@ NIST Lvl = NIST PQC Security Level (Level 1 $\approx$ AES-128)
 \end{flushleft}
 \end{table}
 
-Table~\ref{tab:key-comparison} compares key sizes across different schemes. While Kyber-512's keys are significantly larger than X25519's 32-byte keys, they remain manageable in modern network protocols. Although hybrid approaches combining Kyber with X25519 are recommended by IETF~\cite{ietf-hybrid-kem} for defense-in-depth, we adopt pure Kyber-512 in our implementation to isolate and evaluate post-quantum cryptographic performance without classical algorithm overhead. This design choice enables clearer performance characterization in SAGIN environments.
-% 【中文翻译】表~\ref{tab:key-comparison}比较了不同方案的密钥大小。虽然Kyber-512的密钥大小显著大于X25519的32字节密钥，但在现代网络协议中仍然是可管理的。尽管IETF推荐将Kyber与X25519结合的混合方案以实现纵深防御，但我们在实现中采用纯Kyber-512，以隔离和评估后量子密码性能，而无需经典算法的额外开销。这一设计选择使得在SAGIN环境中能够更清晰地表征性能特征。
+Table~\ref{tab:key-comparison} compares key sizes across different schemes. While Kyber's keys are significantly larger than X25519's 32-byte keys, they remain manageable in modern network protocols. Following cryptographic best practices~\cite{ietf-hybrid-kem}, we employ a \emph{hybrid} approach combining Kyber-512 with X25519. This ensures security against both classical attacks (via X25519) and future quantum attacks (via Kyber), providing defense-in-depth even if one primitive is compromised.
+% 【中文翻译】表~\ref{tab:key-comparison}比较了不同密钥交换机制的密钥大小。虽然Kyber的密钥大小显著大于X25519的32字节密钥，但在现代网络协议中仍然是可管理的。遵循密码学最佳实践，我们采用混合方法，将Kyber-512与X25519结合。这确保了对经典攻击（通过X25519）和未来量子攻击（通过Kyber）的双重防护，即使一个基元被攻破也能提供纵深防御。
 
 
 %=============================================================================

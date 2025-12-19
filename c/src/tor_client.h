@@ -14,7 +14,7 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include "cell.h"
-#include "pq_ntor.h"
+#include "hybrid_ntor.h"
 #include "onion_crypto.h"
 
 /* Node information from directory */
